@@ -29,6 +29,10 @@ if( $api->SC->isAdmin() ){
         if ($d_data['manager_staff_id'] == 0) {
             $api->denied('No Manager In This Department.');
         }
+
+        if ($d_data['upper_id'] == 0) {
+            $api->denied('Top Department Can Not Give Leadership.');
+        }
     }
 
     $staff = new Staff();

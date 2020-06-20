@@ -89,7 +89,7 @@ class SessionCenter {
 
   public function isCEO(){
     $tmp = $this->getMember();
-    return (isset($tmp) && count($tmp['_department_upper_path']) <= 1 && $tmp['is_leader']) && $tmp['id'] == 1;
+    return (isset($tmp) && count($tmp['_department_upper_path']) <= 1 && $tmp['is_leader']);
   }
 
   public function isSuperUser(){

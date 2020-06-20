@@ -288,6 +288,8 @@ class ProcessReport extends MultipleSets{
       }
     }
 
+    unset($data['update_date']);
+
     $report['id'] = $id;
     if($chagne && count($data)>0){
       $pr_id = $process['id'];
