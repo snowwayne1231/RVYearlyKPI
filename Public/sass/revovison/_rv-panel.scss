@@ -1,0 +1,20 @@
+.panel {
+    border-radius: 2px;
+    background-color: #fff;
+    display: block;
+    border: 1px solid #e2e2e2;
+    box-shadow: none;
+    margin: 5px;
+    >.panel-title {
+        padding: 20px;
+        font-size: 16px;
+    }
+    .panel-title + .panel-body {
+        padding-top: 0;
+        margin-top: -10px;
+    }
+}
+
+.panel-body {
+    padding: 20px;
+}

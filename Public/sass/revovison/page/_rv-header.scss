@@ -1,0 +1,47 @@
+.headway {
+    position: relative;
+    .material-icons {
+        line-height: 65px;
+        height: 100%;
+    }
+    .notification-cycle {
+        background-color: #ff1d1d;
+        border-radius: 9px;
+        width: 17px;
+        height: 17px;
+        display: block;
+        position: absolute;
+        top: 14px;
+        left: 29px;
+        color: #fff;
+        line-height: 17px;
+        font-size: 12px;
+        text-align: center;
+    }
+    .right-notification {
+        position: absolute;
+        z-index: 11;
+        top: 100%;
+        right: -110px;
+        background-color: #fff;
+        border: 1px #ffad0c outset;
+        height: auto;
+        display: none;
+        i {
+            color: #fff;
+            white-space: nowrap;
+            font-size: 21px;
+            padding: 5px;
+            cursor: pointer;
+            line-height: 23px;
+            height: auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+    .right-notification {
+        &.show {
+            display: block;
+        }
+    }
+}

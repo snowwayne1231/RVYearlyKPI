@@ -1,0 +1,2 @@
+update rv_monthly_report as a left join rv_staff as b on a.staff_id = b.id set a.post_id = b.post_id, a.title_id = b.title_id where a.post_id != b.post_id or a.title_id != b.title_id;
+update rv_monthly_report_leader as a left join rv_staff as b on a.staff_id = b.id set a.post_id = b.post_id, a.title_id = b.title_id where a.post_id != b.post_id or a.title_id != b.title_id;

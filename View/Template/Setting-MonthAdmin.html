@@ -1,0 +1,107 @@
+<?=V('Component/MonthAppraisalReport.html')?>
+
+<style>
+    #SettingAdmin .month-appraisal-report{
+        position: absolute;
+        width: calc(100vw - 480px);
+        top: 5px;
+        left: -30px;
+        z-index: 2;
+        max-height: 0px;
+        overflow: auto;
+        transition: max-height 0.3s ease;
+        
+    }
+
+    #SettingAdmin .month-appraisal-report.open {
+        max-height: 350px;
+    }
+
+    #SettingAdmin .month-appraisal-report .card {
+        margin: 0px;
+    }
+</style>
+
+<div id="SettingAdmin">
+    <div class="had-container rv-admin">
+        <h1 class="rv-title">月份考評單管理</h1>
+        <div class="filter-date row">
+            <h3 class="title">請選擇日期</h3>
+            <div class="dropdown">
+                <select id="getYear" class="btn dropdown-button" type="button" v-model="year" v-on:change="onChangeUpdate()">
+                </select>
+            </div>
+            <div class="dropdown">
+                <select id="getMonth" class="btn dropdown-button" type="button" v-model="month" v-on:change="onChangeUpdate()">
+                    <option value="1">1月</option>
+                    <option value="2">2月</option>
+                    <option value="3">3月</option>
+                    <option value="4" selected>4月</option>
+                    <option value="5">5月</option>
+                    <option value="6">6月</option>
+                    <option value="7">7月</option>
+                    <option value="8">8月</option>
+                    <option value="9">9月</option>
+                    <option value="10">10月</option>
+                    <option value="11">11月</option>
+                    <option value="12">12月</option>
+                </select>
+            </div>
+        </div>
+        <div class="row" v-if="reports.length>0">
+            <div class="card">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>類別</th>
+                            <th>單位名稱</th>
+                            <th>單位主管</th>
+                            <th>持有單位</th>
+                            <th>考評狀態</th>
+                            <th>執行動作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-for="(report,index) in reports">
+                        <tr>
+                            <td v-if="report.type == 1" style="font-weight: bold; color: orange;">主管單</td>
+                            <td v-else>組員單</td>
+                            <td>
+                                <!-- @click="onClickReport(index)" -->
+                                {{report.created_unit_id}} - {{report.created_unit_name}}
+                                <span class="link" style="cursor:pointer;" @click="detailReports('detail_report_'+index, index, report)">[查看報表]</span>
+                                
+                            </td>
+                            <td>{{report.created_name}} {{report.created_name_en}}</td>
+                            <td>{{report.owner_department_name}}</td>
+                            <td>
+                                <div v-if="report.status_code == 1" :style="{ color: ' #636363' }">初始</div>
+                                <div v-if="report.status_code == 2" :style="{ color: ' #1495ff' }">考評</div>
+                                <div v-if="report.status_code == 3" :style="{ color: ' #FF9800' }">送審</div>
+                                <div v-if="report.status_code == 4" :style="{ color: ' #F44336' }">退回</div>
+                                <div v-if="report.status_code == 5" :style="{ color: ' #52af47' }">核准</div>
+                                <td>
+                                    <a style="cursor:pointer;" class="btn waves-effect waves-teal lighten-1 orange" v-if="decideStatus(report.status_code)" v-on:click="commit(report.id)">送審</a>
+                                    <p v-if="report.status_code == 1">尚未啟動送審功能</p>
+                                    <a href="#" class="btn waves-effect waves-teal lighten-1 red" :href="'#ReJectModal-'+(index+1)" v-else-if="report.status_code == 5" v-on:click="reject(report,index)">退回核准</a>
+                                </td>
+                            </td>
+                        </tr>
+                        <tr class="hide" :ref="'detail_report_' + index">
+                            <td colspan="6" style="padding: 10px;">
+                                <month-appraisal-report
+                                class="month-appraisal-reports"
+                                :class="{open: openReportArray[index]}"
+                                :type="report.type"
+                                :reports="curr_evaluating"
+                            >
+                            </month-appraisal-report></td>
+                        </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="<?=U('/Public/js/Index/Setting-MonthAdmin.js')?>"></script>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>人事考評系統 | REVOVISION</title>
+    <script>
+      var ua = navigator.userAgent;
+      var isIE = !!ua.match(/MSIE|Trident/i);
+      if(isIE){
+        try {
+            window.stop();
+        } catch (ex) {
+            document.execCommand('Stop');
+        }
+        var go = confirm('IE 無法使用。 是否前往下載 Chrome ?');
+        if(go){location.href='https://www.google.com/chrome/browser/desktop/index.html';}
+      }
+    </script>
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/material-icons.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/revovison.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/animate.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/sweetalert.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/sweetalert.css')?>">
+    <script type="text/javascript" src="<?=U('/Public/js/sweetalert.min.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/jquery-3.2.0.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Api/Javascript/v1')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/generalController.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/Index/loading.js')?>"></script>
+
+</head>
+
+<body>
+    <div class="loading-blcok" style="display:block;">
+        <div class="loader"></div>
+    </div>
+    {{Template}}
+</body>
+
+</html>

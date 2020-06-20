@@ -1,0 +1,94 @@
+$widget-default-padding-x: 15px !default;
+$widget-default-padding-y: 8px !default;
+$widget-notifications-item-padding-x: $widget-default-padding-x !default;
+$widget-notifications-item-padding-y: $widget-default-padding-y !default;
+$widget-notifications-icon-size: 26px !default;
+$widget-notifications-icon-font-size: 14px !default;
+$widget-notifications-line-height: 1.61539;
+//
+// Widgets / Notifications
+// --------------------------------------------------
+@include pixel-widget-item(notifications, $widget-notifications-item-padding-x, $widget-notifications-item-padding-y);
+.widget-notifications-title,
+.widget-notifications-description,
+.widget-notifications-date {
+    display: block;
+    margin-right: $widget-notifications-icon-size + $widget-notifications-item-padding-x;
+    line-height: $widget-notifications-line-height;
+}
+
+.widget-notifications-title {
+    font-size: 11px;
+    font-weight: 700;
+    font-weight: bolder;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.widget-notifications-description {
+    color: #6d6d6d;
+    font-size: 11px;
+}
+
+.widget-notifications-date {
+    color: #a1a7ab;
+    font-size: 11px;
+    font-style: italic;
+}
+
+.widget-notifications-icon {
+    position: absolute;
+    top: 40%;
+    right: $widget-notifications-item-padding-x;
+    width: 35px;
+    height: 35px;
+    margin-top: -(round($widget-notifications-icon-size / 2));
+    text-align: center;
+    border-radius: $border-radius-base;
+    font-size: $widget-notifications-icon-font-size;
+    line-height: $widget-notifications-icon-size;
+}
+
+// Widget within panel
+//
+@include pixel-widget-within-panel(notifications) {
+    .widget-notifications-icon {
+        right: $panel-body-padding;
+    }
+}
+
+.rv-notifications {
+    position: relative;
+    a {
+        @extend .grey-text;
+        @extend .text-darken-1;
+        &:hover {
+            background-color: #fff;
+        }
+    }
+}
+
+.notifications-content {
+    height: 280px;
+    position: relative;
+    overflow: auto;
+}
+
+.widget-more-link {
+    text-align: center;
+    padding: 10px 0 !important;
+    border-top: 1px solid;
+    border-color: rgba(0, 0, 0, 0.05);
+    display: block;
+    text-decoration: none !important;
+    font-size: 10px;
+    font-weight: 600;
+    color: #898989;
+    line-height: $widget-notifications-line-height !important;
+}
+
+.widget-notifications-item {
+    cursor: pointer;
+    &:hover {
+        background: #d8d8d8;
+    }
+}

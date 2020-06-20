@@ -1,0 +1,19 @@
+<div id="SettingImport">
+    <link rel="stylesheet" href="<?=U('/Public//css/dropzone.css')?>">
+    <script src="<?=U('/Public/js/dropzone.js')?>"></script>
+    <div class="had-container">
+        <h1 class="rv-title">批次匯入員工</h1>
+        <div class="attendance-block container">
+            <div class="pull-right">
+                <a class="waves-effect waves-light btn teal darken-1" data-toggle="downlaod-staff">下載現有人員名單Excel</a>
+            </div>
+            <div class="section">
+                <h3 class="att-title">請上傳要匯入之人員名單</h3>
+                <div class="drop-fild-block">
+                    <form action="/" method="post" enctype="multipart/form-data" class="dropzone dz-clickable"></form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Setting-ImportBatchStaff.js')?>"></script>

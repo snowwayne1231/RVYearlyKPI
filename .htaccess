@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+
+RewriteEngine on
+
+RewriteCond %{REQUEST_URI} !/(Api/|Public/|info|Lang).+ 
+RewriteRule ^.*$ index.php
+
+RewriteCond %{REQUEST_URI} /(Api/.+)$
+RewriteRule ^(.*Api/[^\.]+)$ $1.php
+
+</IfModule>
+
+SetEnv downgrade-1.0

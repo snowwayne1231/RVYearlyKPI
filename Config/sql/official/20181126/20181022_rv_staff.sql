@@ -1,0 +1,1 @@
+ALTER TABLE `rv_staff` CHANGE `update_date` `update_date` DATE NULL DEFAULT '0000-00-00' COMMENT '換單位日期';

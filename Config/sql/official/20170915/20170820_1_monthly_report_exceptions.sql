@@ -1,0 +1,2 @@
+alter table `rv_monthly_report` add column exception int(2) not null default 0 comment '例外情況 0=正常 , 1=例外不需要計分';
+alter table `rv_monthly_report_leader` add column exception int(2) not null default 0 comment '例外情況 0=正常 , 1=例外不需要計分';

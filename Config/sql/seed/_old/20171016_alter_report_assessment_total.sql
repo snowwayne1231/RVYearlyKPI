@@ -1,0 +1,1 @@
+alter table `rv_year_performance_report` change column assessment_total assessment_total float(5,2) NOT NULL DEFAULT '0.00' COMMENT '考績結算總分';

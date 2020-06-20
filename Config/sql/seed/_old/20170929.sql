@@ -1,0 +1,1 @@
+alter table `rv_record_year_performance_questions` add column from_staff_id int(11) not null default 0 comment '問答/評論來源，0=不記名人員' after target_staff_id;

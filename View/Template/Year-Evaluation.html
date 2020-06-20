@@ -1,0 +1,656 @@
+<div id="Year-Evaluation">
+    <div class="had-container rv-year-evaluation">
+        <h1 class="rv-title"><div class="subtitle pull-left"><span class="year pull-left">20xx</span> 年績效待考評單</div>
+            <div class="LeaderBtn pull-right"  v-if="staff_is_leader">
+                <a href="<?=U('/Month-SearchPerson')?>" class="waves-effect waves-dark btn blue linkBtn" target="_blank">員工績效分析</a>
+            </div>
+        </h1>
+        <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+            <div class="title">無年績效待考評單</div>
+            <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
+        </div>
+        <div id="YearEvaluationForm" class="section rv-assess">
+            <div class="row">
+                <div class="col s12">
+                    <div id="YearProcessingBar" class="stepper">
+                        <div class="stepper-header">
+                            <div class="stepper-step inactive"><span class="stepper-step-num">1</span>
+                                <div class="stepper-label">個人考評</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step inactive"><span class="stepper-step-num">2</span>
+                                <div class="stepper-label">部門考評</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step inactive"><span class="stepper-step-num">3</span>
+                                <div class="stepper-label">執行長評核</div>
+                            </div>
+                            <!--<hr class="divider">
+                            <div class="stepper-step inactive"><span class="stepper-step-num">4</span>
+                                <div class="stepper-label">核準</div>
+                            </div>-->
+                        </div>
+                        <div id="YearLeaderDetail" class="rv-numberOfPeopleArea row">
+                            <div class="number-title col s12">
+                                {{info.department}} - 部屬考評表提交狀況
+                            </div>
+                            <div class="number-content col s12">
+                                <div class="number-top number-text">
+                                    已提交人數<span>{{info.overme}}</span>人
+                                </div> /
+                                <div class="number-bottom number-text">
+                                    應提交總人數<span>{{info.total}}</span>人
+                                </div> /
+                                <div class="number-top number-text">
+                                    已完成人數<span>{{info.finished}}</span>人
+                                </div>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th v-for="(v,k) in team">{{v.name}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td v-for="(vtd,k) in team" :title="totalNoCommit(vtd.sub)">提交 : {{vtd.overme}} / {{vtd.total}} </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="template-evaluation" style="display: none">
+    <div class="row">
+        <div class="col s12">
+            <ul class="collapsible popout rv-card yearCollapsible" :class="{person:personal,under:underStaff}">
+                <li>
+                    <input type="hidden">
+                    <div class="collapsible-header truncate card-header own">
+                        <div class="col info-block ml10">
+                            <div>
+                                <p class="top">受評對象</p>
+                                <h1>{{main.staff_name}}{{main.staff_name_en}}</h1>
+                            </div>
+                        </div>
+                        <div class="col info-block">
+                            <div>
+                                <p class="top">職務</p>
+                                <h1>{{main.staff_post}}</h1>
+                            </div>
+                        </div>
+                        <div class="col info-block">
+                            <div>
+                                <p class="top">所屬單位</p>
+                                <h1>{{main.department_name}}</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapsible-body card-body"></div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div id="template-sidenav-personal" style="display: none">
+    <div id="mySidenav">
+        <div class="sidenav rv-assess" class="moveleft">
+            <div class="sideArea">
+                <h1 class="rv-title">
+                  <span>{{main.staff_no}} {{main.staff_name}} {{main.staff_name_en}} 考評單</span>
+                  <button class="modal-action modal-close btn-flat" v-on:click="closeReport"><i class="material-icons">close</i></button>
+                </h1>
+                <div class="card-body"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="template-yearreport-card-body" style="display:none;">
+    <div class="card-body">
+        <div class="brand-actions">
+            <span class="form-actions">
+              <a title="儲存" v-on:click="saveReport(main.id)" v-if="main._authority.edit || main._authority.edit_comment"><i class="material-icons indigo-text text-accent-2">save</i></a>
+              <a title="送審" v-on:click="commitReport(main.id)" v-if="main._authority.commit"><i class="material-icons yellow-text text-darken-2">arrow_forward</i></a>
+              <a title="退回" v-on:click="rejectReport(main.id)" v-if="main._authority.return"><i class="material-icons red-text">arrow_back</i></a>
+          </span>
+            <span class="line"></span>
+            <span class="note-btns">
+              <a title="意見回饋" v-on:click="getReportWord(main.id)"><i class="material-icons teal-text">chat_bubble_outline</i></a>
+              <a title="歷史記錄" v-on:click="getRecords(main.id)"><i class="material-icons indigo-text">library_books</i></a>
+          </span>
+        </div>
+        <div class="step"><span class="no">a.</span>考核項目</div>
+        <div class="year-evaluation-item-group">
+            <table class="table table-fixed">
+                <tbody>
+                    <tr>
+                        <th>受評對象</th>
+                        <td>{{main.staff_name}} {{main.staff_name_en}} ( {{main.staff_no}} )</td>
+                        <th>到職日</th>
+                        <td>{{main.staff_first_day}}</td>
+                    </tr>
+                    <tr>
+                        <th>部門</th>
+                        <td>{{main.division_name}}</td>
+                        <th>處/組單位</th>
+                        <td v-if="main.department_name != main.division_name">{{main.department_name}}</td>
+                        <td v-else></td>
+                    </tr>
+                    <template v-if="main.staff_stay.length > 0">
+                        <tr class="stay-infor">
+                            <th>留停記錄</th>
+                            <td colspan="3" class="left-align">
+                                <span class="log-list" v-for="(log, log_index) in main.staff_stay">
+                                    {{log.start_day}} - {{log.end_day}} <em v-if="!!log.return_day">(復職: {{log.return_day}})</em>
+                                </span>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+            <table class="table table-fixed" style="table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th>{{currentYear-1}}
+                            <br>年考績等級</th>
+                        <th>{{currentYear}}
+                            <br>月績效均分</th>
+                        <th>遲到(次)</th>
+                        <th>忘刷(次)</th>
+                        <th>忘卡(次)</th>
+                        <th>事假(時)</th>
+                        <th>全薪病假(時)</th>
+                        <th>半薪病假(時)</th>
+                        <th>曠職(時)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{main.before_level}}</td>
+                        <td>{{main.monthly_average}}</td>
+                        <td>{{main.attendance_json.late}}</td>
+                        <td>{{main.attendance_json.forgetcard}}</td>
+                        <td>{{main.attendance_json.nocard}}</td>
+                        <td>{{main.attendance_json.leave}}</td>
+                        <td>{{main.attendance_json.paysick}}</td>
+                        <td>{{main.attendance_json.sick}}</td>
+                        <td>{{main.attendance_json.absent}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- Table -->
+            <div class="year-evalution-table">
+                <table class="table table-fixed" v-if="feedback[0]" style="table-layout: fixed;">
+                    <thead>
+                        <tr>
+                            <th colspan="11">部屬回饋問卷</th>
+                        </tr>
+                        <tr>
+                            <th v-for="f in feedback">{{f.name}}</th>
+                            <th>總分</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td v-for="f in feedback">{{f.point}}</td>
+                            <td>{{feedback.total}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-fixed">
+                    <thead>
+                        <tr>
+                            <th colspan="2">項目</th>
+                            <th :colspan="val.item.length" v-for="(val, index) in topicHead">{{val.name}}</th>
+                            <th rowspan="2">總分</th>
+                        </tr>
+                        <tr>
+                            <th>比重</th>
+                            <th>分數類別</th>
+                            <th v-for="(tp, index) in topic">{{tp.name}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="ready" v-if="main.assessment_json.under">
+                            <td>{{main.assessment_json.under.percent}}%</td>
+                            <td>部屬</td>
+                            <td :colspan="topic.length"></td>
+                            <td>
+                                <div class="total">{{main.assessment_json.under.total}}</div>
+                            </td>
+                        </tr>
+                        <tr :class="{ready:!main.assessment_json[aj_key].edit}" v-for="(aj_key, i) in lv_sort" v-if="main.assessment_json[aj_key] && main.assessment_json[aj_key].view">
+                            <td>{{main.assessment_json[aj_key].percent}}%</td>
+                            <td :class="{'copy-group':1,'active':main.assessment_json[aj_key].preAbove }">{{main.assessment_json[aj_key].name}}
+                                <div class="copy-button-div" v-if="!isNaN(aj_key) && main.assessment_json[aj_key].edit">
+                                    <a class="copy-button" title="同上" v-on:click="copyData(aj_key,$event)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                </div>
+                            </td>
+                            <td v-for="(tp, index) in topic">
+                                <select v-if="main.assessment_json[aj_key].edit" v-model="main.assessment_json[aj_key].score[tp.id]" @change="main.assessment_json[aj_key].preAbove=false">
+                                    <option value="0">00</option>
+                                    <option v-for="socre_s in tp.score" :value="socre_s">{{socre_s}}</option>
+                                </select>
+                                <span v-else>{{main.assessment_json[aj_key].score[tp.id]}}</span>
+                            </td>
+                            <td>
+                                <div class="total">{{totalScore(main.assessment_json[aj_key].score)}}</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="step"><span class="no">b.</span>問答題<span ><small class="blue-text text-darken-2"> (請以繁體中文填寫)</small></span>
+        </div>
+        <div class="questionnaires-leader-essay-questions questions">
+            <div class="question-group">
+                <div class="question-area">
+                    <div class="question">今年度在公司的主要貢獻：</div>
+                    <div class="answer-group">
+                        <textarea v-model="main.self_contribution" :disabled="main.staff_id != main.owner_staff_id"></textarea>
+                    </div>
+                </div>
+                <div class="question-area">
+                    <div class="question">未來需要加強及改進之處：</div>
+                    <div class="answer-group">
+                        <textarea v-model="main.self_improve" :disabled="main.staff_id != main.owner_staff_id"></textarea>
+                    </div>
+                </div>
+                <div v-for="(lv,i) in lv_sort" class="question-area" v-if="main.upper_comment[lv] && main.upper_comment[lv].view">
+                    <div class="question">{{main.upper_comment[lv].name}}</div>
+                    <div class="answer-group">
+                        <textarea v-model="main.upper_comment[lv].content" :disabled="!main.path_lv[lv] || !main.upper_comment[lv].edit"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes showFadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+#YearEvaluationForm .division-table tbody tr {
+    display: none;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+    animation-duration: 0.3s;
+}
+
+#YearEvaluationForm .division-table tbody tr.show {
+    display: table-row;
+    animation-name: showFadeIn;
+}
+
+#YearEvaluationForm .year-evalution-table .level-blocks.on-focus {
+    background-color: #fffaea;
+    border-color: #baa100;
+}
+
+
+</style>
+<div id="template-division-zone" style="display: none">
+    <div class="row" v-show="processing >= 7 && !divisionData.noShow" v-if="divisionData.processing!=5">
+        <div class="col s12">
+            <ul :class="'collapsible yearCollapsible popout rv-card division'+(divisionData._authority.edit?'':'cannot')">
+                <li>
+                    <input type="hidden">
+                    <div class="collapsible-header truncate card-header">
+                        <div class="col info-block ml10">
+                            <div>
+                                <p class="top">受評單位</p>
+                                <h1>{{divisionData.division_name}}</h1>
+                            </div>
+                        </div>
+                        <div class="col info-block ml10">
+                            <div>
+                                <p class="top">總人數</p>
+                                <h1>{{divisionData._reports.length}}<span>人</span></h1>
+                            </div>
+                        </div>
+                        <div class="col info-block division-progress">
+                            <div>
+                                <p class="top">進程狀態</p>
+                                <div class="progress-group">
+                                    <div class="progress-status" :class="{first:divisionData.processing >= 0}"></div>
+                                    <div class="progress-status" :class="{second:divisionData.processing >= 1 || divisionData._canfix_division}"></div>
+                                    <div class="progress-status" :class="{third:divisionData.processing >= 2}"></div>
+                                    <div class="progress-status" :class="{fourth:divisionData.processing >= 3}"></div>
+                                    <div class="progress-status" :class="{fifth:divisionData.processing == 5}"></div>
+                                    <h1 class="fadeIn animated" v-if="divisionData.processing == 0 && !divisionData._canfix_division">初始狀態</h1>
+                                    <h1 class="fadeIn animated" v-if="divisionData.processing == 1 || divisionData._canfix_division">部長配比</h1>
+                                    <h1 class="fadeIn animated" v-if="divisionData.processing == 2">部長配比</h1>
+                                    <h1 class="fadeIn animated" v-if="divisionData.processing == 3 || divisionData.processing == 4">執行長評核</h1>
+                                    <h1 class="fadeIn animated" v-if="divisionData.processing == 5">完成</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="data-info bounceInRight animated">
+                            <div class="slash"></div>
+                            <div class="col data-block">
+                                <h1 class="overhight">{{totalOverByKey(1)}}<span>人</span></h1>
+                                <p class="top">超過上限</p>
+                            </div>
+                            <div class="col data-block">
+                                <h1 class="overlow">{{totalOverByKey(2)}}<span>人</span></h1>
+                                <p class="top">低於下限</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapsible-body card-body">
+                        <div class="brand-actions">
+                            <span class="form-actions">
+                        <a title="儲存" v-on:click="saveDivisionZone(divisionData.id)" v-if="divisionData._authority.edit"><i class="material-icons indigo-text text-accent-2">save</i></a>
+                        <a title="提交" v-on:click="commitDivisionZone(divisionData.id)" v-if="divisionData._authority.commit"><i class="material-icons yellow-text text-darken-2">arrow_forward</i></a>
+                        <a title="退回" v-on:click="rejectDivisionZone(divisionData.id)" v-if="divisionData._authority.return"><i class="material-icons red-text">arrow_back</i></a>
+                        <a title="匯出excel" v-on:click="downloadExcelDivisionZone(divisionData.division)"><i class="material-icons">vertical_align_bottom</i></a>
+                        </span>
+                        </div>
+                        <div class="year-evaluation-item-group">
+                            <div class="year-evalution-table" style="overflow-x: initial;">
+                                <div class="level-group">
+                                    <div class="col s12 l2" v-for="distanceLv in divisionData._distribution">
+                                        <div class="bs-component" :class="{'too-over':distanceLv.count>rateLimit(distanceLv)}">
+                                            <div :class="{'level-blocks':true, 'on-focus':distanceLv.focus}" v-on:click="focusLevel(distanceLv,$event)">
+                                                <div class="level-header">
+                                                    <span class="fs11"><i class="material-icons red-text text-darken-1">arrow_upward</i>
+                                                <span class="red-text text-darken-1">max</span> <b>上限值</b>&nbsp;&nbsp;【<span>{{ rateLimit(distanceLv) }}</span>】人</span>
+                                                </div>
+                                                <div :class="{'level-body':true, 'too-little':distanceLv.count<rateLeast(distanceLv)}" :title="distanceLv.score_least +' ~ '+ distanceLv.score_limit +'分'">
+                                                    <h1 class="fs35 mbn" :class="'score'+distanceLv.name">{{distanceLv.name}}：{{distanceLv.count}}人</h1>
+                                                    <h6 :class="'text-system score'+distanceLv.name" v-if="false">{{distanceLv.score_least}} ~{{distanceLv.score_limit}}</h6>
+                                                </div>
+                                                <div class="level-footer">
+                                                    <span class="fs11"><i class="material-icons green-text text-darken-1">arrow_downward</i>
+                                                <span class="green-text text-darken-1">min</span> <b>下限值</b>&nbsp;&nbsp;【<span>{{ rateLeast(distanceLv) }}</span>】人</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="division-table-area">
+                                    <div class="division-table-head">
+                                        <table id="division-table-header" class="table table-fixed">
+                                            <thead>
+                                                <tr>
+                                                    <th v-on:click="sortReportBy('department_code')" :class="{'sort-this':report_sort_now=='department_code'}"><span class="tdSpan tdDepartment">單位</span> <i v-if="report_sort['department_code']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('staff_name')" :class="{'sort-this':report_sort_now=='staff_name'}"><span class="tdSpan">員工</span> <i v-if="report_sort['staff_name']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('staff_post')" :class="{'sort-this':report_sort_now=='staff_post'}"><span class="tdSpan tdPost">職務</span> <i v-if="report_sort['staff_post']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('_status')" :class="{'sort-this':report_sort_now=='_status'}"><span class="tdSpan tdStatus">狀態</span> <i v-if="report_sort['_status']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('assessment_total')" :class="{'sort-this':report_sort_now=='assessment_total'}"><span class="tdSpan tdTotal">原始總分</span> <i v-if="report_sort['assessment_total']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('assessment_total_division_change')" :class="{'sort-this':report_sort_now=='assessment_total_division_change'}" v-if="divisionData._canfix_division || divisionData._canfix_ceo"><span class="tdSpan">部級配比</span> <i v-if="report_sort['assessment_total_division_change']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('assessment_total_ceo_change')" :class="{'sort-this':report_sort_now=='assessment_total_ceo_change'}" v-if="divisionData._canfix_ceo"><span class="tdSpan tdTotal">總配比</span> <i v-if="report_sort['assessment_total_ceo_change']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('total')" :class="{'sort-this':report_sort_now=='total'}" v-if="divisionData._canfix_division || divisionData._canfix_ceo"><span class="tdSpan">調整後總分</span> <i v-if="report_sort['total']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th><span class="tdSpan">考評單</span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                    <div class="division-table-body">
+                                        <table id="division-table" class="table table-fixed division-table">
+                                            <thead>
+                                                <tr>
+                                                    <th v-on:click="sortReportBy('department_code')" :class="{'sort-this':report_sort_now=='department_code'}"><span class="tdSpan tdDepartment">單位</span> <i v-if="report_sort['department_code']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('staff_name')" :class="{'sort-this':report_sort_now=='staff_name'}"><span class="tdSpan">員工</span> <i v-if="report_sort['staff_name']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('staff_post')" :class="{'sort-this':report_sort_now=='staff_post'}"><span class="tdSpan tdPost">職務</span> <i v-if="report_sort['staff_post']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('_status')" :class="{'sort-this':report_sort_now=='_status'}"><span class="tdSpan tdStatus">狀態</span> <i v-if="report_sort['_status']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('assessment_total')" :class="{'sort-this':report_sort_now=='assessment_total'}"><span class="tdSpan tdTotal">原始總分</span> <i v-if="report_sort['assessment_total']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('assessment_total_division_change')" :class="{'sort-this':report_sort_now=='assessment_total_division_change'}" v-if="divisionData._canfix_division || divisionData._canfix_ceo"><span class="tdSpan">部級配比</span> <i v-if="report_sort['assessment_total_division_change']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('assessment_total_ceo_change')" :class="{'sort-this':report_sort_now=='assessment_total_ceo_change'}" v-if="divisionData._canfix_ceo"><span class="tdSpan tdTotal">總配比</span> <i v-if="report_sort['assessment_total_ceo_change']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th v-on:click="sortReportBy('total')" :class="{'sort-this':report_sort_now=='total'}" v-if="divisionData._canfix_division || divisionData._canfix_ceo"><span class="tdSpan">調整後總分</span> <i v-if="report_sort['total']==1" class="material-icons">arrow_downward</i><i v-else class="material-icons">arrow_upward</i></th>
+                                                    <th><span class="tdSpan">考評單</span></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(report,index) in divisionData._reports" :class="{
+                                                      ready: divisionData.owner_staff_id != member.id || !divisionData._authority.edit,
+                                                      done:  divisionData.processing==5 || report.done,
+                                                      opppen: report._authority.isFinished && report._authority.edit,
+                                                      show: report.show
+                                                  }">
+                                                    <td :title="report.department_name">
+                                                        <span class="tdSpan">{{report.department_code}} </span>
+                                                        <span class="tdSpan tdDepartment">{{report.department_name}}</span>
+                                                    </td>
+                                                    <td :title="report.staff_name+report.staff_name_en">
+                                                        <span class="tdSpan">{{report.staff_name}}</span>
+                                                        <span class="tdSpan">{{report.staff_name_en}}</span>
+                                                    </td>
+                                                    <td :title="report.staff_post"><span class="tdSpan tdPost">{{report.staff_post}}</span></td>
+                                                    <td class="status" title="狀態">
+                                                        <span title="完成考評" class="tdSpan tdStatus blue-text" v-if="report.processing_lv==0 && report.done">完成考評</span>
+                                                        <span v-else title="評核中" class="tdSpan tdStatus yellow-text text-darken-2">評核中</span>
+                                                        <span title="提交中" class="tdSpan tdStatus yellow-text" v-if="report.processing_lv!=0">提交中</span>
+                                                    </td>
+                                                    <td class="total" :title="report.assessment_total">
+                                                        <span class="tdSpan tdTotal" v-if="!report._authority.isFinished">-</span>
+                                                        <span class="tdSpan tdTotal" v-else>{{report.assessment_total}}</span>
+                                                    </td>
+                                                    <td v-if="divisionData._canfix_division">
+                                                        <template v-if="!divisionData._authority.edit">
+                                                            <span class="tdSpan" v-if="report.path_lv[2] && report.path_lv[2][1] == report.staff_id">-</span>
+                                                            <span class="tdSpan" v-else>{{report.assessment_total_division_change}}</span>
+                                                        </template>
+                                                        <div class="stepperInput" v-else>
+                                                            <button class="button button--addOnLeft" v-on:click="minusScore(report,1)">-</button>
+                                                            <input type="text" class="input stepperInput__input" v-model.number="report.assessment_total_division_change" :disabled="divisionData._authority.edit == false" v-on:change="countTotal(report)" />
+                                                            <button class="button button--addOnRight" v-on:click="plusScore(report,1)">+</button>
+                                                        </div>
+                                                    </td>
+                                                    <td v-if="divisionData._canfix_ceo">
+                                                        <span class="tdSpan" v-if="report.path_lv[2] && report.path_lv[2][1] == report.staff_id">-</span>
+                                                        <span class="tdSpan" v-else>{{report.assessment_total_division_change}}</span>
+                                                    </td>
+                                                    <td v-if="divisionData._canfix_ceo" class="addScore">
+                                                        <template v-if="report.done || !divisionData._authority.edit">
+                                                            <span class="tdSpan">{{report.assessment_total_ceo_change}}</span>
+                                                        </template>
+                                                        <div class="stepperInput" v-else>
+                                                            <button class="button button--addOnLeft" v-on:click="minusScore(report,0)">-</button>
+                                                            <input type="text" class="input stepperInput__input" v-model.number="report.assessment_total_ceo_change" :disabled="divisionData._authority.edit == false" v-on:change="countTotal(report)" />
+                                                            <button class="button button--addOnRight" v-on:click="plusScore(report,0)">+</button>
+                                                        </div>
+                                                    </td>
+                                                    <td v-if="(divisionData._canfix_division || divisionData._canfix_ceo) && (report._authority.isFinished)" :title="report.total">
+                                                        <span class="tdSpan red-text darken-1"> {{report.total}}【{{report.level}}】 </span>
+                                                    </td>
+                                                    <td><a v-if="report._authority.view" class="btn waves-effect waves-teal lighten-1" v-on:click="personalReport(report.id)">考評單</a></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div id="ReJectModalPersonal" class="modal">
+    <div class="modal-content">
+        <div class="rv-page-title">
+            <h1 class="rv-title">退回考評單</h1>
+        </div>
+        <div class="row">
+            <div class="col s12" style="padding-left: 10px;">
+                <div class="ml10">退回事由：</div>
+                <p class="ml10">
+                    <textarea class="form-control" v-model="rejectReason"></textarea>
+                </p>
+                <div class="row">
+                    <div class="pull-right">
+                        <button class="btn waves-effect waves-teal lighten-1 red" v-on:click="rejectReport(assessment_id,rejectReason)">退回</button>
+                        <button class="waves-effect waves-light btn modal-close darken-1 grey">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#ReportWordPersonal .content .no{
+  background:#fff1e1;
+  color:#43301d;
+}
+#ReportWordPersonal .tab-content{
+  max-height:440px;
+  overflow-y:auto;
+}
+</style>
+<div id="ReportWordPersonal" class="modal evaluation-modal">
+    <div class="modal-content">
+        <div class="rv-page-title">
+            <h1 class="rv-title">意見回饋<button href="#" class="modal-action modal-close btn-flat"><i class="material-icons md-18">close</i></button></h1>
+        </div>
+        <div class="tab-area">
+            <ul class="tabs tab-feedback">
+                <li class="tab" v-if="staff_is_leader"><a :href="'#subordinate123'" class="active">部屬回饋</a></li>
+                <li class="tab" v-if="staff_is_leader"><a :href="'#other'">其它單位回饋</a></li>
+                <li class="tab"><a :href="'#self'">自我評語</a></li>
+                <li class="tab" v-if="!staff_is_ceo"><a :href="'#supervisor'">主管評語</a></li>
+            </ul>
+            <div id="subordinate123" class="col s12 tab-content" v-if="staff_is_leader">
+                <div class="content">
+                    <ul class="content-list">
+                        <span class="no">讚揚</span>
+                        <template v-if="opinionFeedback.question.question_1.length > 0">
+                            <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_1">{{(index+1)}}. {{opinion.content}}</li>
+                        </template>
+                        <p v-else>無</p>
+                    </ul>
+                    <ul class="content-list">
+                        <span class="no">改善</span>
+                        <template v-if="opinionFeedback.question.question_2.length > 0">
+                            <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_2">{{index+1}}.  {{opinion.content}}</li>
+                        </template>
+                        <p v-else>無</p>
+                    </ul>
+                    <ul class="content-list">
+                        <span class="no">建議</span>
+                        <template v-if="opinionFeedback.question.question_4.length > 0">
+                            <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_4">{{index+1}}.  {{opinion.content}}</li>
+                        </template>
+                        <p v-else>無</p>
+                    </ul>
+                </div>
+            </div>
+            <div :id="'other'" class="col s12 tab-content" v-if="staff_is_leader" style="display: none;">
+                <div class="content" v-if="opinionFeedback.question.question_5.length > 0">
+                    <ul class="content-list" v-for="(opinion,index) in opinionFeedback.question.question_5">
+                        <!-- <span class="no"></span> -->
+                        <li class="text" style="border-bottom:1px solid #d8d8d8;">{{index+1}}. {{opinion.content}}</li>
+                    </ul>
+                </div>
+                <div v-else>無</div>
+            </div>
+            <div :id="'self'" class="col s12 tab-content" style="display: none;">
+                <div class="content">
+                    <ul class="content-list">
+                        <span class="no">貢獻</span>
+                        <li class="text" v-if="opinionFeedback.self_contribution">{{opinionFeedback.self_contribution}}</li>
+                        <p v-else>無</p>
+                    </ul>
+                    <ul class="content-list">
+                        <span class="no">改進</span>
+                        <li class="text" v-if="opinionFeedback.self_improve">{{opinionFeedback.self_improve}}</li>
+                        <p v-else>無</p>
+                    </ul>
+                </div>
+            </div>
+            <div :id="'supervisor'" class="col s12 tab-content" style="display: none;">
+                <div class="content">
+                    <ul class="content-list" v-if="opinionFeedback.upper_comment[1]">
+                        <span class="no">運維中心主管</span>
+                        <li class="text" v-if="opinionFeedback.upper_comment[1].content">{{opinionFeedback.upper_comment[1].content}}</li>
+                        <p v-else>無</p>
+                    </ul>
+                    <ul class="content-list" v-if="opinionFeedback.upper_comment[2]">
+                        <span class="no">部門主管</span>
+                        <li class="text" v-if="opinionFeedback.upper_comment[2].content">{{opinionFeedback.upper_comment[2].content}}</li>
+                        <p v-else>無</p>
+                    </ul>
+                    <ul class="content-list" v-if="opinionFeedback.upper_comment[3]">
+                        <span class="no">處主管</span>
+                        <li class="text" v-if="opinionFeedback.upper_comment[3].content">{{opinionFeedback.upper_comment[3].content}}</li>
+                        <p v-else>無</p>
+                    </ul>
+                    <ul class="content-list" v-if="opinionFeedback.upper_comment[4]">
+                        <span class="no">組長主管</span>
+                        <li class="text" v-if="opinionFeedback.upper_comment[4].content">{{opinionFeedback.upper_comment[4].content}}</li>
+                        <p v-else>無</p>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="FeedBackDetail" class="modal">
+    <div class="modal-content">
+        <h5>部屬回饋問卷- 各題平均分數<button href="#" class="modal-action modal-close btn-flat"><i class="material-icons md-18">close</i></button></h5>
+        <p>A bunch of text</p>
+    </div>
+</div>
+<div id="HistoryModalPersonal" class="modal">
+    <div class="modal-content">
+        <div class="rv-page-title">
+            <h1 class="rv-title">歷史紀錄<button href="#" class="modal-action modal-close btn-flat"><i class="material-icons md-18">close</i></button></h1>
+        </div>
+        <div class="row">
+            <div class="widget-timeline">
+                <div class="widget-timeline-section widget-timeline-first">考評單歷程</div>
+                <div v-for="(record,index) in historyRecords">
+                    <div class="widget-timeline-item">
+                        <div class="widget-timeline-info">
+                            <div class="widget-timeline-bullet bg-primary"></div>
+                            <div class="widget-timeline-time bg-primary">{{record.date}}
+                                <br>{{record.time}}</div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-body">
+                                <div v-if="record.type == '0'">
+                                    <span>✧產生考評單</span>
+                                    <p>日期：{{record.date}} {{record.time}}</p>
+                                </div>
+                                <div v-if="record.type == '2'">
+                                    <span>【{{record.from_name}}{{record.from_name_en}} 】</span>
+                                    <span class="commit">→ 送審 →</span>
+                                    <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                </div>
+                                <div v-if="record.type == '4'">
+                                    <span>【{{record.from_name}}{{record.from_name_en}}】</span>
+                                    <span class="return">→ 退回 →</span>
+                                    <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                    <p>&nbsp;&nbsp;退回原因： {{record.reason}}</p>
+                                </div>
+                                <div v-if="record.type == '3'">
+                                    <span class="done">√ </span><span>考評單已完成</span>
+                                    <p>日期：{{record.date}}；時間：{{record.time}}</p>
+                                </div>
+                                <div v-if="record.type == '5'">
+                                    <span>【{{record.from_name}}{{record.from_name_en}}】</span>
+                                    <span class="other">→ 其他 →</span>
+                                    <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Year-Evaluation.js')?>"></script>

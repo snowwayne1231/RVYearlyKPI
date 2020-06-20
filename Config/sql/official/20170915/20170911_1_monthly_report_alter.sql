@@ -1,0 +1,2 @@
+alter table rv_monthly_report change column staff_id staff_id int(11) not null default '0' comment '員工 staff.id' ;
+alter table rv_monthly_report_leader change column staff_id staff_id int(11) not null default '0' comment '員工 staff.id' ;

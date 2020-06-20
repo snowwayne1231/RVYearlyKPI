@@ -1,0 +1,1707 @@
+<style>
+    .rv-icon {
+        position: absolute;
+        right: 10px;
+        top: 8px;
+        line-height: 40px;
+    }
+    .rv-icon span {
+        display: inline-block;
+        font-size: 12px;
+        width: 22px;
+        height: 22px;
+        line-height: 20px;
+        text-align: center;
+        margin: 0 2px;
+        color: #FFF;
+        border-radius: 3px;
+    }
+</style>
+<div id="SettingOrganization">
+  <div class="had-container rv-setting">
+    <h1 class="rv-title">系統組織設定</h1>
+    <div class="container">
+      <div class="row">
+        <!-- DepartmentMenu -->
+        <div
+          id="DepartmentMenu"
+          class="col s12 m12 l4 mb10 select-unit hoverable"
+          v-if="display"
+        >
+          <ul class="tabs tabs-fixed-width">
+            <li class="tab">
+              <a href="#DepartmentUnit-2">部單位</a>
+            </li>
+            <li class="tab">
+              <a href="#DepartmentUnit-3">處單位</a>
+            </li>
+            <li class="tab">
+              <a href="#DepartmentUnit-4">組單位</a>
+            </li>
+            <div class="indicator"></div>
+          </ul>
+          <div
+            :id="'DepartmentUnit-'+key"
+            class="col s12 content-area"
+            v-for="(value,key,index) in devLv"
+          >
+            <div class="col s12 m12 l6" v-for="dd in value">
+              <a
+                v-on:click="openDepartment(dd)"
+                :class="'card card-mark waves-effect waves-orange department_id_'+dd.id"
+              >
+                <strong>{{dd.unit_id}}</strong>
+                <div>{{dd.name}}</div>
+              </a>
+            </div>
+            <div class="col s12 m12 l6">
+              <a
+                href="#CreateUnit"
+                class="card card-mark waves-effect waves-orange"
+                v-on:click="addDepartmentButton(key)"
+              >
+                <i class="material-icons">add_circle_outline</i>
+                <div>新增單位</div>
+              </a>
+            </div>
+          </div>
+          <div id="CreateUnit" class="modal">
+            <div class="modal-content">
+              <h1 class="rv-title">
+                新增單位 -
+                <span v-if="createUnitData.lv==2">部單位</span>
+                <span v-if="createUnitData.lv==3">處單位</span>
+                <span v-if="createUnitData.lv==4">組單位</span>
+              </h1>
+              <div class="container">
+                <div class="row">
+                  <div class="form-group">
+                    <label class="col s2 control-label">單位代號</label>
+                    <div class="col s10">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="單位代號"
+                        :value="createUnitData.unit_id"
+                        v-model="createUnitData.unit_id"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-group">
+                    <label class="col s2 control-label">單位名稱</label>
+                    <div class="col s10">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="單位名稱"
+                        :value="createUnitData.name"
+                        v-model="createUnitData.name"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-group">
+                    <label class="col s2 control-label">隸屬於</label>
+                    <div class="col s10">
+                      <div class="dropdown">
+                        <a
+                          class="btn dropdown-button"
+                          type="button"
+                          data-activates="Of"
+                        >
+                          <span
+                            >{{createUnitData.upper.unit_id}}
+                            {{createUnitData.upper.name}}</span
+                          >
+                          <span class="caret"></span>
+                        </a>
+                        <ul id="Of" class="dropdown-content">
+                          <li v-for="(value,key,index) in upper_array">
+                            <a v-on:click="changOfUnitData(value)"
+                              >{{value.unit_id}} {{value.name}}</a
+                            >
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="button-group center mt10">
+                    <button
+                      class="waves-effect waves-light btn"
+                      v-on:click="addDepartment"
+                    >
+                      送出
+                    </button>
+                    <button
+                      class="waves-effect waves-darken btn white black-text modal-close"
+                    >
+                      取消
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- DepartmentMenu -->
+        <!-- DepartmentDetail -->
+        <div
+          id="DepartmentDetail"
+          class="col s12 m12 l8 mb10 setting-unit"
+          v-if="display"
+        >
+          <div class="forms-block hoverable">
+            <div class="title">單位資料管理</div>
+            <template v-if="showBlock">
+              <div class="row">
+                <div class="col s12 m12 l6 mb10">
+                  <div class="form-group">
+                    <label class="col s4 control-label">單位代碼</label>
+                    <div class="col s8">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="單位代碼"
+                        :value="now.unit_id"
+                        v-model="now.unit_id"
+                        v-on:change="submitData.unit_id=now.unit_id"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l6 mb10">
+                  <div class="form-group">
+                    <label class="col s4 control-label">上層主管</label>
+                    <div class="col s8">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="上層主管"
+                        :value="supervisor_name"
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l6 mb10">
+                  <div class="form-group">
+                    <label class="col s4 control-label">單位名稱</label>
+                    <div class="col s8">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="單位名稱"
+                        :value="now.name"
+                        v-model="now.name"
+                        v-on:change="submitData['name']=now.name"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l6 mb10" v-show="upper">
+                  <div class="form-group">
+                    <label class="col s4 control-label">上層單位</label>
+                    <div class="col s8">
+                      <div class="dropdown">
+                        <a
+                          class="btn dropdown-button"
+                          type="button"
+                          data-activates="OfUpperUnit"
+                        >
+                          <span v-if="upper"
+                            >{{upper.unit_id}} {{upper.name}}</span
+                          >
+                          <span class="caret"></span>
+                        </a>
+                        <ul id="OfUpperUnit" class="dropdown-content">
+                          <li v-for="(value,key,index) in upper_array">
+                            <a v-on:click="changeUpper(value)"
+                              >{{value.unit_id}} {{value.name}}</a
+                            >
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l6 mb10">
+                  <div class="form-group">
+                    <label class="col s4 control-label">單位主管</label>
+                    <div class="col s8">
+                      <div class="dropdown">
+                        <a
+                          class="btn dropdown-button"
+                          type="button"
+                          data-activates="UnitManager"
+                          >{{manager.name}} {{manager.name_en}}
+                          <span class="caret"></span>
+                        </a>
+                        <ul id="UnitManager" class="dropdown-content">
+                          <!-- 將主管兼職功能hide，此功能不做，若之後要兼職功能，把下方的v-if移除 -->
+                          <li
+                            v-for="(value,key,index) in managers_array"
+                            v-if="now.id == value.department_id"
+                          >
+                            <a v-on:mousedown="changeManager(value)"
+                              >{{value.name}} {{value.name_en}}</a
+                            >
+                          </li>
+                          <li v-if="upper">
+                            <a v-on:mousedown="changeManager(0)">無</a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l6 mb10">
+                  <div class="form-group">
+                    <label class="col s4 control-label">單位狀態</label>
+                    <div class="col s8">
+                      <div class="dropdown">
+                        <a
+                          v-if="now.enable==0"
+                          class="btn dropdown-button"
+                          type="button"
+                          data-activates="CloseUnit"
+                          >關閉
+                          <span class="caret"></span>
+                        </a>
+                        <a
+                          v-if="now.enable==1"
+                          class="btn dropdown-button"
+                          type="button"
+                          data-activates="CloseUnit"
+                          >開啟
+                          <span class="caret"></span>
+                        </a>
+                        <ul id="CloseUnit" class="dropdown-content">
+                          <li v-on:mousedown="submitData.enable=now.enable=1">
+                            <a>開啟</a>
+                          </li>
+                          <li v-on:mousedown="submitData.enable=now.enable=0">
+                            <a>關閉</a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l6 mb10">
+                  <div class="form-group">
+                    <label class="col s4 control-label">輪班單位</label>
+                    <div class="col s8">
+                      <div class="dropdown">
+                        <a
+                          v-if="now.duty_shift==0"
+                          class="btn dropdown-button"
+                          type="button"
+                          data-activates="DutyShift"
+                          >否
+                          <span class="caret"></span>
+                        </a>
+                        <a
+                          v-if="now.duty_shift==1"
+                          class="btn dropdown-button"
+                          type="button"
+                          data-activates="DutyShift"
+                          >是
+                          <span class="caret"></span>
+                        </a>
+                        <ul id="DutyShift" class="dropdown-content">
+                          <li
+                            v-on:mousedown="submitData.duty_shift=now.duty_shift=1"
+                          >
+                            <a>是</a>
+                          </li>
+                          <li
+                            v-on:mousedown="submitData.duty_shift=now.duty_shift=0"
+                          >
+                            <a>否</a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <a
+                  class="waves-effect waves-light btn btn-update"
+                  v-on:click="updateDepartment()"
+                  >更新</a
+                >
+              </div>
+            </template>
+          </div>
+        </div>
+        <!-- DepartmentDetail -->
+      </div>
+      <div class="row">
+        <!-- StaffList -->
+        <div
+          id="StaffList"
+          class="col s12 m12 l4 mb10 staff-list hoverable"
+          v-if="display"
+        >
+          <div class="wrapper">
+            <div class="title">
+              單位人員清單
+              <div class="filter pull-right">
+                <input
+                  type="checkbox"
+                  class="filled-in"
+                  id="test5"
+                  v-model="onDuty"
+                  v-on:change="refresh()"
+                />
+                <label for="test5">離職</label>
+              </div>
+              <a
+                href="#AddStaff"
+                class="add-staff pull-right"
+                v-on:mousedown="openCreate()"
+              >
+                <i class="ion-plus"></i>
+                <span>新增</span>
+              </a>
+              <div id="AddStaff" class="modal" style="overflow: auto;">
+                <div class="modal-content" style="position: relative;">
+                  <h1 class="rv-title">新增人員</h1>
+                  <div class="container">
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">所屬單位</label>
+                        <div class="col s9">
+                          <div class="dropdown">
+                            <a
+                              class="btn dropdown-button"
+                              type="button"
+                              data-activates="AddOfUnit"
+                            >
+                              <span>{{team.unit_id}} {{team.name}}</span>
+                              <span class="caret"></span>
+                            </a>
+                            <ul id="AddOfUnit" class="dropdown-content">
+                              <li v-for="value in department_list">
+                                <a v-on:mousedown="team=value"
+                                  >{{value.unit_id}} {{value.name}}</a
+                                >
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">人員編號</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="代碼"
+                            v-model="newStaffData.staff_no"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">* 帳號</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="帳號"
+                            v-model="newStaffData.account"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">* 密碼</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="密碼"
+                            v-model="newStaffData.passwd"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">* 中文名字</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="中文名字"
+                            v-model="newStaffData.name"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">* 英文名字</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="英文名字"
+                            v-model="newStaffData.name_en"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">* 電子郵件</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="電子郵件"
+                            v-model="newStaffData.email"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">到職日</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control rv-ui-datepicker"
+                            placeholder="到職日"
+                            v-model="newStaffData.first_day"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">離職日</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control rv-ui-datepicker"
+                            placeholder="離職日"
+                            v-model="newStaffData.last_day"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">換單位日</label>
+                        <div class="col s9">
+                          <input
+                            type="text"
+                            class="form-control rv-ui-datepicker"
+                            placeholder="換單位日"
+                            v-model="newStaffData.update_date"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">在職狀態</label>
+                        <div class="col s9">
+                          <div class="dropdown">
+                            <a
+                              class="btn dropdown-button"
+                              type="button"
+                              data-activates="AddJobStatus"
+                            >
+                              <span>{{newStaffData.status.name}}</span>
+                              <span class="caret"></span>
+                            </a>
+                            <ul id="AddJobStatus" class="dropdown-content">
+                              <li v-for="value in staff_status">
+                                <a v-on:mousedown="newStaffData.status=value"
+                                  >{{value.name}}</a
+                                >
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">職務類別</label>
+                        <div class="col s9">
+                          <div class="dropdown">
+                            <a
+                              class="btn dropdown-button"
+                              type="button"
+                              data-activates="AddJobType"
+                            >
+                              <span>{{newStaffData.title.name}}</span>
+                              <span class="caret"></span>
+                            </a>
+                            <ul id="AddJobType" class="dropdown-content">
+                              <li
+                                v-for="value in staff_title"
+                                v-if="value.enable==1"
+                              >
+                                <a v-on:mousedown="newStaffData.title=value"
+                                  >{{value.name}}</a
+                                >
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">職務</label>
+                        <div class="col s9">
+                          <div class="dropdown">
+                            <a
+                              class="btn dropdown-button"
+                              type="button"
+                              data-activates="AddJobTitle"
+                            >
+                              <span>{{newStaffData.post.name}}</span>
+                              <span class="caret"></span>
+                            </a>
+                            <ul id="AddJobTitle" class="dropdown-content">
+                              <li
+                                v-for="value in staff_post"
+                                v-if="value.enable==1"
+                              >
+                                <a v-on:mousedown="newStaffData.post=value"
+                                  >{{value.name}}</a
+                                >
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group">
+                        <label class="col s3 control-label">職等</label>
+                        <div class="col s9">
+                          <input
+                            type="number"
+                            class="form-control"
+                            placeholder="職等"
+                            v-model.number="newStaffData.rank"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="button-group center">
+                        <button
+                          class="waves-effect waves-light btn"
+                          v-on:click="addStaff"
+                        >
+                          送出
+                        </button>
+                        <button
+                          class="waves-effect waves-darken btn white black-text modal-close"
+                        >
+                          取消
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="list">
+              <div
+                :class="'rv-item staff_id_'+value.id+' status_'+value.status_id"
+                v-for="(value,key,index) in staff_list"
+                v-on:click="showDetail(value)"
+              >
+                <div class="rv-img">{{value.staff_no}}</div>
+                <div class="rv-text">{{value.name_en}} {{value.name}}</div>
+                <div class="rv-icon">
+                    <span class="red lighten-1" v-if="value.is_admin">系</span><span class="teal" v-if="value.is_main_leader">主</span><span class="cyan darken-1" v-if="value.is_leader_group">群</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- StaffList -->
+        <!-- StaffDetail -->
+        <div
+          id="StaffDetail"
+          class="col s12 m12 l8 mb10 staff-forms"
+          v-if="display"
+        >
+          <div class="forms-block hoverable">
+            <div class="title">
+              <span>員工資料管理</span>
+              <div class="filter pull-right">
+                <input
+                  type="checkbox"
+                  class="filled-in"
+                  id="test6"
+                  v-model="isAdmin"
+                  v-on:change="updateAdmin"
+                />
+                <label for="test6">系統管理者</label>
+              </div>
+            </div>
+            <div class="row mt10">
+              <!-- 帳號 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >* 帳號</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="帳號"
+                      :value="now.account"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- 密碼 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >* 密碼</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="password"
+                      class="form-control"
+                      placeholder="密碼"
+                      v-model="now.passwd"
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- 員工編號 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >* 員工編號</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="員工編號"
+                      :value="now.staff_no"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- 電子信箱 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >* 電子信箱</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="電子信箱"
+                      v-model="now.email"
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- 中文姓名 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >* 中文姓名</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="中文姓名"
+                      v-model="now.name"
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- 到職日 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >到職日</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control rv-ui-datepicker"
+                      placeholder="到職日"
+                      v-model="now.first_day"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 英文名字 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >* 英文名字</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="英文名字"
+                      v-model="now.name_en"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 離職日 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >離職日</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control rv-ui-datepicker"
+                      placeholder="離職日"
+                      :disabled="now.status!=='離職'"
+                      v-model="now.last_day"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- <div class="row mt50" style="position: relative;">
+                            <a class="waves-effect waves-light btn btn-update" v-on:click="updateStaff">更新</a>
+                        </div> -->
+            <div class="title">
+              <span></span>
+            </div>
+            <div class="row mt10">
+              <!-- 在職狀態 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >在職狀態</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <div class="dropdown">
+                      <a
+                        v-if="ableChangeStatus"
+                        class="btn dropdown-button"
+                        type="button"
+                        data-activates="JobStatus"
+                        >{{now.status}}
+                        <span class="caret"></span>
+                      </a>
+                      <a
+                        v-if="!ableChangeStatus"
+                        class="btn dropdown-button"
+                        type="button"
+                        disabled
+                        >{{now.status}}
+                        <span class="caret"></span>
+                      </a>
+
+                      <ul id="JobStatus" class="dropdown-content">
+                        <li
+                          v-for="value in staff_status"
+                          v-on:click="changeStatus(value)"
+                        >
+                          <a>{{value.name}}</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 已經正式，但有復職日 -->
+              <div
+                class="col s12 m12 l6 mb20 staff-item"
+                v-show="now.status!=='留停' && staff_return_day && !itemShow.return_day"
+              >
+                <div class="form-group">
+                  <label
+                    class="col s4 m4 l3 control-label truncate"
+                    title="復職日"
+                    >復職日</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control rv-ui-datepicker"
+                      placeholder="復職日"
+                      v-model="staff_return_day"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 復職日 -->
+              <div
+                class="col s12 m12 l6 mb20 staff-item"
+                v-show="itemShow.return_day"
+              >
+                <div class="form-group">
+                  <label
+                    class="col s4 m4 l3 control-label truncate"
+                    title="復職日"
+                    >復職日</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control rv-ui-datepicker"
+                      placeholder="復職日"
+                      v-model="now.return_day"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 留停起始日期 -->
+              <div
+                class="col s12 m12 l6 mb20 staff-item"
+                v-show="itemShow.stay_day_range && !itemShow.return_day && !itemShow.last_day"
+              >
+                <div class="filter">
+                  <!-- 如果沒有留停記錄，則不顯示此勾選，預設為新增記錄 -->
+                  <div class="pl_10 pt_10">
+                    <input
+                      type="checkbox"
+                      id="addNewStopRecord"
+                      class="filled-in"
+                      v-model="isAddLog"
+                      :disabled="itemShow.haveToAddNewlog"
+                    />
+                    <label
+                      for="addNewStopRecord"
+                      v-bind:class="{'disabled-text': itemShow.haveToAddNewlog}"
+                    >
+                      <span>新增留停記錄</span>
+                      <div class="orange-text mt5">
+                        <small
+                          >(勾選則新增記錄，不勾選則覆蓋最後一筆記錄)</small
+                        >
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="col s12 m12 l6 mb20 staff-item"
+                v-show="itemShow.stay_day_range"
+              >
+                <div class="form-group">
+                  <label
+                    class="col s4 m4 l3 control-label truncate"
+                    title="留停開始日期"
+                    >留停起日</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      id="ReturnStartDate"
+                      type="text"
+                      class="form-control rv-ui-datepicker"
+                      placeholder="留停開始日期"
+                      v-model="now.stay_start_day"
+                      :disabled="itemShow.return_day || itemShow.last_day"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div
+                class="col s12 m12 l6 mb20 staff-item"
+                v-show="itemShow.stay_day_range"
+              >
+                <div class="form-group">
+                  <label
+                    class="col s4 m4 l3 control-label truncate"
+                    title="留停結束日期"
+                    >留停迄日</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      id="ReturnEndDay"
+                      type="text"
+                      class="form-control rv-ui-datepicker"
+                      placeholder="留停結束日期"
+                      v-model="now.stay_end_day"
+                      :disabled="itemShow.return_day || itemShow.last_day"
+                    />
+                    <span
+                      v-if="!ableChangeStatus"
+                      class="grey-text"
+                      style="position: absolute; margin-top: -8px;"
+                    >
+                      <small>(留停迄日要在今日之前才能更改狀態喔!)</small></span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="title">
+              <span></span>
+            </div>
+            <div class="row mt10">
+              <!-- 所屬單位 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >所屬單位</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <div class="dropdown">
+                      <a
+                        class="btn dropdown-button"
+                        type="button"
+                        data-activates="OfUnit"
+                        >{{nowDepartment.unit_id}} {{nowDepartment.name}}
+                        <span class="caret"></span>
+                      </a>
+                      <ul id="OfUnit" class="dropdown-content">
+                        <li
+                          v-for="(value,key,index) in department"
+                          v-on:mousedown="checkUnitChange(value)"
+                        >
+                          <a>{{value.unit_id}} {{value.name}}</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 換單位日 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >換單位日</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="text"
+                      class="form-control rv-ui-datepicker"
+                      :disabled="oldStaff.department_id == nowDepartment.id"
+                      placeholder="換單位日"
+                      v-model="now.update_date"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="title">
+              <span></span>
+            </div>
+            <div class="row mt10">
+              <!-- 職務 -->
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s12 m4 l3 control-label truncate"
+                    >職務類別</label
+                  >
+                  <div class="col s12 m8 l9">
+                    <div class="dropdown">
+                      <a
+                        class="btn dropdown-button"
+                        type="button"
+                        data-activates="JobType"
+                        >{{now.title}}
+                        <span class="caret"></span>
+                      </a>
+                      <ul id="JobType" class="dropdown-content">
+                        <li
+                          v-for="value in staff_title"
+                          v-if="value.enable==1"
+                          v-on:mousedown="now.title=value.name;now.title_id=value.id; now.lv=value.lv"
+                        >
+                          <a>{{value.name}}</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s12 m4 l3 control-label truncate"
+                    >職務</label
+                  >
+                  <div class="col s12 m8 l9">
+                    <div class="dropdown">
+                      <a
+                        class="btn dropdown-button"
+                        type="button"
+                        data-activates="JobTitle"
+                        >{{now.post}}
+                        <span class="caret"></span>
+                      </a>
+                      <ul id="JobTitle" class="dropdown-content">
+                        <li
+                          v-for="value in staff_post"
+                          v-if="value.enable==1"
+                          v-on:mousedown="now.post=value.name;now.post_id=value.id"
+                        >
+                          <a>{{value.name}}</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >職等</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <input
+                      type="number"
+                      class="form-control"
+                      placeholder="職等"
+                      v-model="now.rank"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col s12 m12 l6 mb20 staff-item">
+                <div class="form-group">
+                  <label class="col s4 m4 l3 control-label truncate"
+                    >管理群</label
+                  >
+                  <div class="col s8 m8 l9">
+                    <span class="col s12 center-align">
+                      <template v-if="now.is_leader_group">是</template>
+                      <template v-else>否</template>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row mt50 btn-group">
+              <div class="col s6">
+                <a
+                  class="waves-effect waves-light btn grey"
+                  @click="goStaffLog(now.staff_id)"
+                  >異動明細</a
+                >
+                <a
+                  class="waves-effect waves-light btn btn-action"
+                  v-on:click="goEditPost"
+                  >前往職務編輯</a
+                >
+              </div>
+              <div class="col s6 right-align">
+                <a
+                  v-if="typeof oldStaff.rank != 'undefined' && oldStaff.rank >= 6"
+                  class="waves-effect waves-light btn"
+                  :class="{'teal lighten-2': !now.is_leader_group, 'red lighten-3': now.is_leader_group}"
+                  v-on:click="updateLeaders(now)"
+                >
+                  <template v-if="now.is_leader_group">退出</template>
+                  <template v-else>加入</template>
+                  單位管理群
+                </a>
+                <a
+                  class="waves-effect waves-light btn btn-update"
+                  v-on:click="updateStaff"
+                  >更新</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- StaffDetail -->
+      </div>
+      <div id="staffLog" class="job-log-area">
+        <div class="area-top">
+          <div class="row">
+            <div class="col s6">
+              <span class="area-title">人員異動明細</span>
+            </div>
+            <div class="col s6 right-align">
+              <span class="icon-btn"
+                ><i class="material-icons waves-effect" @click="closeStaffLog"
+                  >clear</i
+                ></span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="area-content">
+          <div class="row">
+            <div class="col s12 m12 l4">
+              <div class="staff-infor">
+                <div class="staff-photo">
+                  <div class="photo">
+                    <div class="code">{{staff.staff_no}}</div>
+                  </div>
+                  <div
+                    class="status"
+                    v-bind:class="{'status-orange': staff.status_id == 1, 'status-green': staff.status_id == 2, 'status-blue': staff.status_id == 3, 'status-grey': staff.status_id == 4, 'status-red': staff.status_id == 5}"
+                  >
+                    {{staff.status}}
+                  </div>
+                </div>
+                <div class="staff-name">
+                  <span class="name-tw">{{staff.name}}</span>
+                  <span class="name-en">{{staff.name_en}}</span>
+                </div>
+                <div class="staff-post">
+                  {{staff.post}}
+                </div>
+                <div class="staff-department">
+                  <span v-for="(item, index) in staff.departments"
+                    ><template v-if="index > 0">。</template>{{item.name}}</span
+                  >
+                </div>
+                <div class="staff-take-office-date">
+                  {{staff.first_day}} 到職
+                </div>
+              </div>
+            </div>
+            <div class="col s12 m12 l8">
+              <div class="job-history">
+                <template v-if="log_event.length == 0">
+                  <div class="no-history"><span>目前沒有異動紀錄</span></div>
+                </template>
+                <template v-else>
+                  <div class="row">
+                    <div class="col s12 m12 l6">
+                      <template v-if="log_status.length != 0">
+                        <table class="highlight log-table">
+                          <caption>
+                            【留停紀錄】
+                          </caption>
+                          <thead>
+                            <tr>
+                              <th width="50%">事件</th>
+                              <th>期間</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(item, index) in log_status">
+                              <td>{{item.status}}</td>
+                              <td>
+                                <div>{{item.start}} 開始</div>
+                                <div>
+                                  <template v-if="item.end!=='0000-00-00'"
+                                    >{{item.end}} 結束</template
+                                  >
+                                  <template v-else>至今</template>
+                                </div>
+                                <!-- <div class="edit-btn-group">
+                                                                    <span class="waves-effect edit-btn">編輯</span>
+                                                                    <span class="waves-effect delete-btn">刪除</span>
+                                                                </div> -->
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </template>
+                    </div>
+                    <div class="col s12 m12 l6">
+                      <template v-if="log_post.length != 0">
+                        <table class="highlight log-table">
+                          <caption>
+                            【任職職務】
+                          </caption>
+                          <thead>
+                            <tr>
+                              <th width="50%">職務</th>
+                              <th>期間</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(item, index) in log_post">
+                              <td>
+                                <div>{{item.title}}</div>
+                                <div>{{item.post}}</div>
+                              </td>
+                              <td>
+                                <div>{{item.start}} 開始</div>
+                                <div>
+                                  <template v-if="item.end!=='0000-00-00'"
+                                    >{{item.end}} 結束</template
+                                  >
+                                  <template v-else>至今</template>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </template>
+                      <template v-if="log_department.length != 0">
+                        <table class="highlight log-table">
+                          <caption>
+                            【任職單位】
+                          </caption>
+                          <thead>
+                            <tr>
+                              <th width="50%">單位</th>
+                              <th>期間</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(item, index) in log_department">
+                              <td>
+                                <div class="departmentGroup">
+                                  <template
+                                    v-for="(list, list_index) in item.departments_id"
+                                  >
+                                    <template v-if="!item.departments_id[2]">
+                                      <div class="main-div">{{list.name}}</div>
+                                    </template>
+                                    <template
+                                      v-else-if="!item.departments_id[3]"
+                                    >
+                                      <div
+                                        class="sub-div"
+                                        v-if="list_index == 1"
+                                      >
+                                        {{list.name}}
+                                      </div>
+                                      <div
+                                        class="main-div"
+                                        v-if="list_index == 2"
+                                      >
+                                        {{list.name}}
+                                      </div>
+                                    </template>
+                                    <template
+                                      v-else-if="!item.departments_id[4]"
+                                    >
+                                      <div
+                                        class="sub-div"
+                                        v-if="list_index == 2"
+                                      >
+                                        {{list.name}}
+                                      </div>
+                                      <div
+                                        class="main-div"
+                                        v-if="list_index == 3"
+                                      >
+                                        {{list.name}}
+                                      </div>
+                                    </template>
+                                    <template v-else>
+                                      <div
+                                        class="sub-div"
+                                        v-if="list_index == 2"
+                                      >
+                                        {{list.name}}
+                                      </div>
+                                      <div
+                                        class="sub-div"
+                                        v-if="list_index == 3"
+                                      >
+                                        {{list.name}}
+                                      </div>
+                                      <div
+                                        class="main-div"
+                                        v-if="list_index == 4"
+                                      >
+                                        {{list.name}}
+                                      </div>
+                                    </template>
+                                  </template>
+                                </div>
+                              </td>
+                              <td>
+                                <div>{{item.start}} 開始</div>
+                                <div>
+                                  <template v-if="item.end!=='0000-00-00'"
+                                    >{{item.end}} 結束</template
+                                  >
+                                  <template v-else>至今</template>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </template>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col s12">
+                      <template v-if="log_event.length != 0">
+                        <table class="highlight">
+                          <caption>
+                            【異動歷程】
+                          </caption>
+                          <thead>
+                            <tr>
+                              <th width="13%">生效日期</th>
+                              <th width="20%">事件</th>
+                              <th width="10%">狀態</th>
+                              <th>單位</th>
+                              <th>職務</th>
+                              <th>更新日期</th>
+                              <th>建立日期</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(item, index) in log_event">
+                              <td>{{item.date}}</td>
+                              <td class="event">
+                                <template v-if="item.status_id != 5">
+                                  {{item.event}}
+                                </template>
+                                <template v-else-if="item.status_id == 5">
+                                  <div>
+                                    {{item.event}}<span v-if="!!item.note"
+                                      >: {{item.date}}</span
+                                    >
+                                  </div>
+                                  <div v-if="!!item.note">
+                                    預計結束: {{item.note}}
+                                  </div>
+                                </template>
+                              </td>
+                              <td>{{item.status}}</td>
+                              <td>
+                                {{item.departments.length}}
+                                <template
+                                  v-for="(list, list_index) in item.departments"
+                                >
+                                  <template v-if="!item.departments[2]">
+                                    <div class="main-div">{{list.name}}</div>
+                                  </template>
+                                  <template v-else-if="!item.departments[3]">
+                                    <div class="sub-div" v-if="list_index == 1">
+                                      {{list.name}}
+                                    </div>
+                                    <div
+                                      class="main-div"
+                                      v-if="list_index == 2"
+                                    >
+                                      {{list.name}}
+                                    </div>
+                                  </template>
+                                  <template v-else-if="!item.departments[4]">
+                                    <div class="sub-div" v-if="list_index == 2">
+                                      {{list.name}}
+                                    </div>
+                                    <div
+                                      class="main-div"
+                                      v-if="list_index == 3"
+                                    >
+                                      {{list.name}}
+                                    </div>
+                                  </template>
+                                  <template v-else>
+                                    <div class="sub-div" v-if="list_index == 2">
+                                      {{list.name}}
+                                    </div>
+                                    <div class="sub-div" v-if="list_index == 3">
+                                      {{list.name}}
+                                    </div>
+                                    <div
+                                      class="main-div"
+                                      v-if="list_index == 4"
+                                    >
+                                      {{list.name}}
+                                    </div>
+                                  </template>
+                                </template>
+                              </td>
+                              <td>
+                                <div class="sub-div">{{item.title}}</div>
+                                <div class="main-div">{{item.post}}</div>
+                              </td>
+                              <td>{{item.updated_at}}</td>
+                              <td>{{item.created_at}}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="area-bottom"></div>
+      </div>
+      <div id="EditPost">
+        <div class="row zoomIn animated" v-if="display">
+          <div class="col s12 m12 l4 mb10 postlist hoverable">
+            <ul class="tabs">
+              <li class="tab">
+                <a href="#Post" v-on:click="tabClick('post')">職務</a>
+              </li>
+              <li class="tab">
+                <a href="#Title" v-on:click="tabClick('title')">職務類別</a>
+              </li>
+              <button
+                data-target="AddPost"
+                class="add pull-right"
+                v-if="type=='post'"
+              >
+                <span>新增</span>
+              </button>
+              <button
+                data-target="AddTitle"
+                class="add pull-right"
+                v-if="type=='title'"
+              >
+                <span>新增</span>
+              </button>
+            </ul>
+            <div id="Post" class="col s12 tabsarea" v-if="display">
+              <div class="list">
+                <div
+                  class="title waves-effect waves-orange"
+                  :class="['post_'+ post.id,{dismiss:post.enable == 0}]"
+                  v-for="post in staffPost"
+                  v-on:click="clickColumn(post,$event)"
+                >
+                  {{post.name}}
+                </div>
+              </div>
+            </div>
+            <div
+              id="Title"
+              class="col s12 tabsarea"
+              v-if="display"
+              style="display: none;"
+            >
+              <div class="list">
+                <div
+                  class="title waves-effect waves-orange"
+                  :class="['title_'+ title.id,{dismiss:title.enable == 0}]"
+                  v-for="title in staffTitle"
+                  v-on:click="clickColumn(title,$event)"
+                >
+                  {{title.name}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m12 l8 mb10 postaction">
+            <div class="forms-block hoverable">
+              <div class="title">相關設定編輯</div>
+              <div class="row">
+                <div class="col s12 m12 l12 mb10">
+                  <div class="form-group">
+                    <label class="col s2 control-label">當前名稱</label>
+                    <div class="col s10">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="請點選右方的欄位"
+                        :value="oldName"
+                        v-model="oldName"
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l12 mb10" style="display: none;">
+                  <div class="form-group">
+                    <label class="col s2 control-label">新的名稱</label>
+                    <div class="col s10">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="輸入新的職務名稱"
+                        v-model="newName"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l12 mb10" v-if="type=='post'">
+                  <div class="form-group">
+                    <label class="col s2 control-label">職務排序</label>
+                    <div class="col s10">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="輸入職務排列順序"
+                        v-model="sortPost"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l12 mb20">
+                  <div class="form-group">
+                    <label class="col s2 control-label">職務狀態</label>
+                    <div class="col s10">
+                      <div class="dropdown">
+                        <a
+                          v-if="enable == 1"
+                          type="button"
+                          data-activates="PostEnable"
+                          class="btn dropdown-button"
+                          >開啟
+                          <span class="caret"></span>
+                        </a>
+                        <a
+                          v-if="enable == 0"
+                          type="button"
+                          data-activates="PostEnable"
+                          class="btn dropdown-button"
+                          >關閉
+                          <span class="caret"></span>
+                        </a>
+                        <ul id="PostEnable" class="dropdown-content">
+                          <li v-on:mousedown="enable = 1">
+                            <a>開啟</a>
+                          </li>
+                          <li v-on:mousedown="enable = 0">
+                            <a>關閉</a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <a
+                  class="waves-effect waves-light btn btnaction"
+                  v-on:click="backSetting"
+                  >返回資料管理</a
+                >
+                <a
+                  class="waves-effect waves-light btn btnupdate"
+                  v-on:click="updateEdit"
+                  >更新</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="AddPost" class="modal">
+          <div class="modal-content">
+            <h1 class="rv-title">新增職務</h1>
+            <div class="container">
+              <div class="row">
+                <div class="form-group">
+                  <label class="col s2 control-label">新的職務</label>
+                  <div class="col s10">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="輸入職務名稱"
+                      v-model="addNewName"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group">
+                  <label class="col s2 control-label">職務排序</label>
+                  <div class="col s10">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="輸入職務排列順序"
+                      v-model="sortPost"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="button-group center mt10">
+                  <button
+                    class="waves-effect waves-light btn"
+                    v-on:click="addEdit()"
+                  >
+                    新增
+                  </button>
+                  <button
+                    class="waves-effect waves-darken btn white black-text modal-close"
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="AddTitle" class="modal">
+          <div class="modal-content">
+            <h1 class="rv-title">新增職務類別</h1>
+            <div class="container">
+              <div class="row">
+                <div class="form-group">
+                  <label class="col s2 control-label">新的類別</label>
+                  <div class="col s10">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="輸入職務名稱"
+                      v-model="addNewName"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group">
+                  <label class="col s2 control-label">職務等級</label>
+                  <div class="col s10">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="輸入職務等級"
+                      v-model="addLv"
+                    />
+                  </div>
+                </div>
+                <p class="col s10 offset-s2">
+                  1=可任職執行長, 2=可任職部長, 3=處長, 4=組長, 5=正式員工,
+                  6=試用, 7=約聘
+                </p>
+              </div>
+              <div class="row">
+                <div class="button-group center mt10">
+                  <button
+                    class="waves-effect waves-light btn"
+                    v-on:click="addEdit()"
+                  >
+                    新增
+                  </button>
+                  <button
+                    class="waves-effect waves-darken btn white black-text modal-close"
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/moment.js')?>"></script>
+<script
+  type="text/javascript"
+  src="<?=U('/Public/js/Index/Setting-Organization.js')?>"
+></script>

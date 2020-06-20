@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!--<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>人事考評系統 | REVOVISION</title>
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/material-icons.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/revovison.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/jquery-ui.date.min.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/sweetalert.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/animate.css')?>">
+    <link type="text/css" rel="stylesheet" href="<?=U('/Public/css/sweetalert.css')?>">
+    
+    <script type="text/javascript" src="<?=U('/Public/js/sweetalert.min.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/jquery-3.2.0.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Api/Javascript/v1')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/generalController.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/jquery-ui.min.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/Index/loading.js')?>"></script>
+    <style>
+    @keyframes loadingFadeIn {
+        from {
+            background: rgba(204, 204, 204, 0);
+        }
+        to {
+            background: rgba(204, 204, 204, 0.4);
+        }
+    }
+
+    #main .rv-loading:before {
+        animation-name: loadingFadeIn;
+        animation-duration: 1s;
+        animation-fill-mode: forwards;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="loading-blcok" style="display:block;">
+        <div class="loader"></div>
+    </div>
+    <?=V('Component/header.html')?>
+    <main id="main">
+        {{Template}}
+    </main>
+    <script src="<?=U('/Public/js/Index/index.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/materialize.min.js')?>"></script>
+    <script type="text/javascript" src="<?=U('/Public/js/jquery.fixme.js')?>"></script>
+</body>
+
+
+</html>

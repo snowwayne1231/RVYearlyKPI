@@ -1,0 +1,141 @@
+<div id="SettingEvaluation">
+    <div class="had-container">
+        <h1 class="rv-title">月考評區間設定</h1>
+        <div class="evaluation-setting container">
+            <div class="row filter-date">
+                <div class="row year-select">
+                    <h3 class="title">請選擇年份</h3>
+                    <div class="dropdown">
+                        <select id="getYear" class="btn dropdown-button" type="button" v-model="now.year">
+                        </select>
+                    </div>
+                </div>
+                <div class="month-select">
+                    <h3 class="title">請選擇月份</h3>
+                    <form action="#" class="row month-list">
+                        <span v-for="value in monthArray">
+                            <input name="month-choose" type="radio" :id="'eva-month-'+value" @change="now.month=value" />
+                            <label :for="'eva-month-'+value">{{value}}月</label>
+                        </span>
+                    </form>
+                </div>
+            </div>
+            <div class="row month-setting">
+                <div class="title">
+                    <span>{{now.year}}</span> 年
+                    <span> {{now.month}} </span> 月考評啟動設定
+                    <small v-if="has_monthly_data" class="orange-text text-darken-2"> (本月份的考評單已產生)</small>
+                </div>
+                <div class="forms-block">
+                    <div class="row" v-show="!canUpdate">
+                        <div>
+                            <p class="center-align red-text text-darken-3">超過三個月；或已經結束考評，無法啟動考評單</p>
+                        </div>
+                    </div>
+                    <div class="row" v-show="canUpdate">
+                        <a class="waves-effect waves-light btn btn-update" v-if="has_monthly_data==false && !config_isLaunch" @click="createProcessing">
+                            <span class="bold700 text120">產生</span>
+                            <span>{{now.year}}</span> 年
+                            <span> {{now.month}} </span> 月考評單</a>
+                        <a class="waves-effect waves-light btn btn-update"
+                            v-if="has_monthly_data  && !config_isLaunch" @click="delRefreshMonthly">
+                            <span class="bold700 text120">重整</span>
+                            <span>{{now.year}}</span> 年
+                            <span> {{now.month}} </span> 月考評表</a>
+                        <a class="btn disabled" v-if="config_isLaunch" title="需先關閉考評才可重整">
+                            <span class="bold700 text120">重整</span>
+                            <span>{{now.year}}</span> 年
+                            <span> {{now.month}} </span> 月考評表</a>
+                        <div class="dialogbox" v-if="has_monthly_data && !config_isLaunch">
+                            <div class="body">
+                                <span class="tip tip-left"></span>
+                                <div class="message">
+                                    <span>更新組織後，請按此按鈕，不會刪除已評分的考評單或員工評語喔，但所有考評單皆會回到初評階段</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dialogbox" v-if="config_isLaunch">
+                            <div class="body">
+                                <span class="tip tip-left"></span>
+                                <div class="message">
+                                    <span>需關閉考評才可重整考評表。</span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+            <div class="row month-setting">
+                <div class="title">
+                    <span>{{now.year}}</span> 年
+                    <span> {{now.month}} </span> 月考評區間設定</div>
+                <div class="forms-block">
+                    <div class="row">
+                        <div class="col s12 m12">
+                            <div class="form-group">
+                                <label class="col s4 control-label">起始/結束日期設定</label>
+                                <div class="process-date col s8">
+                                    <span :class="{'month-range':(now.month-1) == 0}">
+                                        <i class="last-month" v-if="(now.month-1) == 0"> {{(now.year-1)}} 年 12 月</i>
+                                        <i v-if="(now.month-1)>0">{{(now.month -1) >= 10 ? (now.month -1) : '0'+ (now.month -1) || 12}}月</i>
+                                        <input type="text" maxlength="2" class="form-control date" v-model="setting.day_start">
+                                    </span>
+                                    <span class="icon">
+                                        <i class="material-icons">keyboard_arrow_right</i>
+                                    </span>
+                                    <span>
+                                        <i>{{now.month }}月</i>
+                                        <input type="text" maxlength="2" class="form-control date" v-model="setting.day_end">
+                                    </span>
+                                    <div class="tip-word col s12">
+                                        <p>請填寫考評的起始日期及結束日期</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 m12">
+                            <div class="form-group">
+                                <label class="col s4 control-label">設定考評之天數</label>
+                                <div class="rate-days col s8">
+                                    <input type="text" maxlength="2" class="form-control date" v-model="setting.day_cut_addition">
+                                    <div class="tip-word col s12">
+                                        <p>請設定啟動日後，主管要考評的天數</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 m12">
+                            <div class="form-group eva-start">
+                                <label class="col s4 control-label">啟動考評</label>
+                                <div class="switch col s8">
+                                    <label>
+                                        <input type="checkbox" id="LaunchBtn" v-model="isLaunch" @change="launchBotton">
+                                        <span class="lever"></span>
+                                    </label>
+                                    <div class="eva-end-date">
+                                        <p>{{finalDay}} 需完成考評</p>
+                                    </div>
+                                    <div class="tip-word col s12">
+                                        <p>請按上方按鈕啟動/關閉 考評</p>
+                                        <p class="tip-em">
+                                            <i class="material-icons md-18">error_outline</i> 啟動考評時，「組織設定」及「批次匯入員工資料」皆不可使用；考評關閉後方可設定組織及批次匯人員工資料。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row pull-right" v-show="canUpdate">
+                        <a class="waves-effect waves-light btn btn-update" @click="submit">更新</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Setting-MonthEvaluation.js')?>"></script>

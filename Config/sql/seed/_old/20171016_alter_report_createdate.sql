@@ -1,0 +1,1 @@
+alter table `rv_year_performance_report` add column `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;

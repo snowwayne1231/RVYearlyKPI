@@ -1,0 +1,1 @@
+alter table `rv_year_performance_report` add column path_lv varchar(128) COLLATE utf8_unicode_ci NOT NULL DEFAULT '{}' COMMENT '考績每一層 部門等級對應的 主管id與單位id' after path;

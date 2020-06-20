@@ -1,0 +1,60 @@
+.side-nav {
+    @include transition(0.5s);
+    @include rwd-to(small-screens) {
+        display: none;
+    }
+    a {
+        font-size: 12px;
+    }
+}
+
+.navbar-fixed nav {
+    background-image: linear-gradient(to bottom right, #FF5722, #FFC107);
+}
+
+.nav-wapper {
+    .logo {
+        font-weight: 300;
+        font-size: 1.3rem;
+        padding: 0 10px;
+        img {
+            width: 220px;
+        }
+    }
+}
+
+.rv-nav-side {
+    width: 240px;
+    top: 64px;
+    height: 94%;
+    overflow: auto;
+    .collapsible {
+        color: rgba(0, 0, 0, 0.87);
+    }
+    i {
+        color: rgba(0, 0, 0, 0.54);
+    }
+    .collapsible-header {
+        padding: 0 26px;
+        i {
+            font-size: 20px;
+            margin: 0 10px 0 0 !important;
+        }
+        &.active {
+            background: #f3f3f3;
+        }
+    }
+    .collapsible-body {
+        padding: 0;
+        a {
+            font-weight: 400;
+            padding: 0 37.5px 0 45px;
+        }
+    }
+    .bold {
+        >a {
+            font-weight: bolder;
+            font-size: 14px;
+        }
+    }
+}

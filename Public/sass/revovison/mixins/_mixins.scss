@@ -1,0 +1,89 @@
+$spacer: 10px !default;
+$panel-body-padding: ($spacer * 2) !default;
+$default-border-color: rgba(0, 0, 0, .05) !default;
+$panel-inner-border: $default-border-color !default;
+$widget-default-border-color: $panel-inner-border !default;
+// Clearfix
+@mixin clearfix() {
+    &:before,
+    &:after {
+        content: "";
+        display: table;
+    }
+    &:after {
+        clear: both;
+    }
+}
+
+// Size
+@mixin size($width, $height) {
+    width: $width;
+    height: $height;
+}
+
+// Square Size
+@mixin square($size) {
+    @include size($size, $size);
+}
+
+// Text
+@mixin text($font-size, $color, $spacing) {
+    font-size: $font-size;
+    color: $color;
+    letter-spacing: $spacing;
+}
+
+@mixin transition($transition) {
+    -webkit-transition: $transition;
+    -moz-transition: $transition;
+    -o-transition: $transition;
+    -ms-transition: $transition;
+    transition: $transition;
+}
+
+@mixin pixel-widget-item($widget, $padding-x: false, $padding-y: false, $padding-left: 0, $padding-right: 0) {
+    @if ($padding-x !=false) {
+        $padding-left: $padding-x;
+        $padding-right: $padding-x;
+    }
+    .widget-#{$widget}-item {
+        position: relative;
+        padding: $padding-y $padding-right $padding-y $padding-left;
+        @include clearfix();
+        + .widget-#{$widget}-item {
+            border-top: 1px solid $widget-default-border-color;
+        }
+        @content;
+    }
+}
+
+@mixin pixel-widget-within-panel($widget, $padding-left: $panel-body-padding, $padding-right: $panel-body-padding) {
+    .panel.widget-#{$widget} .panel-body {
+        padding: 0;
+    }
+    .panel .widget-#{$widget}-item {
+        padding-right: $padding-right;
+        padding-left: $padding-left;
+        @content;
+    }
+    .panel-title + .widget-#{$widget}-item {
+        border-top: 1px solid $widget-default-border-color;
+    }
+}
+
+//media queries setting
+@mixin rwd-to($media) {
+    @if $media==small-screens {
+        @media only screen and (max-width: 1280px) {
+            @content;
+        }
+    }
+}
+
+@mixin transition($transition) {
+    -webkit-transition: $transition;
+    -moz-transition: $transition;
+    -o-transition: $transition;
+    -ms-transition: $transition;
+    transition: $transition;
+}

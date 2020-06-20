@@ -1,0 +1,34 @@
+#canvas-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.rv-login {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .card-panel {
+        width: 320px;
+    }
+    .login-form-text {
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.8rem;
+    }
+    .login-text {
+        label {
+            margin-left: 5px;
+            span {
+                margin-left: 15px;
+                line-height: 20px;
+            }
+        }
+    }
+}

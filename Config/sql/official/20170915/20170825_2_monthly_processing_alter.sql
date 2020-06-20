@@ -1,0 +1,1 @@
+alter table `rv_record_monthly_processing` change column action action enum('launch','commit','return','done','cancel','drawing','other') COLLATE utf8_unicode_ci NOT NULL;

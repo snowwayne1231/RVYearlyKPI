@@ -1,0 +1,89 @@
+<style>
+body {
+    overflow-x: hidden;
+}
+.absence-record .absence-table .single{
+  background: #9f9f9f;
+  color: #fff;
+}
+
+.absence-record .data-block .absence-table td{
+  padding : 1px;
+}
+.absence-record .data-block .absence-table tbody tr:nth-child(odd){
+  background: #e3edec;
+}
+.absence-record .data-block .absence-table .td-remark{
+  max-width : 200px;
+  min-width : 150px;
+  border-right: 1px solid #999;
+  padding: 0 10px;
+}
+.absence-record .data-block .absence-table .val-day{
+  border-right: 1px solid #999;
+}
+</style>
+<div id="Absence" class="absence-record">
+    <div class="had-container">
+        <h1 class="rv-title"><span class="dtime"></span>出缺席記錄</h1>
+        <!-- 無資料時顯示 -->
+        <div class="no-data">
+            <div class="message">
+                <h2>查無資料</h2>
+                <p>請重新查詢</p>
+            </div>
+        </div>
+        <!-- 有資料時顯示 -->
+        <div class="data-block" style="display:none;">
+            <div :class="'data-block'">
+                <a class="waves-effect waves-light btn teal darken-1" @click="downloadExcel">Download Excel</a>
+                <span style="color: #fff;background: #ff003b;padding:3px 5px; margin:0px 5px;">遲到/早退</span>
+                <span style="background: #9f9f9f; color: #fff;padding:3px 5px;">非上班時間</span>
+                <table class="absence-table">
+                    <thead>
+                        <tr>
+                            <td colspan='2'>部門</td>
+                            <td v-for="(val,ix) in staff" colspan='3' :pos="ix">{{val.unit_code}} {{val.unit_name}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan='2'>姓名</td>
+                            <td v-for="(val,ix) in staff" colspan='3' :pos="ix">{{val.name}} {{val.name_en}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan='2'>日期</td>
+                            <td class="template" v-for="(item,ix) in staff">
+                                <td :pos="ix">上班</td>
+                                <td :pos="ix">下班</td>
+                                <td :pos="ix">備註</td>
+                                <td class="/template"></td>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(val,key) in date">
+                            <td>{{val.mDate}}</td>
+                            <td class="val-day">{{val.day}}</td>
+                            <td class="template" v-for="(item,ix) in staff">
+                                <td :pos="ix" :class="item._attendance_map[key]&&item._attendance_map[key].remark.length==0? {late:item._attendance_map[key].late>0,nocard:item._attendance_map[key].nocard>0,single:item._attendance_map[key]._sig==1} :false">{{(item._attendance_map[key])?item._attendance_map[key].checkin_hours:''}}</td>
+                                <td :pos="ix" :class="item._attendance_map[key]&&item._attendance_map[key].remark.length==0? {early:item._attendance_map[key].early>0,nocard:item._attendance_map[key].nocard>0,single:item._attendance_map[key]._sig==1} :false">{{(item._attendance_map[key])?item._attendance_map[key].checkout_hours:''}}</td>
+                                <td :pos="ix" class="td-remark" v-if="item._attendance_map[key]">
+                                    <span v-if="item._attendance_map[key].remark">{{item._attendance_map[key].remark}}</span>
+                                    <span v-else>
+                                        {{item._attendance_map[key].late>0?'遲到,':''}}
+                                        {{item._attendance_map[key].early>0?'早退,':''}}
+                                        {{item._attendance_map[key].nocard>0?'忘卡,':''}}
+                                    </span>
+                                </td>
+                                <td :pos="ix" v-else></td>
+                                <td class="/template"></td>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="scroll-x" style="display:none;"><span></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="<?=U('/Public/js/vue.2.2.6.js')?>"></script>
+<script type="text/javascript" src="<?=U('/Public/js/Index/absence.js')?>"></script>

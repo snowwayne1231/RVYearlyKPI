@@ -1,0 +1,1 @@
+ALTER TABLE `rv_monthly_report_leader` ADD `create_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `exception_reason`, ADD `update_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `create_date`;

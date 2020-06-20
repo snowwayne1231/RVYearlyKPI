@@ -1,0 +1,1 @@
+ALTER TABLE `rv_monthly_processing`  ADD COLUMN `prev_owner_staff_id` INT(11) NULL DEFAULT '0' COMMENT '上一個擁有者' AFTER `owner_department_id`;

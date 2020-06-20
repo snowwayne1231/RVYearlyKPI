@@ -1,0 +1,145 @@
+<script rv-component="monthly_history" type="rv-component">
+    <div class="modal">
+        <div class="modal-content">
+            <div class="rv-page-title">
+                <h1 class="rv-title">歷史紀錄<button href="#" class="modal-action modal-close btn-flat"><i class="material-icons md-18">close</i></button></h1>
+            </div>
+            <div class="row">
+                <div class="widget-timeline">
+                    <div class="widget-timeline-section widget-timeline-first">考評單歷程</div>
+                    <div class="test" v-for="(r,index) in records">
+                        <div class="widget-timeline-item">
+                            <div class="widget-timeline-info">
+                                <div class="widget-timeline-bullet bg-primary"></div>
+                                <div class="widget-timeline-time bg-primary">{{r.update_date[0]}}
+                                    <br>{{r.update_date[1]}}</div>
+                            </div>
+                            <div class="panel">
+                                <div class="panel-body">
+                                    <div v-if="r.action == 'create'">
+                                        <span>✧產生考評單</span>
+                                        <p>日期：{{r.update_date[0]}}；時間：{{r.update_date[1]}}</p>
+                                    </div>
+                                    <div v-if="r.action == 'commit'">
+                                        <span>【{{r._operating_name}}{{r._operating_name_en}} 】</span>
+                                        <span class="commit">→ 送審 →</span>
+                                        <span>【{{r._target_name}}{{r._target_name_en}}】</span>
+                                    </div>
+                                    <div v-if="r.action == 'return'">
+                                        <span>【{{r._operating_name}}{{r._operating_name_en}}】</span>
+                                        <span class="return">→ 退回 →</span>
+                                        <span>【{{r._target_name}}{{r._target_name_en}}】</span>
+                                        <p>&nbsp;&nbsp;退回原因： {{r.reason}}</p>
+                                    </div>
+                                    <div v-if="r.action == 'drawing'">
+                                        <span>【{{r._operating_name}}{{r._operating_name_en}}】</span>
+                                        <span class="draw"> ← 抽回考評單 </span>
+                                        <p>&nbsp;&nbsp; 原因： {{r.reason}}</p>
+                                    </div>
+                                    <div v-if="r.action == 'done'">
+                                        <span class="done">√ </span><span>考評單已完成</span>
+                                        <p>日期：{{r.update_date[0]}}；時間：{{r.update_date[1]}}</p>
+                                    </div>
+                                    <div v-if="r.action == 'cancel'">
+                                        <span>【{{r._operating_name}}{{r._operating_name_en}}】</span>
+                                        <span class="return">→ 取消核准 →</span>
+                                        <span>【{{r._target_name}}{{r._target_name_en}}】</span>
+                                    </div>
+                                    <div v-if="r.action == 'other'">
+                                        <span>【{{r._operating_name}}{{r._operating_name_en}}】</span>
+                                        <span class="other">→ 其他 →</span>
+                                        <span>【{{r._target_name}}{{r._target_name_en}}】</span>
+                                    </div>
+                                    <div v-if="r._report_changed">
+                                        <font color="blue">修改內容：</font>
+                                        <ul v-for="rrc in r._report_changed">
+                                            <li>{{rrc.name}} {{rrc.name_en}}</li>
+                                            <li v-for="(changed,key) in rrc.changed_json">{{colMapping[key]}} >> {{changed}}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script>
+;
+(function($, w, v, a) {
+    var name = 'monthly_history',
+        vued = '_vue_modal',
+        sourceColumnMapping = {
+            'quality': '工作品質',
+            'completeness': '工作績效',
+            'responsibility': '責任感',
+            'cooperation': '配合度',
+            'attendance': '出席率',
+            'addedValue': '特殊貢獻',
+            'mistake': '重大缺失',
+            'total': '總分',
+            'bonus': '獎金發放',
+            'target': '目標達成',
+            'quality': '工作品質',
+            'method': '工作方法',
+            'error': '出錯率',
+            'backtrack': '進度追查',
+            'planning': '企劃能力',
+            'execute': '執行力',
+            'decision': '判斷力',
+            'resilience': '應變能力',
+            'attendance_members': '組員出勤'
+        }
+
+    if (!w[vued]) {
+        w[vued] = {};
+    }
+    var _tmp = w[vued],
+        $$ = $('script[rv-component="' + name + '"]'),
+        tmp = $$.html();
+    _tmp[name] && $(_tmp[name].$el).remove();
+    _tmp[name] = new v({
+        template: tmp,
+        el: $$[0],
+        data: {
+            processing_id: 0,
+            records: {},
+            colMapping: sourceColumnMapping
+        },
+        mounted: function() {
+            var ts = this;
+            $(function() {
+                ts.$ = $(ts.$el).filter('.modal').modal({
+                    inDuration: 100,
+                    outDuration: 100,
+                    startingTop: '10%',
+                    endingTop: '10%'
+                });
+            });
+        },
+        methods: {
+            show: function(id) {
+                this.processing_id = id;
+                var ts = this;
+                a.getMonthlyProcessHistory({
+                    'processing_id': id
+                }).then(function(e) {
+                    var cnt = a.format(e);
+                    if (cnt.is) {
+                        ts.records = cnt.res();
+                        for (var i in ts.records) {
+                            ts.records[i].update_date = ts.records[i].update_date.split(' ');
+                        }
+                        ts.$.modal('open');
+                    } else {
+                        //alert('錯誤');
+                        swal("Fail", "錯誤");
+                    }
+                });
+            }
+        }
+    });
+})(jQuery, window, Vue, API);
+</script>

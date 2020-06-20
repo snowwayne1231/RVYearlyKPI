@@ -1,0 +1,365 @@
+.rv-yearFeedbackForm {
+    .no-data {
+        display: block;
+    }
+    .feedback-header {
+        background: url('../img/bg.png');
+        .blocks {
+            .title {
+                font-size: 26px;
+                color: #ff781a;
+                text-align: center;
+                margin: 5px 0;
+                position: relative;
+                top: 6px;
+            }
+            .name {
+                color: #ff781a;
+                text-align: center;
+                line-height: 30px;
+                position: relative;
+                bottom: 5px;
+                font-size: 15px;
+            }
+        }
+    }
+    .card-header {
+        position: relative;
+        border: 1px solid #EEE;
+        .info-block {
+            padding: 20px 30px;
+            .top {
+                color: #737070;
+            }
+            h1 {
+                margin: 0px;
+                color: #f57c00;
+            }
+            .date {
+                h1 {
+                    color: #747474;
+                }
+            }
+            .arrow {
+                padding: 0px 10px;
+                svg {
+                    vertical-align: middle;
+                }
+            }
+            &.right-border {
+                border-right: 1px solid #eee;
+            }
+        }
+        .icon-block {
+            position: absolute;
+            right: -10px;
+            bottom: -30px;
+            svg {
+                width: 120px;
+                line-height: 80px;
+                vertical-align: bottom; // fill: #f57c00;
+            }
+        }
+    }
+    .card-body {
+        .brand-actions {
+            float: none;
+            padding: 0px 25px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #eee;
+            span {
+                display: inline-block;
+                padding: 0px 10px;
+                a {
+                    margin: 12px 3px;
+                }
+                &.form-actions {}
+                &.line {
+                    height: 20px;
+                    width: 1px;
+                    background: #DDD;
+                    padding: 0px;
+                    vertical-align: baseline;
+                }
+            }
+        }
+        .step {
+            font-size: 18px;
+            line-height: 22px;
+            font-weight: bolder;
+            color: #5F5F5F;
+            padding: 0px 40px;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            clear: both;
+            span {
+                display: inline-block;
+                &.no {
+                    font-family: 'Poppins', sans-serif;
+                    font-size: 26px;
+                    padding-right: 5px;
+                }
+                &.note {
+                    margin-left: 10px;
+                    padding-left: 10px;
+                    border-left: 1px solid #C5C5C5;
+                }
+            }
+        }
+    }
+    .company {
+        .info-block {
+            h1 {
+                color: #FFC107;
+            }
+            svg {
+                fill: #FFC107;
+            }
+        }
+        input {
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 85px;
+            margin-top: 5px;
+            padding: 6px 12px;
+            color: #555555;
+        }
+    }
+    .autocomplete-content {
+        display: block;
+        opacity: 1;
+        position: absolute;
+        width: 100%;
+    }
+}
+
+.item-area {
+    position: relative;
+    .item {
+        float: left;
+        display: inline-block;
+        background: #FFFFFF;
+        padding: 10px 10px 0px;
+        border: 1px solid #D8D8D8;
+        margin: 5px 2px;
+        .no {
+            text-align: center;
+            color: #747474;
+            font-size: 50px;
+        }
+        .btn {
+            margin: 10px -10px 0px;
+            background: #737373;
+            width: 115px;
+            height: 36px;
+            line-height: 36px;
+            padding: 0;
+            text-align: center;
+            &:hover {
+                background: #909090;
+            }
+        }
+        &.active {
+            .no {
+                color: #FF9528;
+            }
+            .btn {
+                background: #FF9528;
+            }
+        }
+    }
+    &:after {
+        display: block;
+        content: "";
+        clear: both;
+    }
+    .count {
+        background: #ff9528;
+        text-align: center;
+        height: 126px;
+        line-height: 125px;
+        font-size: 48px;
+        color: #fff;
+        border-radius: 5px;
+        min-width: 90px;
+    }
+    .add-target {
+        position: relative;
+        left: 140px;
+        bottom: 25px;
+    }
+}
+
+.questions {
+    padding-bottom: 1px;
+    .question-group {
+        background: #FFF;
+        padding-bottom: 15px;
+        margin: 0px 40px 20px;
+        border: 1px solid #D8D8D8;
+        .question-area {
+            padding: 15px 30px 0px;
+        }
+        .answer-group {
+            padding-top: 10px;
+            textarea {
+                width: 100%;
+                padding: 10px;
+                box-sizing: border-box;
+                height: 120px;
+            }
+        }
+    }
+}
+
+.next-btn-style {
+    background: #737373;
+    margin-top: 10px;
+}
+
+.question {
+    font-size: 16px;
+    font-weight: bolder;
+    padding: 5px 0;
+    .no {
+        display: inline-block;
+        padding-right: 6px;
+    }
+}
+
+
+.other-manager {
+    .modal-footer{
+        .btn{
+            margin-right: 10px;
+        }
+    }
+    // textarea {
+    //     display: none;
+    //     &.active {
+    //         display: block;
+    //     }
+    // }
+}
+
+
+.choice-score {
+    margin: 0 40px;
+    padding-bottom: 20px;
+    cursor: pointer;
+    textarea {
+        width: 100%;
+        height: 85px;
+        margin-top: 5px;
+        padding: 6px 12px;
+        color: #555555;
+    }
+}
+
+.questions-choice {
+    .question-group {
+        .question-area {
+            display: none;
+            &.active {
+                display: block;
+            }
+        }
+    }
+}
+
+.questionnaires-block {
+    margin: 10px 40px;
+}
+
+.questionnaires-essay {
+    .question-group {
+        .question-area {
+            display: none;
+            &.active {
+                display: block;
+            }
+        }
+    }
+}
+
+.custom-fab {
+    position: relative;
+    right: 0;
+    bottom: 0;
+    padding-bottom: 10px;
+    .custom-btn {
+        line-height: 36px;
+        padding: 0 15px;
+        margin: 5px 5px 0 0;
+        border-radius: 2px;
+        position: relative;
+        background: #737373;
+        display: inline-block;
+        text-transform: inherit;
+        &:after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            height: 7px;
+            width: 7px;
+            background: #4c4c4c;
+            border-radius: 50px;
+            box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.5), 0px 1px 0px rgba(255, 255, 255, 0.2);
+        }
+        &.active {
+            background: #f57c00;
+        }
+        &.has-content {
+            &:after {
+                background: #FFEB3B;
+            }
+        }
+    }
+}
+
+.fixed-action-btn.horizontal {
+    padding: 0;
+    .btn {
+        i {
+            transform: rotate(0deg);
+            transition: .3s;
+        }
+    }
+    ul {
+        height: 0;
+        text-align: left;
+        right: auto;
+        top: 5px;
+        width: inherit;
+        position: relative;
+        transform: initial;
+        transition: .3s;
+        li {
+            margin: 5px 5px 0 0;
+            a {
+                transform: scaleY(0.5) scaleX(0.5) translateY(0px) translateX(-40px);
+                opacity: 0;
+                transition: .3s;
+            }
+        }
+    }
+    &.active {
+        .btn {
+            i {
+                transform: rotate(45deg);
+            }
+        }
+        ul {
+            height: inherit;
+            li {
+                a {
+                    transform: scaleY(1) scaleX(1) translateY(0px) translateX(0px);
+                    opacity: 1;
+                }
+            }
+        }
+    }
+}

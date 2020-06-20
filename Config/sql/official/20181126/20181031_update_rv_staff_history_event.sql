@@ -1,0 +1,1 @@
+ALTER TABLE `rv_staff_history_event` ADD `note` VARCHAR(200) NOT NULL COMMENT '備註' AFTER `event_day`;

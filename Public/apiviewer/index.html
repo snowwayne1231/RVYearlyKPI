@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='UTF-8' />
+	<title>JSON Visualizer</title>
+
+    <script src="../js/jquery-3.2.0.js"></script>
+	
+    <script src="js/jquery-ui.min.js"></script>
+    <link href="../css/revovison.css" rel="stylesheet"/>
+
+	<!-- Add JSON2HTML -->
+	<script src='js/json2html.js' type='text/javascript'></script>
+	<script src='js/jquery.json2html.js' type='text/javascript'></script>
+
+  </script>
+  
+  <script>
+    var API_POSITION = '../../Api/Javascript/v1';
+    var API_OBJECT_NAME = 'API';
+    var MAX_TIP_LENGTH = 255;
+    var MAX_AUTOCOMPLETE_ITEM = 24;
+  </script>
+	
+	<link href='css/layout.css' media='all' type='text/css' rel='stylesheet'/>
+	<link href='css/index.css' media='all' type='text/css' rel='stylesheet'/>
+	<link href='css/jquery-ui.css' media='all' type='text/css' rel='stylesheet'/>
+  
+</head>
+	<section id='page'>
+    <div id="apis">
+      <span>API.</span><input type="text" style="width:400px;" /><a href="#">Clear</a>
+    </div>
+    <div class="clearfix">
+      <div id="params">
+        <span>PARAM:</span>
+        <p><textarea type="text" style="width:500px;height:120px;"></textarea></p>
+        <p style="text-align:center;"><button id='btnVisualize' class='btn btn-primary' style='width:200px;'>submit</button></p>
+      </div>
+    
+      <div id="detail">
+        <textarea style="width:90%;min-height:220px;margin-top:-20px;"></textarea>
+      </div>
+    </div>
+		<article style="border-top:1px solid #bebebe;">
+
+			<div class='well'>
+				
+			</div>
+			
+			<div style="">
+
+				<div id='content'></div>
+        
+			</div>
+      
+		</article>
+
+	</section>
+</body>
+
+
+<script type="text/javascript">
+
+var API_JS_CONTENT,API_DEFERRED;
+$(function(){
+  API_DEFERRED = $.Deferred();
+  API_DEFERRED.then(launch);
+  $.get(API_POSITION,function(e){
+    try{
+      API_JS_CONTENT = e;
+      eval(API_JS_CONTENT);
+      window.API = window[API_OBJECT_NAME];
+      API_DEFERRED.resolve();
+    }catch(e){
+      console.log(e);
+      alert('API讀取錯誤，請重新嘗試.');
+    }
+  });
+  
+});
+
+var comment = {};
+function buildComment(items){
+  //console.log(items);
+  //var fnName = API_OBJECT_NAME+'.'+item.name;
+  //var fnName = 'self.'+item.name;
+  //var index = API_JS_CONTENT.indexOf(fnName);
+  
+  API_JS_CONTENT.replace(/(\/\*\*[^!!]+?)function/igm,function($m,$a){
+    //console.log($a);
+    for(var i in items){
+      var str = items[i].name;
+      var ia = $a.lastIndexOf(str);
+      if(ia>=0){
+        var fn = $a.slice(ia).replace(/[\W]+/i,'');
+        if(fn!=str){continue;}
+        comment[str] = $a.slice(0,ia-5);
+        break;
+      };
+    }
+    return '';
+  });
+}
+
+function launch(){
+  var $apis = $('#apis');
+  $apis.fns = [];
+  $apis.limit = MAX_AUTOCOMPLETE_ITEM;
+  
+  var $params = $('#params');
+  
+  var max_tip = MAX_TIP_LENGTH;
+  
+  console.log(API);
+  
+  for(var i in API){
+    if(typeof API[i]!='function' || String(i).match(/^(encode|go|decode|when|format)/i)){continue;}
+    $apis.fns.push( {name:i,fn:API[i],label:i} );
+  }
+  
+  $apis.find('input')
+  .autocomplete({
+    appendTo : $apis,
+    source : function(rq,res){
+      res( $apis.fns.filter(function(o){
+        return !!o.name.match( new RegExp(rq.term,'i') );
+      }).slice(0,$apis.limit) );
+    },
+    select: function( e,ui){
+      //console.log(ui);
+      $apis.target = ui.item.fn;
+      var cm = comment[ui.item.name] || '無註解';
+      $('#detail textarea').val( cm );
+      //buildComment(ui.item);
+    }
+  });
+  
+  buildComment($apis.fns);
+  
+  
+  $apis.find('a').click(function(e){
+    e.preventDefault();
+    $apis.find('input').val('');
+  })
+
+	$params.find('textarea').change(function(){
+    localStorage.setItem('tmp_hr_textarea', this.value );
+  }).val( localStorage.getItem('tmp_hr_textarea') );
+
+	$('#btnVisualize').click(function() {
+		if( !$apis.target || typeof $apis.target != 'function' ){ return alert('沒選 API.'); }
+		
+		var params = $params.find('textarea').val();
+    var p_array = params.split(/[\r\n\;]+/gi);
+    var p_object = {};
+    p_array.forEach(function(s){
+      var ary,key,val;
+      if(s.length==0){return}
+      if(s.match(/[\[\]\{\}\"\']+/)){
+        //object
+        ary = s.split(/[\=]+/);
+        val = JSON.parse(ary[1]);
+      }else{
+        ary = s.split(/[\:\=]+/);
+        val = $.trim(ary[1]);
+      }
+      if( ary.length!=2 ){ alert('Error Textarea Format.');throw 'Error Format.';}
+      key = $.trim(ary[0]);
+      p_object[key] = val;
+    });
+    
+    //submit data
+    console.log(p_object);
+    $apis.target( p_object ).then(callbackSuccess);
+    
+		
+	});
+  
+  
+  $('#content').on('click','.package',function(e){
+    var $t = $(this);
+    e.stopPropagation();
+    if($t.hasClass('array') || $t.hasClass('object')){
+      
+      if( $t.hasClass('open') ){
+        $t.removeClass('open').addClass('closed').find('.open').removeClass('open').addClass('closed');
+      }else{
+        $t.removeClass('closed').addClass('open');
+      }
+    }
+    
+  });
+  
+  function callbackSuccess(r){
+    
+    var cot = API.format(r);
+    //console.log(cot);
+    if(cot.is){
+      var data = cot.res();
+      console.log(data);
+      
+      visualize(data);
+      
+    }else{
+      alert(cot.get());
+    }
+  }
+
+}
+
+var transforms = {
+	'object':{
+    'tag':'div',
+    'class':'package ${show} ${type}',
+    'children':[
+      {
+        'tag':'div',
+        'class':'header',
+        'children':[
+          {
+            'tag':'div',
+            'class':function(obj){
+              var classes = ["arrow"];
+              if( getValue(obj.value) !== undefined ) classes.push("hide");
+              return(classes.join(' '));
+            }
+          },
+          {
+            'tag':'span',
+            'class':'name',
+            'html':'${name}'
+          },
+          {
+            'tag':'span',
+            'class':'value',
+            'html':function(obj) {
+              
+              var value = getValue(obj.value);
+              if( value !== undefined ){return(" : " + value);} 
+              else {
+                var tip = vv('',obj).slice(0,-1);
+                if(obj.type=='array'){tip='['+tip+']';}
+                return tip;
+                
+              }
+              function vv(s,o){
+                if(s.length>MAX_TIP_LENGTH){return s;}
+                var type = $.type(o.value);
+                switch(type) {
+                  case 'array':
+                  case 'object':
+                    for(var i in o.value){
+                      s = vv(s,o.value[i]);
+                    }
+                  break;
+                  case 'string':
+                    s += (''+o.name+' : "'+o.value+'" ,');
+                  break;
+                  case 'number':
+                    s += (''+o.name+' : '+o.value+' ,');
+                  break;
+               }
+               return s;
+              }
+              
+            }
+          },
+          {
+            'tag':'span',
+            'class':'type',
+            'html':'${type}'
+          }
+        ]
+      },
+      {
+        'tag':'div',
+        'class':'children',
+        'children':function(obj){return(children(obj.value));}
+      }
+    ]
+  }
+};
+
+function visualize(json) {
+	
+	$('#content').html('')
+	.json2html( convert('result',json,'open'), transforms.object );
+  
+}
+
+function getValue(obj) {
+	var type = $.type(obj);
+
+	switch(type) {
+		case 'array':
+		case 'object':
+			return(undefined);
+		break;
+
+		case 'function':
+			//none
+			return('function');
+		break;
+
+		case 'string':
+			return("'" + obj + "'");
+		break;
+
+		default:
+			return(obj);
+		break;
+	}
+}
+
+function children(obj){
+	var type = $.type(obj);
+	switch(type) {
+		case 'array':
+		case 'object':
+			return(json2html.transform(obj,transforms.object));
+		break;
+
+		default:
+			//
+		break;
+	}
+}
+
+function convert(name,obj,show) {
+	
+	var type = $.type(obj);
+
+	if(show === undefined) show = 'closed';
+	
+	var children = [];
+
+	switch(type) {
+		case 'array':
+
+			var len=obj.length;
+			for(var j=0;j<len;++j){	
+				children[j] = convert(j,obj[j]);
+			}
+		break;
+
+		case 'object':
+			var j = 0;
+			for(var prop in obj) {
+				children[j] = convert(prop,obj[prop]);
+				j++;
+			}	
+		break;
+		default:
+			children = obj;
+		break;
+	}
+
+	return( {'name':name,'value':children,'type':type,'show':show} );
+	
+}
+
+
+</script>
+</html>

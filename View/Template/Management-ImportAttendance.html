@@ -1,0 +1,37 @@
+<div id="Attendance">
+    <link rel="stylesheet" href="<?=U('/Public/css/dropzone.css')?>">
+    <script src="<?=U('/Public/js/dropzone.js')?>"></script>
+    <div class="had-container">
+        <h1 class="rv-title">出缺勤匯入</h1>
+        <div class="import-block container">
+            <div class="section upload-block">
+                <h3 class="att-title">請上傳出缺席表</h3>
+                <div class="drop-fild-block">
+                    <form id="myDropzone" action="/" enctype="multipart/form-data" class="dropzone dz-clickable"></form>
+                </div>
+            </div>
+            <div class="view-import">
+                <h3 class="att-title">查詢公司所有員工出缺席總表</h3>
+                <!-- 選擇要看的年月，預設出現當月份 -->
+                <!-- 使用None.html 的 template，url用 /None/Frame/.... -->
+                <form action="<?=U('/None/Frame/absence')?>" target="_blank">
+                    <div class="filter-date row" id="SelectYM">
+                        <div class="title">請選擇要觀看的出缺席總表年月</div>
+                        <div class="dropdown">
+                            <select id="getYear" class="btn dropdown-button" type="button" name="year">
+                            </select>
+                        </div>
+                        <div class="dropdown">
+                            <select id="getMonth" class="btn dropdown-button" type="button" name="month">
+                            </select>
+                        </div>
+                        <div>
+                            <input type="submit" name="" value="送出" class="btn">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Management-ImportAttendance.js')?>"></script>

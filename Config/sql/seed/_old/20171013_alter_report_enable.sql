@@ -1,0 +1,1 @@
+alter table `rv_year_performance_report` add column enable int(2) default '1' not null comment '啟用狀態 1=正常, 0=作廢' after staff_title_id;

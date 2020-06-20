@@ -1,0 +1,234 @@
+<script rv-component="monthly_review" type="rv-component">
+    <div class="rv-review modal">
+        <div class="rv-page-title">
+            <h1 class="rv-title"><span>{{report.name}} {{report.name_en}} </span>的評語紀錄<button href="#" class="modal-action btn-flat" v-on:click="close()"><i class="material-icons md-18">close</i></button></h1>
+        </div>
+        <div class="row comment-area">
+            <div class="comment-add-area" v-if="can_add">
+                <div class="card comment-add">
+                    <textarea id="CommentText" class="form-control" placeholder="請輸入對當前員工的評論..(限輸入255個字)" maxlength="255"></textarea>
+                    <a v-on:click="addComment()"><i class="material-icons">send</i></a>
+                </div>
+            </div>
+            <div class="comment-add-area" v-else>
+                <div class="card comment-add">
+                    <textarea id="CommentText" class="form-control" rows="2" placeholder="當前不能評論" maxlength="255" disabled="false" style="color:#da6868;background:#eeeeee;cursor:not-allowed;width:100%"></textarea>
+                </div>
+            </div>
+            <div class="comment-content-area" v-if="!commentRecord.length == 0">
+                <div :id="'record-'+(index+1)" class="card comment-card" v-for="(record,index) in commentRecord">
+                    <span class="comment-no"> <span class="no">{{index+1}}</span></span>
+                    <div class="comment-head"> <span class="en">{{record._created_staff_name_en}} </span><span class="tw">{{record._created_staff_name}}</span></div>
+                    <div class="comment-content">
+                        <h3><span class="time">{{record.create_time}}</span></h3>
+                        <span v-show="!record.edit_open" style="display:block;">{{record.content}}</span>
+                        <textarea v-show="record.edit_open" style="display:block;" type="text" class="form-control edit-input" maxlength="255" v-model="record.edit_text"></textarea>
+                    </div>
+                    <div v-if="record._authority==true">
+                        <div class="tool" v-show="!record.edit_open" style="display:block;">
+                            <a class="edit" v-on:click="editOpen(index)">編輯</a><a class="delete" v-on:click="deleteComment(record.id,index,record)">刪除</a>
+                        </div>
+                        <div class="edit-success" v-show="record.edit_open" style="display:block;">
+                            <a class="edit" v-on:click="editComment(index,record.id)">編輯完成</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-else class="no-comment">
+                尚未有評論..
+            </div>
+        </div>
+    </div>
+</script>
+<script src="<?=U('/Public/js/jquery.autosize.js')?>"></script>
+<script>
+;
+(function($, w, v, a) {
+    var name = 'monthly_review',
+        vued = '_vue_modal'
+
+    if (!w[vued]) {
+        w[vued] = {};
+    }
+    $(function() {
+        $('#CommentText').autosize();
+        $('#CommentText').css('height','70px');
+    });
+
+    var _tmp = w[vued],
+        $$ = $('script[rv-component="' + name + '"]'),
+        tmp = $$.html();
+    _tmp[name] && $(_tmp[name].$el).remove();
+    _tmp[name] = new v({
+        template: tmp,
+        el: $$[0],
+        data: {
+            staff_id: 0,
+            year: 0,
+            month: 0,
+            num: 0,
+            report: {},
+            commentRecord: [],
+            can_add: true
+        },
+        mounted: function() {
+            var ts = this;
+            $(function() {
+                ts.$ = $(ts.$el).filter('.modal').modal({
+                    dismissible: false,
+                    inDuration: 100,
+                    outDuration: 100,
+                    startingTop: '10%',
+                    endingTop: '10%'
+                });
+                //console.log(ts.$);
+            });
+        },
+        methods: {
+            show: function(r, num) {
+                this.staff_id = r.staff_id;
+                this.year = r.year;
+                this.month = r.month;
+                this.num = num;
+                this.report = r;
+                var vss = this;
+                // num = 0 是 review, num = 1 是index
+                if (num == 0) {
+                    vss.$.removeClass('modal');
+                    vss.$.q('.rv-page-title').remove();
+                }
+                this.Comment({
+                    staff_id: r.staff_id,
+                    year: r.year,
+                    month: r.month
+                });
+            },
+            Comment: function(q) {
+                var vss = this;
+                a.getComment(q).then(function(e) {
+                    var result = a.format(e);
+                    if (result.is) {
+                        var commentRes = result.res();
+                        var comment = commentRes.comments;
+                        console.log(comment)
+                        for (var loc in comment) {
+                            comment[loc]["name_head"] = comment[loc]._created_staff_name.charAt(0);
+                            comment[loc]["edit_text"] = comment[loc].content;
+                            comment[loc]["edit_open"] = false;
+                            comment[loc]["no"] = loc++;
+                        }
+                        vss.commentRecord = comment.reverse();
+                        vss.can_add = !!commentRes._authority;
+                        if (vss.num != 0) {
+                            vss.$.modal('open');
+                        }
+                    } else {
+                        swal("Fail", "錯誤");
+                    }
+                });
+            },
+            addComment: function() {
+                var txt = this.$.q("#CommentText").val();
+                var target = {
+                    staff_id: this.staff_id,
+                    year: this.year,
+                    month: this.month,
+                    content: txt
+                }
+                if (txt != "") {
+                    var vss = this;
+                    a.addComment(target).then(function(e) {
+                        if (a.format(e).is) {
+                            if (vss.num != 0) {
+                                vss.report._comment_count++;
+                            }
+                            vss.Comment(target);
+                            vss.$.q("#CommentText").val('');
+                            swal("OK", "已新增一筆評論");
+                        } else {
+                            return swal("!", "無法輸入");
+                        }
+                    });
+                } else {
+                    swal("Hi", "您尚未輸入任何評論");
+                }
+            },
+            editOpen: function(index) {
+                var list = this.$.q("#record-" + (index + 1));
+                var txt = list.find(".comment-content span").text();
+                $('.comment-content textarea').autosize();
+                for (var i in this.commentRecord) {
+                    if (this.commentRecord[i].edit_open) { this.commentRecord[i].edit_open = false; }
+                }
+                this.commentRecord[index].edit_open = true;
+                //list.parent().find(".comment-content span").show();
+                //list.parent().find("textarea").hide();
+                //list.parent().find(".tool").show();
+                //list.parent().find(".edit-success").hide();
+
+                //list.find(".comment-content span").hide();
+                //list.find("textarea").show().val(txt);
+                //list.find(".tool").hide();
+                //list.find(".edit-success").show();
+            },
+            editComment: function(index, id) {
+                var list = $("#record-" + (index + 1))
+                var content = $("#record-" + (index + 1)).find("textarea").val()
+                var editParam = {
+                    comment_id: id,
+                    do: "upd",
+                    content: content
+                }
+                var vss = this;
+
+                a.updateComment(editParam).then(function(e) {
+                    if (!a.format(e).is) {
+                        //list.find(".comment-content span").show();
+                        //list.find("textarea").hide();
+                        //list.find(".tool").show();
+                        //list.find(".edit-success").hide();
+                        swal("!", "無法編輯");
+                    } else {
+                        swal("OK", "已更新一筆評論");
+                        vss.commentRecord[index].content = content;
+
+                        //list.find(".comment-content span").show();
+                        //list.find("textarea").hide();
+                        //list.find(".tool").show();
+                        //list.find(".edit-success").hide();
+                    }
+                    vss.commentRecord[index].edit_open = false;
+                })
+            },
+            deleteComment: function(id, index, record) {
+                var deleteParam = {
+                    comment_id: id,
+                    do: "del"
+                }
+                var vss = this;
+                a.updateComment(deleteParam).then(function(e) {
+                    if (a.format(e).is) {
+                        // 改變資料面，從而改變DOM
+                        swal("OK", "已刪除一筆評論!");
+                        if (vss.num != 0) {
+                            vss.report._comment_count--;
+                        }
+                        vss.commentRecord.splice(index, 1);
+                    } else {
+                        swal("Error", "更新失敗!");
+                    }
+                })
+            },
+            close: function() {
+                //var rrveiw = this.$;
+                //rrveiw.find("textarea").hide();
+                //rrveiw.find(".comment-content span").show();
+                //rrveiw.find(".tool").show();
+                //rrveiw.find(".edit-success").hide();
+                this.$.q("#CommentText").val('');
+                this.$.modal('close');
+            }
+        }
+    });
+})(jQuery, window, Vue, API);
+</script>

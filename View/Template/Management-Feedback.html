@@ -1,0 +1,101 @@
+<div id="Management-Feedback">
+    <div class="had-container rv-feedback">
+        <h1 class="rv-title">部屬回饋問卷管理</h1>
+        <div class="pull-right">
+            <a class="waves-effect waves-light btn teal darken-1" v-on:click="downloadYearlyFeedback">下載部屬回饋問卷Excel</a>
+        </div>
+        <div class="row filter-date">
+            <div class="col s12 l6 year-select">
+                <h3 class="title">請選擇年份</h3>
+                <div class="dropdown">
+                    <select id="getYear" class="btn dropdown-button" type="button" name="year" v-on:change="init()" v-model="currentYear">
+                    </select>
+                </div>
+                <div class="dropdown">
+                    <div class="search-input-article input-field">
+                        <input placeholder="可查詢受評者中/英文名" type="text" class="form-control" :value="targetName" v-model="targetName" placeholder="受評者中/英文名">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+            <div class="title">{{currentYear}} 年度部屬回饋問卷尚未產生</div>
+            <div class="content">
+                請至【系統設定】>【年考評區間設定】進行相關設定。
+            </div>
+        </div>
+        <div id="fbData">
+            <transition mode="in-out">
+                <table class="table  bordered card fb-table fbdata" v-if="viewList">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>組織單位</th>
+                            <th>評議人員</th>
+                            <th>受評對象</th>
+                            <th>總分(滿分50)</th>
+                            <th v-for="(val,key) in managementFbkChoices">{{val.title}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(FBlist,index) in managementFbk" v-if="
+                    FBlist.target_staff.name.indexOf(targetName) != -1 ||
+                    FBlist.target_staff.name_en.toLowerCase().indexOf(targetName.toLowerCase()) != -1
+                    ">
+                            <td>{{index+1}}</td>
+                            <td>{{FBlist.department.unit_id}}{{FBlist.department.name}}</td>
+                            <td>{{FBlist.staff.name_en}} {{FBlist.staff.name}}</td>
+                            <td class="target">{{FBlist.target_staff.name_en}} {{FBlist.target_staff.name}}</td>
+                            <td class="total">{{FBlist.multiple_score}}</td>
+                            <td v-for="(val,key) in managementFbkChoices">{{FBlist.multiple_choice_json[ val.id ]}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row feedback-container fbdata" v-if="viewCard">
+                    <div class="col s12 l4" v-for="(FBcard,index) in managementFbk" v-if="
+                    FBcard.target_staff.name.indexOf(targetName) != -1 ||
+                    FBcard.target_staff.name_en.toLowerCase().indexOf(targetName.toLowerCase()) != -1
+                    ">
+                        <div class="card feedback-card">
+                            <div class="row fbk-info">
+                                <div class="dep">{{FBcard.department.name}}</div>
+                                <div class="col s12 l9 info-content">
+                                    <div class="col s4 l4">
+                                        <label>議評者</label>
+                                        <div class="name">{{FBcard.staff.name_en}} <span class="name_tw">{{FBcard.staff.name}} </span></div>
+                                    </div>
+                                    <div class="col s4 l4">
+                                        <svg width="55" height="35">
+                                            <path fill="#fb7844" d="M12.6,17.1H9.1c-1,0-1.8,0.8-1.8,1.8c0,1,0.8,1.8,1.8,1.8h3.5c1,0,1.8-0.8,1.8-1.8 C14.4,17.9,13.6,17.1,12.6,17.1z"></path>
+                                            <path fill="#fb7844" d="M49.9,17.6L39.1,6.8c-0.7-0.7-1.9-0.7-2.6,0c-0.7,0.7-0.7,1.9,0,2.6l7.7,7.7H20.9c-1,0-1.8,0.8-1.8,1.8 c0,1,0.8,1.8,1.8,1.8h23.3l-7.7,7.7c-0.7,0.7-0.7,1.9,0,2.6c0.7,0.7,1.9,0.7,2.6,0l10.8-10.8C50.8,19.3,50.8,18.5,49.9,17.6z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="col s4 l4 border-right">
+                                        <label>受評者</label>
+                                        <div class="name target">{{FBcard.target_staff.name_en}}<span class="name_tw">{{FBcard.target_staff.name}} </span></div>
+                                    </div>
+                                </div>
+                                <div class="col s12 l3">
+                                    <label>總分</label>
+                                    <div class="total-score"><span class="score">{{FBcard.multiple_score}}</span><span class="score-name">分 / 50</span></div>
+                                </div>
+                            </div>
+                            <div class="horizontal">
+                                <div class="title">各項分數</div>
+                            </div>
+                            <div class="first row fbk-score">
+                                <div class="col s2 l2" v-for="(val,key) in managementFbkChoices">
+                                    <div class="score">{{FBcard.multiple_choice_json[val.id]}}</div>
+                                    <div class="subtitle">{{val.title}}</div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Management-Feedback.js')?>"></script>

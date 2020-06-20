@@ -1,0 +1,177 @@
+.year-chat-menu {
+    position: absolute;
+    width: 230px;
+    z-index: 1000;
+    background: #f9f9f9;
+    border: 1px solid #bcbcbc;
+    box-shadow: #333333 1px 1px 2px;
+    color: #222222;
+    text-align: center;
+    max-height: 250px;
+    overflow: auto;
+    button {
+        line-height: 15px;
+        font-size: 11px;
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 3px 7px;
+        float: right;
+        margin-right: 5px;
+        color: #000;
+        border-radius: 50%;
+    }
+    li {
+        list-style: none;
+        color: #000;
+        background: #fff;
+        padding: 5px 5px 5px 25px;
+        text-align: left;
+        cursor: default;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        &:hover {
+            background: #e0e0e0;
+        }
+
+        .dots {
+            left: -11px;
+            top: -2px;
+            .dot {
+                box-shadow: 0px 1px 2px 0.5px rgba(0, 0, 0, 0.55), inset 0 0 3px transparent;
+            }
+        }
+    }
+    .gofeedback {
+        background: linear-gradient(#749e93, #4ec366);
+        color: #fff;
+    }
+    .nogofeedback {
+        background: #9e9e9e;
+        color: #fff;
+    }
+    .report-info {
+        border-radius: 0;
+    }
+    .report-void {
+        border-radius: 0;
+    }
+    .report-recovery {
+        border-radius: 0;
+    }
+    .personal-downexcel {
+        border-radius: 0;
+    }
+    .division-downexcel {
+        border-bottom: 1px solid #d8d8d8;
+        cursor: pointer;
+    }
+    .department-downexcel {
+        border-bottom: 1px solid #d8d8d8;
+        cursor: pointer;
+    }
+
+    #search {
+        width: 90%;
+        margin: 5px;
+    }
+    .filter {
+        &.feedback {
+            padding-right: 12px;
+            button {
+                margin-bottom: 5px;
+                border-radius: 0;
+                width: calc(100%/5);
+            }
+            .no {
+                background: #eee;
+            }
+            .success {
+                background: #ade6b9;
+            }
+            .overtime {
+                background: #ffb3b3;
+            }
+            .self {
+                background: #9e9e9e;
+            }
+            .all {
+                background: #fff;
+            }
+        }
+        &.report {
+            button {
+                margin-top: 5px;
+                margin-bottom: 5px;
+                border-radius: 0;
+                width: calc(100%/6);
+            }
+            .void {
+                background: #ff7272;
+                margin-right: 7px;
+            }
+            .success {
+                background: #ade6b9;
+            }
+            .commit {
+                background: #ffd54f;
+            }
+            .self {
+                background: #bbdefb;
+            }
+        }
+    }
+}
+
+#Management-YearChart {
+    .rv-chart {
+        .team-block {
+            background: #FFF;
+        }
+        .gofeedback {
+            background: linear-gradient(#ffffff, #9fe2ad);
+        }
+        .nogofeedback {
+            background: #0F9246;
+        }
+        button {
+            vertical-align: middle;
+            margin-left: 25px;
+            display: none;
+        }
+    }
+}
+
+.rv-chart-info {
+    &.one {
+        display: none;
+        margin-top: -300px;
+    }
+    &.two {
+        display: none;
+        margin-top: -345px;
+    }
+    &.three {
+        display: none;
+        margin-top: -300px;
+    }
+}
+
+.fbk-model {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    margin-right: 5px;
+    width: 940px;
+    height: 100px;
+    position: fixed;
+    left: 58%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    transition-duration: 0.5s;
+    box-shadow: 7px 8px 9px 0px rgba(0, 0, 0, 0.37), 0 1px 5px 0 rgba(0, 0, 0, 0.33), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+}
+
+.exclusive-admin {
+    display: none;
+}

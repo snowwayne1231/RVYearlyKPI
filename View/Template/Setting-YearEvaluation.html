@@ -1,0 +1,386 @@
+<div id="SettingYearEva" class="SettingYearEva">
+    <div class="had-container">
+        <h1 class="rv-title">年考評區間設定</h1>
+        <div class="row filter-date" id="SelectDate">
+            <h3 class="title">請選擇日期</h3>
+            <div class="dropdown">
+                <select id="EvaluationYear" type="button" class="btn dropdown-button"></select>
+            </div>
+        </div>
+        <div class="rv-readysetting" v-if="processing == 0">
+            <div class="row filter-date">
+                <div class="col s12">
+                    <div class="stepper">
+                        <div class="stepper-header">
+                            <div class="stepper-step" :class="{active:activeHeader.headerOne,inactive: !activeHeader.headerOne}"><span class="stepper-step-num">1</span>
+                                <div class="stepper-label">年度區間設定</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step" :class="{active:activeHeader.headerTwo,inactive: !activeHeader.headerTwo}"><span class="stepper-step-num">2</span>
+                                <div class="stepper-label">年度考核名單設定</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step" :class="{active:activeHeader.headerThree,inactive: !activeHeader.headerThree}"><span class="stepper-step-num">3</span>
+                                <div class="stepper-label">部屬回饋問卷產生</div>
+                            </div>
+                        </div>
+                        <div class="stepper-content one">
+                            <div class="stepper-wrapper">
+                                <div class="mb5">
+                                    <div class="row mb0">
+                                        <div class="col s12 m12 l12 initdate">
+                                            <div class="grid">
+                                                <div class="dateblock">
+                                                    <label>起算日</label>
+                                                    <div class="dropdown">
+                                                        <select id="startYear" class="btn dropdown-button" type="button" v-model="StartDate.year">
+<!--                                                             <option :value="value" v-for="value in year">{{value}}年</option> -->
+                                                        </select>
+                                                    </div>
+                                                    <div class="dropdown">
+                                                        <select class="btn dropdown-button" type="button" v-model="StartDate.month">
+                                                            <option :value="value" v-for="value in month">{{value}}月</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="dropdown">
+                                                        <select class="btn dropdown-button" type="button" v-model="StartDate.day">
+                                                            <option :value="value" v-for="value in dayLength.start">{{value}}日</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <p class="arrow">→</p>
+                                                <div class="dateblock">
+                                                    <label>結算日</label>
+                                                    <div class="dropdown">
+                                                        <select id="EndYear" class="btn dropdown-button" type="button" v-model="EndDate.year">
+ <!--                                                            <option :value="value" v-for="value in year">{{value}}年</option> -->
+                                                        </select>
+                                                    </div>
+                                                    <div class="dropdown">
+                                                        <select class="btn dropdown-button" type="button" v-model="EndDate.month">
+                                                            <option :value="value" v-for="value in month">{{value}}月</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="dropdown">
+                                                        <select class="btn dropdown-button" type="button" v-model="EndDate.day">
+                                                            <option :value="value" v-for="value in dayLength.end">{{value}}日</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col s12 m12 l12 description">
+                                            <div class="grid">
+                                                <ul>
+                                                    <li>區間設定說明：</li>
+                                                    <li>1. 每年度考核前建議優先確定考核區間。</li>
+                                                    <li>2. 考核名單產生時，將會以考核區間判斷人員是否符合年度考核條件，系統自動預先勾選該員工是否列入年度考核名單。</li>
+                                                    <li>3. 若考核名單已經產生後，進行區間更改系統不會重新判斷上一項目，建議手動勾選。</li>
+                                                    <li>4. 年度考核表制成時，將會以考核區間計算月考核均分與出缺勤紀錄。</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="waves-effect waves-dark btn m5 ml15" v-on:click="readyStepOne($event)">下一步</button>
+                            </div>
+                        </div>
+                        <div class="stepper-content two" style="display: none;">
+                            <div class="stepper-wrapper">
+                                <div>
+                                    <button class="waves-effect waves-dark btn blue lighten-1" v-on:click="updateConstruct">更新考評名單</button>
+                                    <div class="row">
+                                        <div class="leftTable">
+                                            <table class="table table-unit-scroll card">
+                                                <thead>
+                                                    <tr>
+                                                        <th>單位代號</th>
+                                                        <th class="unit">單位名稱</th>
+                                                        <th>單位主管</th>
+                                                        <th>單位人數</th>
+                                                        <th>問卷人數</th>
+                                                        <th>考核人數</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="pointer" v-for="(o,index) in organizationConstruct" v-on:click="getGroupStaff(index,o.name,$event)">
+                                                        <td>{{o.unit_id}}</td>
+                                                        <td class="unit" :title="o.name">{{o.name}}</td>
+                                                        <td :title="o.manager_staff_name">{{o.manager_staff_name}}</td>
+                                                        <td>{{o.staff.length}}</td>
+                                                        <td>{{o.feedback_num}}</td>
+                                                        <td>{{o.assessment_num}}</td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr class="pointer">
+                                                        <th>人數總計</th>
+                                                        <th>{{unitTotal}}</th>
+                                                        <th>{{feedbackTotal}}</th>
+                                                        <th>{{assessmentTotal}}</th>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                        <div class="rightTable">
+                                            <table class="table table-staff-scroll card">
+                                                <thead>
+                                                    <tr>
+                                                        <th>員工編號</th>
+                                                        <th>員工姓名</th>
+                                                        <th>單位名稱</th>
+                                                        <th>異動單位名稱</th>
+                                                        <th>問卷名單</th>
+                                                        <th>年考評名單</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="(staff,index) in organizatioStaff" v-on:change="transaction(staff)">
+                                                        <td>{{staff.staff_no}}</td>
+                                                        <td>{{staff.name}} {{staff.name_en}}</td>
+                                                        <td>{{staff.unit}}</td>
+                                                        <td>
+                                                            <div class="dropdown">
+                                                                <select type="button" class="btn dropdown-button" v-model="staff.department_id">
+                                                                    <option v-for="unit in allDepartment" :value="unit.id">{{unit.name}}</option>
+                                                                </select>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <label>
+                                                                <input class="myinput large" type="checkbox" v-model="staff._can_feedback" :true-value="1" :false-value="0">
+                                                            </label>
+                                                        </td>
+                                                        <td>
+                                                            <label>
+                                                                <input class="myinput large" type="checkbox" v-model="staff._can_assessment" :true-value="1" :false-value="0">
+                                                            </label>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="waves-effect waves-dark btn m5 ml15" v-on:click="nextBtn($event,'headerTwo','headerThree')">下一步</button>
+                                <button class="waves-effect waves-dark btn btn-back grey m5" v-on:click="backBtn($event,'headerTwo','headerOne')">返回</button>
+                            </div>
+                        </div>
+                        <div class="stepper-content three" style="display: none;">
+                            <div class="stepper-wrapper">
+                                <!-- <h3>您已完成所有設定</h3> -->
+                                <div class="mb5 ml15">
+                                    <!--  以下二個連結在2017年考評結束後，要移除
+                                    <h3>問卷產生前相關資料匯入</h3>
+                                    <a class="waves-effect waves-dark btn" href="<?=U('/Management-Import2016')?>" target="_blank">匯入2016年度考評</a>
+                                    <a class="waves-effect waves-dark btn" href="<?=U('/Management-Import2017JanToMar')?>" target="_blank">匯入2017.1~3月考評</a>-->
+                                    <!-- 移至系統設定 -->
+                                    <!-- <a class="waves-effect waves-dark btn" href="<?=U('/Management-ForgetCard')?>" target="_blank">匯入忘卡出勤紀錄</a> 
+                                    <hr>-->
+                                    <h3>確認相關數據功能</h3>
+                                    <a class="waves-effect waves-dark btn" href="<?=U('/Management-ExceptionList')?>" target="_blank">確認月績效特殊人員</a>
+                                    <a class="waves-effect waves-light btn teal darken-1" v-on:click="downloadPeopleList()">下載年考評人員名單Excel</a>
+                                    <hr>
+                                    <h3>確認區間設定以及年度考核名單都設定完畢，確認完畢即可開始產生問卷</h3>
+                                    <p>年度區間設定：{{config.date_start}} ~ {{config.date_end}}</p>
+                                    <p class="red-text text-darken-1">p.s. 產生問卷後，名單所屬單位與問卷勾選功能將無法編輯</p>
+                                    <button class="waves-effect waves-dark btn" v-on:click="finsh()">產生問卷</button>
+                                    <button class="waves-effect waves-dark btn btn-back grey" v-on:click="backBtn($event,'headerThree','headerTwo')">返回</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="rv-yearsetting" v-if="processing >= 1">
+            <div class="row">
+                <div class="col s12">
+                    <div class="stepper">
+                        <div class="stepper-header">
+                            <div class="stepper-step" :class="[{active: activeYearly.headerOne == processing},{inactive: activeYearly.headerOne != processing}]"><span class="stepper-step-num">1</span>
+                                <div class="stepper-label">部屬問卷啟動</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step" :class="[{active: activeYearly.headerTwo == processing},{inactive: activeYearly.headerTwo != processing}]"><span class="stepper-step-num">2</span>
+                                <div class="stepper-label">部屬問卷關閉</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step" :class="[{active: activeYearly.headerThree == processing},{inactive: activeYearly.headerThree != processing}]"><span class="stepper-step-num">3</span>
+                                <div class="stepper-label">年度考評產生</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step" :class="[{active: activeYearly.headerFour == processing},{inactive: activeYearly.headerFour != processing}]"><span class="stepper-step-num">4</span>
+                                <div class="stepper-label">年度考評啟動</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step" :class="[{active: activeYearly.headerFive == processing},{inactive: activeYearly.headerFive != processing}]" v-if="processing <= 5"><span class="stepper-step-num">5</span>
+                                <div class="stepper-label">年度考評設置</div>
+                            </div>
+                            <div class="stepper-step" :class="[{active: activeYearly.headerSix == processing},{inactive: activeYearly.headerSix != processing}]" v-if="processing == 6"><span class="stepper-step-num">5</span>
+                                <div class="stepper-label">年度考評設置</div>
+                            </div>
+                            <div class="stepper-step" :class="[{active: activeYearly.headerSeven == processing},{inactive: activeYearly.headerSeven != processing}]" v-if="processing == 7"><span class="stepper-step-num">5</span>
+                                <div class="stepper-label">年度考評設置</div>
+                            </div>
+                            <div class="stepper-step" :class="[{active: activeYearly.headerEight == processing},{inactive: activeYearly.headerEight != processing}]" v-if="processing >= 8"><span class="stepper-step-num">5</span>
+                                <div class="stepper-label">年度考評設置</div>
+                            </div>
+                            <hr class="divider">
+                            <div class="stepper-step" :class="[{active: activeYearly.headerNine == processing},{inactive: activeYearly.headerNine != processing}]"><span class="stepper-step-num">6</span>
+                                <div class="stepper-label">年度考評完成</div>
+                            </div>
+                        </div>
+                        <div class="stepper-content" :class="[{show: activeYearly.headerOne == processing},{remove: activeYearly.headerOne != processing}]">
+                            <div class="stepper-wrapper">
+                                <div class="mb5">
+                                    <div class="row mb0">
+                                        <div class="col s12">
+                                            <h3>設置部屬回饋問卷<div class="pull-right">年度區間設定：{{config.date_start}} ~ {{config.date_end}}</div></h3>
+                                            <hr>
+                                        </div>
+                                        <div class="col s1">
+                                            <label>期限天數</label>
+                                            <input type="text" class="form-control rv-ui-datepicker" style="width: 60px;" placeholder="天數" v-model="setFeedbackDate">
+                                        </div>
+                                        <div class="col s12">
+                                            <ul>
+                                                <li>問卷提交期間：{{fbkStartDate}} ~ {{fbkEndDate}}</li>
+                                                <li>超出期限最後一日，且尚未提交問卷者，系統將會不斷發送提醒信件，直到關閉問卷流程。</li>
+                                                <li>啟動流程後，使用者將被允許使用儲存和提交的功能。</li>
+                                            </ul>
+                                            <button class="waves-effect waves-dark btn" v-on:click="setFBK">啟動問卷流程</button>
+                                            <button class="waves-effect waves-dark btn red m5" v-on:click="resetFBK">清除問卷</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stepper-content" :class="[{show: activeYearly.headerTwo == processing},{remove: activeYearly.headerTwo != processing}]">
+                            <div class="stepper-wrapper">
+                                <div class="col s12 mb5">
+                                    <h3>關閉部屬回饋問卷</h3>
+                                    <p>關閉流程，將收回所有部屬回饋問卷。</p>
+                                    <a class="waves-effect waves-dark btn blue" href="<?=U('/Management-YearChat')?>" target="_black">問卷提交狀態</a>
+                                    <button class="waves-effect waves-dark btn m5" v-on:click="stopFBK">關閉問卷流程</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stepper-content" :class="[{show: activeYearly.headerThree == processing},{remove: activeYearly.headerThree != processing}]">
+                            <div class="stepper-wrapper">
+                                <div class="col s12 mb5">
+                                    <h3>產生年度考評單<div class="pull-right">年度區間設定：{{config.date_start}} ~ {{config.date_end}}</div></h3>
+                                    <hr>
+                                    <ul>
+                                        <li>您的部屬回饋問卷已關閉。</li>
+                                        <li>執行產生年考評後，部屬問卷將無法在進行任何調整。</li>
+                                        <li>確認部屬回饋問卷沒問題，可以開始產生年度考評單。</li>
+                                    </ul>
+                                    <button class="waves-effect waves-dark btn" v-on:click="createYearlyAssessment">產生年度考評單</button>
+                                    <div class="dashed-orange"></div>
+                                    <h3>重新啟動部屬回饋問卷</h3>
+                                    <hr>
+                                    <ul>
+                                        <li>執行重新啟動後，將返回第二步驟。</li>
+                                        <li>管理部屬問卷可以查看當前問卷狀況，參考評估進行其他動作。</li>
+                                        <li>執行清除問卷，將返回初始年設定的畫面。</li>
+                                        <li>執行清除問卷，<span style="color:red;text-decoration: underline;">清除的資料將無法恢復</span>，請謹慎確認。</li>
+                                    </ul>
+                                    <a class="waves-effect waves-dark btn blue" href="<?=U('/Management-YearChat')?>" target="_black">問卷提交狀態</a>
+                                    <button class="waves-effect waves-dark btn m5" v-on:click="startFBK">重新啟動問卷流程</button>
+                                    <button class="waves-effect waves-dark btn red" v-on:click="resetFBK">清除問卷</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stepper-content" :class="[{show: activeYearly.headerFour == processing},{remove: activeYearly.headerFour != processing}]">
+                            <div class="stepper-wrapper">
+                                <div class="mb5">
+                                    <div class="row mb0">
+                                        <div class="col s12">
+                                            <h3>啟動年度考評單流程<div class="pull-right">年度區間設定：{{config.date_start}} ~ {{config.date_end}}</div></h3>
+                                            <hr>
+                                        </div>
+                                        <div class="col s3">
+                                            <label>期限天數</label>
+                                            <input type="text" class="form-control rv-ui-datepicker" style="width: 60px;" placeholder="天數" v-model="setYealyDate">
+                                        </div>
+                                        <div class="col s12">
+                                            <ul>
+                                                <li>問卷提交期間：{{yearAssStartDate}} ~ {{yearAssEndDate}}</li>
+                                                <li>啟動流程後，使用者將被允許使用儲存和提交的功能。</li>
+                                            </ul>
+                                            <a class="waves-effect waves-dark btn blue" href="<?=U('/Management-YearChat')?>" target="_black">年考評單提交狀態</a>
+                                            <button class="waves-effect waves-dark btn m5" v-on:click="setYearlyAssessment">啟動年度考評單</button>
+                                            <button class="waves-effect waves-dark btn red m5" v-on:click="resetYearlyAssessment">清除考評單</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stepper-content" :class="[{show: activeYearly.headerFive == processing},{remove: activeYearly.headerFive != processing}]">
+                            <div class="stepper-wrapper">
+                                <div class="col s12 mb5">
+                                    <h3>關閉年考評單流程</h3>
+                                    <p>關閉流程，將收回所有部屬回饋問卷。</p>
+                                    <a class="waves-effect waves-dark btn blue" href="<?=U('/Management-YearChat')?>" target="_black">年考評單提交狀態</a>
+                                    <button class="waves-effect waves-dark btn m5" v-on:click="stopYearlyAssessment">關閉考評流程</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stepper-content" :class="[{show: activeYearly.headerSix == processing},{remove: activeYearly.headerSix != processing}]">
+                            <div class="stepper-wrapper">
+                                <div class="col s12 mb5">
+                                    <h3>重新啟動年度考評流程</h3>
+                                    <ul>
+                                        <li>管理績效單可以查看當前問卷狀況，參考評估進行其他動作。</li>
+                                        <li>執行清除考評單，將返回考評產生的畫面。</li>
+                                        <li>執行清除問卷，<span style="color:red;text-decoration: underline;">清除的資料將無法恢復</span>，請謹慎確認。</li>
+                                    </ul>
+                                    <a class="waves-effect waves-dark btn blue" href="<?=U('/Management-YearChat')?>" target="_black">年考評單提交狀態</a>
+                                    <button class="waves-effect waves-dark btn m5" v-on:click="operatYearlyProcess(0)">重新啟動考評流程</button>
+                                    <button class="waves-effect waves-dark btn red" v-on:click="resetYearlyAssessment">清除考評單</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stepper-content" :class="[{show: activeYearly.headerSeven == processing},{remove: activeYearly.headerSeven != processing}]">
+                            <div class="stepper-wrapper">
+                                <div class="col s12 mb5">
+                                    <h3>重新啟動年度考評流程</h3>
+                                    <ul>
+                                        <li>管理績效單可以查看當前問卷狀況，參考評估進行其他動作。</li>
+                                        <li>執行清除考評單，將返回考評產生的畫面。</li>
+                                        <li>狀態：當前是部長單正在收集</li>
+                                        <li>執行清除問卷，<span style="color:red;text-decoration: underline;">清除的資料將無法恢復</span>，請謹慎確認。</li>
+                                    </ul>
+                                    <a class="waves-effect waves-dark btn blue" href="<?=U('/Management-YearChat')?>" target="_black">年考評單提交狀態</a>
+                                    <button class="waves-effect waves-dark btn red" v-on:click="resetYearlyAssessment">清除考評單</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stepper-content" :class="[{show: activeYearly.headerEight == processing},{remove: activeYearly.headerEight != processing}]">
+                            <div class="stepper-wrapper">
+                                <div class="col s12 mb5">
+                                    <h3>正式關閉本年度考評流程</h3>
+                                    <p>系統已將所有核准完畢的報表回收完畢，執行按鈕正式關閉。</p>
+                                    <button class="waves-effect waves-dark btn green" v-on:click="finishYearlyAssessment">結束該年度考評</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stepper-content " :class="[{show: activeYearly.headerNine == processing},{remove: activeYearly.headerNine !=processing}] ">
+                            <div class="stepper-wrapper">
+                                <div class="col s12 mb5 nullDataInfo" style="margin-bottom: 60px;">
+                                    <div class="title">本年度所有考評已結束</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+            <div class="title">該年度沒有設定</div>
+            <div class="content">若有疑問請詢問【開發組】承辦人員詢問。</div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript " src="<?=U('/Public/js/Index/Setting-YearEvaluation.js')?>"></script>

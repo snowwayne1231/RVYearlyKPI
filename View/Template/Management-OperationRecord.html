@@ -1,0 +1,92 @@
+<div id="Management-OperationRecord">
+    <div class="had-container operation-record">
+        <h1 class="rv-title">管理者操作紀錄</h1>
+        <div class="record-block">
+            <div class="filter-date row">
+                <h3 class="title">請輸入要取得的資料數</h3>
+                <div class="dropdown">
+                    <input type="text" v-model="count" class="form-control input-field">
+                </div>
+                <h3 class="title">請選擇查詢類型</h3>
+                <div class="dropdown">
+                    <select v-model="type" class="form-control">
+                        <option value="0">全部</option>
+                        <option value="1">組織設定</option>
+                        <option value="2">月績效</option>
+                        <option value="3">年考評</option>
+                        <option value="4">月報表</option>
+                        <option value="5">年報表</option>
+                        <option value="6">EXCEL</option>
+                        <option value="7">人員編輯</option>
+                    </select>
+                </div>
+            </div>
+            <h3 class="title" v-if="record.system.length !=0">系統操作的紀錄</h3>
+            <table class="responsive-table striped mb50" v-if="record.system.length !=0">
+                <thead>
+                    <th style="display:none;">id</th>
+                    <th style="display:none;">操作者id</th>
+                    <th>操作類型</th>
+                    <th>API端口路徑</th>
+                    <th>操作動作</th>
+                    <th>動作說明</th>
+                    <th>操作時間</th>
+                    <th>操作者IP</th>
+                    <th>操作者名稱</th>
+
+                </thead>
+                <tbody>
+                    <tr v-for="r in record.system" @click="showDetail(r)">
+                        <td style="display:none;">{{r.id}}</td>
+                        <td style="display:none;">{{r.operating_staff_id}}</td>
+                        <td>
+                            <span v-if="r.type==1">組織設定</span>
+                            <span v-if="r.type==2">月績效</span>
+                            <span v-if="r.type==3">年考評</span>
+                            <span v-if="r.type==4">月報表</span>
+                            <span v-if="r.type==5">年報表</span>
+                            <span v-if="r.type==6">EXCEL</span>
+                        </td>
+                        <td>{{r.api}}</td>
+                        <td>
+                            <span v-if="r.doing==1" class="blue-text text-darken-3">新增</span>
+                            <span v-if="r.doing==2" class="orange-text text-darken-4">更新</span>
+                            <span v-if="r.doing==3" class="red-text ">刪除</span>
+                        </td>
+                        <td>{{r._operating}}</td>
+                        <td>{{r.update_date}}</td>
+                        <td>{{r.ip}}</td>
+                        <td>{{r.name}} / {{r.name_en}}</td>
+
+                    </tr>
+
+                </tbody>
+            </table>
+            <h3 class="title" v-if="record.staff.length !=0">人員操作的紀錄</h3>
+            <table class="responsive-table striped " v-if="record.staff.length !=0">
+                <thead>
+                    <th>被修改者名稱</th>
+                    <th>操作動作</th>
+                    <th>操作時間</th>
+                    <th>操作者IP</th>
+                    <th>操作者名稱</th>
+                </thead>
+                <tbody>
+                    <tr v-for="s in record.staff" @click="showDetail(s)">
+
+                        <td>{{s.staff_name}} / {{s.staff_name_en}}</td>
+                        <td>
+                            <span v-if="s.doing==1" class="blue-text text-darken-3">新增</span>
+                            <span v-if="s.doing==2" class="orange-text text-darken-4">更新</span>
+                            <span v-if="s.doing==3" class="red-text ">刪除</span>
+                        </td>
+                        <td>{{s.update_date}}</td>
+                        <td>{{s.ip}}</td>
+                        <td>{{s.operating_staff_name}} / {{s.operating_staff_name_en}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Management-OperationRecord.js')?>"></script>

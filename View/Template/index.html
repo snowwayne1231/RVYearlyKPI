@@ -1,0 +1,915 @@
+<style>
+  .assess {
+    z-index: 996;
+  }
+</style>
+
+<div id="Assess" class="block-layer">
+  <div class="had-container">
+    <h1 class="rv-title">月績效待考評單</h1>
+  </div>
+  <div id="NoData" class="no-data">
+    <p>您目前無考評單</p>
+  </div>
+  <div id="AssessForm" class="section rv-assess">
+    <div id="template-1" style="display: none;">
+      <div
+        :class="{ row:true, report:true, canDrawing:isAuthority('drawing') }"
+        :data-vue="rand"
+      >
+        <div class="col s12">
+          <ul class="collapsible popout rv-card">
+            <li>
+              <input type="hidden" />
+              <div
+                class="collapsible-header truncate card-header"
+                v-bind:class="{'commit-status':isAuthority('drawing')}"
+              >
+                <div class="col s12 m12 l3 info-block area-1">
+                  <div class="team-info right-align">
+                    <p class="white-text" style="line-height: 12px; padding-left: 0;">0</p>
+                    <h1>{{recvice.created_department_name}}</h1>
+                    <p>
+                      <span class="orange-text" v-if="recvice.type==1"
+                        >Leaders</span
+                      ><span class="teal-text" v-else>Members</span>
+                    </p>
+                    <!-- <h1>{{recvice.created_staff_name}}</h1> -->
+                  </div>
+                </div>
+                <div class="col s12 m12 l3 info-block area-2">
+                  <div class="month">
+                    <p>{{recvice.year}}</p>
+                    <h1>{{recvice.month}}月份</h1>
+                  </div>
+                </div>
+                <div class="col s12 m12 l3 info-block area-3">
+                  <div class="start-date">
+                    <p v-if="recvice.month-1 == 0">12月</p>
+                    <p v-else>{{recvice.month-1}}月</p>
+                    <h1>{{recvice.day_start}}</h1>
+                    <p v-if="recvice.month-1 == 0">{{recvice.year-1}}</p>
+                    <p v-else>{{recvice.year}}</p>
+                  </div>
+                  <div class="arrow">
+                    <svg width="55" height="35">
+                      <path
+                        fill="#536dfe"
+                        d="M12.6,17.1H9.1c-1,0-1.8,0.8-1.8,1.8c0,1,0.8,1.8,1.8,1.8h3.5c1,0,1.8-0.8,1.8-1.8 C14.4,17.9,13.6,17.1,12.6,17.1z"
+                      />
+                      <path
+                        fill="#536dfe"
+                        d="M49.9,17.6L39.1,6.8c-0.7-0.7-1.9-0.7-2.6,0c-0.7,0.7-0.7,1.9,0,2.6l7.7,7.7H20.9c-1,0-1.8,0.8-1.8,1.8 c0,1,0.8,1.8,1.8,1.8h23.3l-7.7,7.7c-0.7,0.7-0.7,1.9,0,2.6c0.7,0.7,1.9,0.7,2.6,0l10.8-10.8C50.8,19.3,50.8,18.5,49.9,17.6z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="end-date">
+                    <p>{{recvice.month}}月</p>
+                    <h1>{{recvice.day_end}}</h1>
+                    <p>{{recvice.year}}</p>
+                    <div></div>
+                  </div>
+                </div>
+                <div class="col s12 m12 l3 info-block area-4">
+                  <div class="start">
+                    <p class="white-text" style="line-height: 12px; ">-</p>
+                    <div>
+                      <h2>{{member.name}}<!-- {{recvice._path_staff[ recvice.owner_staff_id ].name}}  --></h2>
+                      <p class="grey-text" style="line-height: 12px;">
+                        {{member.name_en}}<!-- {{recvice._path_staff[ recvice.owner_staff_id ].name_en}} --><!-- now --><!-- {{recvice._path_staff[ recvice.owner_staff_id].name_en}} -->
+                      </p>
+                    </div>
+                  </div>
+                  <div class="arrow pull-left">
+                    <svg width="55" height="35">
+                      <path
+                        fill="#fb7844"
+                        d="M12.6,17.1H9.1c-1,0-1.8,0.8-1.8,1.8c0,1,0.8,1.8,1.8,1.8h3.5c1,0,1.8-0.8,1.8-1.8 C14.4,17.9,13.6,17.1,12.6,17.1z"
+                      />
+                      <path
+                        fill="#fb7844"
+                        d="M49.9,17.6L39.1,6.8c-0.7-0.7-1.9-0.7-2.6,0c-0.7,0.7-0.7,1.9,0,2.6l7.7,7.7H20.9c-1,0-1.8,0.8-1.8,1.8 c0,1,0.8,1.8,1.8,1.8h23.3l-7.7,7.7c-0.7,0.7-0.7,1.9,0,2.6c0.7,0.7,1.9,0.7,2.6,0l10.8-10.8C50.8,19.3,50.8,18.5,49.9,17.6z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="end">
+                    <template v-if="recvice._next_staff">
+                      <p class="white-text" style="line-height: 12px; padding-left: 0;">-</p>
+                      <div>
+                        <h2>{{recvice._next_staff.department_name}}</h2>
+                        <p class="grey-text" style="line-height: 12px; padding-left: 0;">next</p>
+                      </div>
+                    </template>
+                    <div v-else>
+                      <p class="white-text" style="line-height: 12px; padding-left: 0;">-</p>
+                      <h2>核准</h2>
+                      <p class="grey-text" style="line-height: 12px; padding-left: 0;">Approval</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dots" v-if="!isAuthority('commit')">
+                  <div
+                    class="dot"
+                    title="初始狀態"
+                    :style="{ background: 'linear-gradient(to bottom, #ffffff, #e3e3e3)' }"
+                  ></div>
+                </div>
+
+                <div class="dots" v-else>
+                  <div
+                    class="dot"
+                    title="初始狀態"
+                    v-if="recvice.status_code == 1"
+                    :style="{ background: 'linear-gradient(to bottom, #ffffff, #e3e3e3)' }"
+                  ></div>
+                  <div
+                    class="dot"
+                    title="考評狀態"
+                    v-if="recvice.status_code == 2"
+                    :style="{ background: 'linear-gradient(to bottom, #ffffff, #bbdefb)' }"
+                  ></div>
+                  <div
+                    class="dot"
+                    title="送審狀態"
+                    v-if="recvice.status_code == 3"
+                    :style="{ background: 'linear-gradient(to bottom, #ffffff, #FF9800)' }"
+                  ></div>
+                  <div
+                    class="dot"
+                    title="退回狀態"
+                    v-if="recvice.status_code == 4"
+                    :style="{ background: 'linear-gradient(to bottom, #ffffff, #F44336)' }"
+                  ></div>
+                  <div
+                    class="dot"
+                    title="核准狀態"
+                    v-if="recvice.status_code == 5"
+                    :style="{ background: 'linear-gradient(to bottom, #ffffff, #52af47)' }"
+                  ></div>
+                </div>
+              </div>
+              <div class="collapsible-body card-body">
+                <div class="brand-actions">
+                  <a title="儲存" v-if="isAuthority('editor')" v-on:click="save"
+                    ><i class="material-icons indigo-text text-accent-2"
+                      >save</i
+                    ></a
+                  >
+                  <a
+                    title="提交"
+                    v-if="isAuthority('commit')"
+                    v-on:click="commit"
+                    ><i class="material-icons yellow-text text-darken-2"
+                      >arrow_forward</i
+                    ></a
+                  >
+                  <a
+                    title="退回"
+                    v-if="isAuthority('return')"
+                    :href="'#ReJectModal-'+rand"
+                    v-on:click="open(recvice)"
+                    ><i class="material-icons red-text">arrow_back</i></a
+                  >
+                  <!-- <a
+                    title="抽回考評單"
+                    v-if="isAuthority('drawing')"
+                    :href="'#DrawModal-'+rand"
+                    v-on:click="open(recvice)"
+                    ><i class="material-icons">arrow_back</i></a
+                  > -->
+                  <a title="出缺席記錄" target="_blank" v-on:click="absence"
+                    ><i class="material-icons teal-text"
+                      >perm_contact_calendar</i
+                    ></a
+                  >
+                  <a title="歷史記錄" v-on:click="history"
+                    ><i class="material-icons indigo-text">library_books</i></a
+                  >
+                  <template
+                    v-if="typeof recvice[departmentScoreLeaderNumberKey] != 'undefined' && recvice[departmentScoreLeaderNumberKey] > 1"
+                  >
+                    <span style="vertical-align: super; display: inline-block; padding: 2px 6px; margin-left: 12px; border: 1px solid rgb(240, 240, 240); color: rgb(187, 187, 187);">此單需所有單位管理者皆提交才會送至下一階段。</span>
+                  </template>
+                  <div :id="'ReJectModal-'+rand" class="modal">
+                    <div class="modal-content">
+                      <div class="rv-page-title">
+                        <h1 class="rv-title">退回考評單</h1>
+                      </div>
+                      <div class="row">
+                        <div class="col s12">
+                          <select class="btn dropdown-button"></select>
+                          <p>
+                            <textarea class="form-control"></textarea>
+                          </p>
+                          <div class="row">
+                            <div class="pull-right">
+                              <button
+                                class="btn waves-effect waves-teal lighten-1 red"
+                                v-on:click="reject(recvice)"
+                              >
+                                退回
+                              </button>
+                              <button
+                                class="waves-effect waves-light btn modal-close darken-1 grey"
+                              >
+                                取消
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- <div :id="'DrawModal-'+rand" class="modal">
+                    <div class="modal-content">
+                      <div class="rv-page-title">
+                        <h1 class="rv-title">抽回考評單</h1>
+                      </div>
+                      <div class="row">
+                        <div class="col s12">
+                          <p>
+                            <textarea class="form-control"></textarea>
+                          </p>
+                          <div class="row">
+                            <div class="pull-right">
+                              <button
+                                class="btn waves-effect waves-teal lighten-1 red"
+                                v-on:click="draw(recvice)"
+                              >
+                                抽回
+                              </button>
+                              <button
+                                class="waves-effect waves-light btn modal-close darken-1 grey"
+                              >
+                                取消
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div> -->
+                </div>
+                <div class="staff-table" v-if="recvice.type == 1">
+                  <table class="table table-fixed">
+                    <thead>
+                      <tr>
+                        <th class="staff-info">員工資訊</th>
+                        <th class="unit-info">單位資訊</th>
+                        <th class="start-date">到職日</th>
+                        <template
+                          v-if="typeof recvice[departmentScoreLeaderNumberKey] != 'undefined' && recvice[departmentScoreLeaderNumberKey] > 1"
+                        >
+                          <th>評分</th>
+                        </template>
+                        <th>目標達成</th>
+                        <th>工作品質</th>
+                        <th>工作方法</th>
+                        <th>出錯率</th>
+                        <th>進度追查</th>
+                        <th>企劃能力</th>
+                        <th>執行力</th>
+                        <th>判斷力</th>
+                        <th>應變能力</th>
+                        <th>出缺勤率</th>
+                        <th>組員出勤</th>
+                        <th>特殊貢獻</th>
+                        <th>重大缺失</th>
+                        <th>總分</th>
+                        <th>獎金發放</th>
+                        <th>評語</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(report,index) in recvice._reports">
+                        <td
+                          class="staff-block"
+                          :class="{'red lighten-4': !checkScoreState}"
+                        >
+                          <div class="num" :style="{color: '#ffffff'}">
+                            <template v-if="!checkScoreState">
+                              <i class="material-icons dp48">report_problem</i>
+                            </template>
+                            <template v-else>
+                              {{report.staff_no}}
+                            </template>
+                          </div>
+                          <div
+                            class="staff-info"
+                            :class="{'red lighten-4': !checkScoreState}"
+                          >
+                            <div class="name">
+                              {{report.name}} {{report.name_en}}
+                            </div>
+                            <div class="title">{{report.post}}</div>
+                          </div>
+                        </td>
+                        <td
+                          class="unit-block"
+                          :class="{'red lighten-4': !checkScoreState}"
+                        >
+                          <div class="staff-info">
+                            <div class="name">{{report.unit_name}}</div>
+                            <div class="title">{{report.unit_id}}</div>
+                          </div>
+                        </td>
+                        <td
+                          class="text"
+                          :class="{'red lighten-4': !checkScoreState}"
+                        >
+                          {{report.first_day}}
+                        </td>
+                        <template
+                          v-if="typeof recvice[departmentScoreLeaderNumberKey] != 'undefined' && recvice[departmentScoreLeaderNumberKey] > 1"
+                        >
+                          <td>
+                            <input
+                              class="myinput large"
+                              type="checkbox"
+                              :disabled="isDisabled()"
+                              :id="'toscore_'+index"
+                            />
+                          </td>
+                        </template>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.target"
+                              v-on:change="collectBackData(report,$event,'target')"
+                              v-on:keyup="decideFloat(this,report.target)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.quality"
+                              v-on:change="collectBackData(report,$event,'quality')"
+                              v-on:keyup="decideFloat(this,report.quality)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.method"
+                              v-on:change="collectBackData(report,$event,'method')"
+                              v-on:keyup="decideFloat(this,report.method)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.error"
+                              v-on:change="collectBackData(report,$event,'error')"
+                              v-on:keyup="decideFloat(this,report.error)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.backtrack"
+                              v-on:change="collectBackData(report,$event,'backtrack')"
+                              v-on:keyup="decideFloat(this,report.backtrack)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.planning"
+                              v-on:change="collectBackData(report,$event,'planning')"
+                              v-on:keyup="decideFloat(this,report.planning)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.execute"
+                              v-on:change="collectBackData(report,$event,'execute')"
+                              v-on:keyup="decideFloat(this,report.execute)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.decision"
+                              v-on:change="collectBackData(report,$event,'decision')"
+                              v-on:keyup="decideFloat(this,report.decision)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.resilience"
+                              v-on:change="collectBackData(report,$event,'resilience')"
+                              v-on:keyup="decideFloat(this,report.resilience)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.attendance"
+                              v-on:change="collectBackData(report,$event,'attendance')"
+                              v-on:keyup="decideFloat(this,report.attendance)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.attendance_members"
+                              v-on:change="collectBackData(report,$event,'attendance_members')"
+                              v-on:keyup="decideFloat(this,report.attendance_members)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              class="form-control"
+                              v-model.number="report.addedValue"
+                              v-on:change="collectBackData(report,$event,'addedValue')"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td text-red">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              :max="(leaderSumScore(report)+report.addedValue)"
+                              class="form-control"
+                              v-model.number="report.mistake"
+                              v-on:change="collectBackData(report,$event,'mistake')"
+                            />
+                          </template>
+                        </td>
+                        <td>
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            {{ total(report) }}
+                          </template>
+                        </td>
+                        <td>
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              class="myinput large"
+                              type="checkbox"
+                              :disabled="isDisabled()"
+                              :id="'bouns_'+index"
+                              v-model="report.bonus"
+                              v-on:change="collectBackData(report,$event,'bonus')"
+                            />
+                          </template>
+                        </td>
+                        <td>
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <a
+                              class="btn waves-effect waves-teal lighten-1 comment-num"
+                              v-on:click="comment(report)"
+                              >{{report._comment_count}}筆</a
+                            >
+                          </template>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="staff-table" v-if="recvice.type == 2">
+                  <table class="table table-fixed">
+                    <thead>
+                      <tr>
+                        <th class="staff-info">員工資訊</th>
+                        <th class="unit-info">單位資訊</th>
+                        <th class="start-date">到職日</th>
+                        <template
+                          v-if="typeof recvice[departmentScoreLeaderNumberKey] != 'undefined' && recvice[departmentScoreLeaderNumberKey] > 1"
+                        >
+                          <th>評分</th>
+                        </template>
+                        <th>工作品質</th>
+                        <th>工作績效</th>
+                        <th>責任感</th>
+                        <th>配合度</th>
+                        <th>出席率</th>
+                        <th>特殊貢獻</th>
+                        <th>重大缺失</th>
+                        <th>總分</th>
+                        <th>獎金發放</th>
+                        <th>評語</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(report,index) in recvice._reports">
+                        <td class="staff-block">
+                          <div class="num staff">{{report.staff_no}}</div>
+                          <!-- 資料庫管理 & 系統管理 & 總務行政處 & 人力資源處 & 風險管理處-->
+                          <div
+                            class="num"
+                            v-if="report.unit_id =='D11' || report.unit_id =='D31' || report.unit_id =='B10' || report.unit_id =='B20' || report.unit_id =='G10'"
+                            :style="{background:'#f06292',color:'#fff'}"
+                          >
+                            {{report.staff_no}}
+                          </div>
+                          <!-- 稽核處 & 專屬客服 -->
+                          <div
+                            class="num"
+                            v-if="report.unit_id =='F10' || report.unit_id =='C11'"
+                            :style="{background:'#ffb74d',color:'#fff'}"
+                          >
+                            {{report.staff_no}}
+                          </div>
+                          <!-- 開發組 -->
+                          <div
+                            class="num"
+                            v-if="report.unit_id =='D51'"
+                            :style="{background:'#e57373',color:'#fff'}"
+                          >
+                            {{report.staff_no}}
+                          </div>
+                          <!-- 值班技術一組 -->
+                          <div
+                            class="num"
+                            v-if="report.unit_id =='D23'"
+                            :style="{background:'#90a4ae ',color:'#fff'}"
+                          >
+                            {{report.staff_no}}
+                          </div>
+                          <!-- 值班技術二、三、四組 -->
+                          <div
+                            class="num"
+                            v-if="report.unit_id =='D24' || report.unit_id =='D25' || report.unit_id =='D26'"
+                            :style="{background:'#7986cb ',color:'#fff'}"
+                          >
+                            {{report.staff_no}}
+                          </div>
+                          <!-- 值班客服組 -->
+                          <div
+                            class="num"
+                            v-if="report.unit_id =='C12'"
+                            :style="{background:'#9575cd',color:'#fff'}"
+                          >
+                            {{report.staff_no}}
+                          </div>
+                          <!-- 聊天管理組 -->
+                          <div
+                            class="num"
+                            v-if="report.unit_id =='C13'"
+                            :style="{background:'#ff4081',color:'#fff'}"
+                          >
+                            {{report.staff_no}}
+                          </div>
+                          <div class="staff-info">
+                            <div class="name">
+                              {{report.name}} {{report.name_en}}
+                            </div>
+                            <div class="title">{{report.post}}</div>
+                          </div>
+                        </td>
+                        <td class="unit-block">
+                          <div class="staff-info">
+                            <div class="name">{{report.unit_name}}</div>
+                            <div class="title">{{report.unit_id}}</div>
+                          </div>
+                        </td>
+                        <td class="text">{{report.first_day}}</td>
+                        <template
+                          v-if="typeof recvice[departmentScoreLeaderNumberKey] != 'undefined' && recvice[departmentScoreLeaderNumberKey] > 1"
+                        >
+                          <td>
+                            <input
+                              class="myinput large"
+                              type="checkbox"
+                              :disabled="isDisabled()"
+                              v-model="report.should_count"
+                              :id="'toscore_'+index"
+                              v-on:change="collectBackData(report,$event,'should_count')"
+                            />
+                          </td>
+                        </template>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.quality"
+                              v-on:change="collectBackData(report,$event,'quality')"
+                              v-on:keyup="decideFloat(this,report.quality)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.completeness"
+                              v-on:change="collectBackData(report,$event,'completeness')"
+                              v-on:keyup="decideFloat(this,report.completeness)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.responsibility"
+                              v-on:change="collectBackData(report,$event,'responsibility')"
+                              v-on:keyup="decideFloat(this,report.responsibility)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.cooperation"
+                              v-on:change="collectBackData(report,$event,'cooperation')"
+                              v-on:keyup="decideFloat(this,report.cooperation)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              max="5"
+                              class="form-control"
+                              v-model.number="report.attendance"
+                              v-on:change="collectBackData(report,$event,'attendance')"
+                              v-on:keyup="decideFloat(this,report.attendance)"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              class="form-control"
+                              v-model.number="report.addedValue"
+                              v-on:change="collectBackData(report,$event,'addedValue')"
+                            />
+                          </template>
+                        </td>
+                        <td class="card edit-td text-red">
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              :disabled="isDisabled()"
+                              type="number"
+                              min="0"
+                              :max="(staffSumScore(report)+report.addedValue)"
+                              class="form-control"
+                              v-model.number="report.mistake"
+                              v-on:change="collectBackData(report,$event,'mistake')"
+                            />
+                          </template>
+                        </td>
+                        <td>
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>{{ total(report) }} </template>
+                        </td>
+                        <td>
+                          <template
+                            v-if="typeof report[toScoreKey] != 'undefined' && !report[toScoreKey]"
+                          >
+                            <span class="deep-orange-text">-</span>
+                          </template>
+                          <template v-else>
+                            <input
+                              class="myinput large"
+                              type="checkbox"
+                              :disabled="isDisabled()"
+                              :id="'bouns_'+index"
+                              v-model="report.bonus"
+                              v-on:change="collectBackData(report,$event,'bonus')"
+                            />
+                          </template>
+                        </td>
+                        <td>
+                            <a
+                              class="btn waves-effect waves-teal lighten-1 comment-num"
+                              v-on:click="comment(report)"
+                              >{{report._comment_count}}筆</a
+                            >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script
+  type="text/javascript"
+  src="<?=U('/Public/js/Index/Month-Appraisal.js')?>"
+></script>
+<?=V('Component/monthly_history.html')?>
+<?=V('Component/monthly_review.html')?>

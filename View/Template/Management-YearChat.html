@@ -1,0 +1,125 @@
+<div id="Management-YearChart">
+    <div class="had-container">
+        <div class="rv-chart-content rv-year-chat">
+            <h1 class="rv-title">單位組織圖</h1>
+            <div class="rv-chart-map">
+                <div class="row filter-date" id="SelectDate">
+                    <h3 class="title">請選擇日期</h3>
+                    <div class="dropdown">
+                        <select id="ChartYear" type="button" class="btn dropdown-button"></select>
+                    </div>
+                    <div class="pull-right fbkManagement">
+                        <a href="<?=U('/Management-Feedback')?>" class="waves-effect waves-dark btn blue exclusive-admin">部屬回饋管理</a>
+                    </div>
+                </div>
+                <div id="not-start" class="col s12 l12 no-data nullDataInfo">
+                    <div class="title">年考評尚未啟動</div>
+                    <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
+                </div>
+                <div class="year-map">
+                        <div class="stepper" style="box-shadow: none;">
+                            <div class="stepper-header">
+                                <div class="stepper-step one inactive"><span class="stepper-step-num">1</span>
+                                    <div class="stepper-label">部屬回饋</div>
+                                </div>
+                                <hr class="divider">
+                                <div class="stepper-step two inactive"><span class="stepper-step-num">2</span>
+                                    <div class="stepper-label">個人單審核</div>
+                                </div>
+                                <hr class="divider">
+                                <div class="stepper-step three inactive"><span class="stepper-step-num">3</span>
+                                    <div class="stepper-label">部門單審核</div>
+                                </div>
+                                <hr class="divider">
+                                <div class="stepper-step four inactive"><span class="stepper-step-num">4</span>
+                                    <div class="stepper-label">執行長評核</div>
+                                </div>
+                                <hr class="divider">
+                                <div class="stepper-step five inactive"><span class="stepper-step-num">5</span>
+                                    <div class="stepper-label">年度考評結束</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rv-chart">
+                            <button class="waves-effect waves-light btn back-btn pull-left">返回</button>
+                            <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+                                <div class="title">無年績效單位組織圖</div>
+                                <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
+                            </div>
+                            <ul id="RvChart" data-department-id="0"></ul>
+                        </div>
+                    <!-- 組織圖顏色示意 -->
+                    <div class="rv-chart-info one">
+                        <h3>單位狀態顏色示意圖：</h3>
+                        <ul>
+                            <li><span class="info-color" style="background:#9e9e9e;"></span><span>無部屬回饋問卷</span></li>
+                            <li><span class="info-color approved"></span><span>已交齊該單位底下的部屬回饋問卷</span></li>
+                        </ul>
+                        <h3>個人狀態顏色示意圖：</h3>
+                        <ul>
+                            <li><span class="info-color" style="background:#9e9e9e;"></span><span>未提交狀態</span></li>
+                            <li><span class="info-color approved"></span><span>已提交狀態</span></li>
+                            <li><span class="info-color" style="background:#ff52528f;"></span><span>過期狀態</span></li>
+                        </ul>
+                    </div>
+                    <div class="rv-chart-info two">
+                        <h3>單位狀態顏色示意圖：</h3>
+                        <ul>
+                            <li><span class="info-color ready"></span><span>無主管/考評單狀態</span></li>
+                            <li><span class="info-color noscore"></span><span>初評狀態</span></li>
+                            <li><span class="info-color review"></span><span>審核狀態</span></li>
+                            <li><span class="info-color" style="background:#ade6b9"></span><span>完成狀態</span></li>
+                            <li><span class="info-color" style="background:#4ac34e"></span><span>核准狀態</span></li>
+                        </ul>
+                        <h3>個人狀態顏色示意圖：</h3>
+                        <ul>
+                            <li><span class="info-color" style="background:#ff7272"></span><span>作廢狀態</span></li>
+                            <li><span class="info-color noscore"></span><span>自評狀態</span></li>
+                            <li><span class="info-color review"></span><span>審核狀態</span></li>
+                            <li><span class="info-color" style="background:#ade6b9"></span><span>完成狀態</span></li>
+                        </ul>
+                    </div>
+                    <div class="rv-chart-info three">
+                        <h3>部長單狀態顏色示意圖：</h3>
+                        <ul>
+                            <li><span class="info-color ready"></span><span>部門單審核禁止觀看</span></li>
+                            <li><span class="info-color" style="background:#dfe9f3;"></span><span>初始階段</span></li>
+                            <li><span class="info-color" style="background:#ffd54f;"></span><span>部長加減分階段</span></li>
+                            <li><span class="info-color" style="background:#ff9222;"></span><span>執行長加減分</span></li>
+                        </ul>
+                    </div>
+                    <div class="rv-chart-info four">
+                        <h3>部長單狀態顏色示意圖：</h3>
+                        <ul>
+                            <li><span class="info-color ready"></span><span>部門單審核禁止觀看</span></li>
+                            <li><span class="info-color" style="background:#dfe9f3;"></span><span>初始階段</span></li>
+                            <li><span class="info-color" style="background:#ffd54f;"></span><span>部長加減分階段</span></li>
+                            <li><span class="info-color" style="background:#ff9222;"></span><span>執行長加減分</span></li>
+                            <li><span class="info-color" style="background:#4CAF50;"></span><span>部門核准</span></li>
+                        </ul>
+                    </div>
+
+
+
+                </div>
+
+
+
+                <div class="no-data">
+                    <p>查無資料</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="cell-1" style="display:none;">
+        <li data-unitid="{unit_id}">
+            <a class="team-block" data-unitid="{unit_id}" data-process-id="{id}">
+                <div class="team-leader">{manager_name_en} {manager_name}</div>
+                <div class="team-name">{name}</div>
+                <!-- <div class="score-block" rv-if="{record_if}"></div> -->
+            </a>
+            <ul data-department-id="{id}"></ul>
+        </li>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Management-YearChat.js')?>"></script>

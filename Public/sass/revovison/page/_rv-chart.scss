@@ -1,0 +1,679 @@
+/**
+** RV Organization Chart
+*/
+
+// 組織圖的預設線的顏色
+$orgChart-tree-line-color:#CCC !default;
+$team-block-max-width:120px;
+$team-block-min-width:100px;
+// 預設的team顯示：灰底白字
+$team-block-default-bg: #eee !default;
+$team-block-default-font: #bdbdbd !default;
+$team-block-default-border: #9e9e9e !default;
+$team-block-default-font-size:12px !default;
+//沒有主管的team顯示，白底灰字
+$team-block-noleader-bg:#FFF !default;
+$team-block-noleader-font-color:#CCC !default;
+// hover 時的team 顯示
+$team-hover-border:#757575 !default;
+$team-hover-color:#757575 !default;
+//使用者自己組別的map顯示
+$team-block-active-border:#777 !default;
+$team-block-active-color:#000 !default;
+// 未評的team顯示 黃色底
+$team-block-nonscore-bg:#bbdefb !default;
+$team-block-nonscore-color:#000 !default;
+// 已評的team顯示 綠底
+$team-block-rated-bg:#8bc34a !default;
+$team-block-rated-color:#000 !default;
+// 被退回的評分表的team顯示 紅底
+$team-block-return-bg:#ff5252 !default;
+$team-block-return-color:#FFF !default;
+//審核中的team顯示
+//$team-block-reviewing-bg:#b2dfdb!default;
+$team-block-reviewing-bg:#ffd54f !default;
+$team-block-reviewing-color:#000 !default;
+//button style
+$team-block-button-height:25px !default;
+$team-leader-height:23px !default;
+//media queries setting
+@mixin respond-to($media) {
+    @if $media==small-screens {
+        @media only screen and (max-width: 1200px) {
+            @content;
+        }
+    }
+    @else if $media==medium-screens {
+        @media only screen and (min-width: 1201px) and (max-width: 1534px) {
+            @content;
+        }
+    }
+    @else if $media==wide-screens {
+        @media only screen and (min-width: 1535px) {
+            @content;
+        }
+    }
+}
+
+//transition setting
+@mixin transition($transition) {
+    -webkit-transition: $transition;
+    -moz-transition: $transition;
+    -o-transition: $transition;
+    -ms-transition: $transition;
+    transition: $transition;
+}
+
+// linear-gradient setting
+@mixin linear-gradient($direction, $color-stops...) {
+    background: nth(nth($color-stops, 1), 1);
+    background: -webkit-linear-gradient(legacy-direction($direction), $color-stops);
+    background: linear-gradient($direction, $color-stops);
+}
+
+//radius
+@mixin border-radius($radius) {
+    -webkit-border-radius: $radius;
+    -moz-border-radius: $radius;
+    -ms-border-radius: $radius;
+    border-radius: $radius;
+}
+
+//rv-loading
+@font-face {
+    font-family: 'Glyphicons Halflings';
+    src: url("/fonts/glyphicons-halflings-regular.eot");
+    src: url("/fonts/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("../fonts/glyphicons-halflings-regular.woff") format("woff"), url("/fonts/glyphicons-halflings-regular.ttf") format("truetype"), url("../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg");
+}
+
+@keyframes spin2 {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes spin2 {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: scale(1) rotate(0deg);
+    }
+    to {
+        transform: scale(1) rotate(360deg);
+    }
+}
+
+@-webkit-keyframes spin {
+    from {
+        transform: scale(1) rotate(0deg);
+    }
+    to {
+        transform: scale(1) rotate(360deg);
+    }
+}
+
+
+
+.had-container {
+    position: relative;
+}
+
+//組織圖
+.rv-chart-map {
+    @include transition(width 2s cubic-bezier(0.79,
+    -0.07,
+    0.58,
+    1));
+    position: relative;
+    .no-data {
+        display: none;
+        position: absolute;
+        margin: 5px 0;
+        top: 60px;
+        width: 95%;
+        text-align: center;
+        border: 1px dashed #999;
+    }
+    .rv-chart {
+        position: relative;
+        min-width: 1380px;
+        min-height: 600px;
+        width: 100%;
+        display: table;
+        margin: 0 auto;
+        text-align: center;
+        @include respond-to(small-screens) {
+            // min-width: 2000px;
+        }
+        @include respond-to(medium-screens) {
+            // min-width: 2000px;
+        }
+        @include respond-to(wide-screens) {
+            // min-width: 2000px;
+        }
+        // 組織圖最下層無li的ul 要隱藏
+        ul:empty {
+            display: none !important;
+        }
+        > ul {
+            // display: inline-block;
+            // min-width: 1350px;
+            display: table;
+            margin: 0 auto;
+            min-width: 1250px;
+            @include respond-to(small-screens) {
+                // min-width: 2000px;
+            }
+            @include respond-to(medium-screens) {
+                // min-width: 2000px;
+            }
+            @include respond-to(wide-screens) {
+                // min-width: 2034px;
+            }
+            &::before {
+                border: 0 !important;
+            }
+        }
+        li {
+            float: left;
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 0px 0 5px;
+            transition: all 0.5s;
+            -webkit-transition: all 0.5s;
+            -moz-transition: all 0.5s;
+            &::before,
+            &::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 50%;
+                border-top: 1px solid $orgChart-tree-line-color;
+                width: 50%;
+                height: 20px;
+            }
+            &::after {
+                right: auto;
+                left: 50%;
+                border-left: 1px solid $orgChart-tree-line-color;
+            }
+            &:only-child {
+                padding-top: 0;
+                &::after,
+                &::before {
+                    display: none;
+                }
+            }
+            &:first-child::before,
+            &:last-child::after {
+                border: 0 none;
+            }
+            &:last-child::before {
+                border-right: 1px solid $orgChart-tree-line-color;
+                border-radius: 0 5px 0 0;
+                -webkit-border-radius: 0 5px 0 0;
+                -moz-border-radius: 0 5px 0 0;
+            }
+            &:first-child::after {
+                border-radius: 5px 0 0 0;
+                -webkit-border-radius: 5px 0 0 0;
+                -moz-border-radius: 5px 0 0 0;
+            }
+            &.active {
+                a {
+                    @extend .z-depth-2;
+                    border-color: $team-block-active-border !important;
+                    color: $team-block-active-color !important;
+                }
+                a:hover {
+                    color: $team-block-active-color;
+                    border: 1px solid $team-block-active-border;
+                    + ul {
+                        li {
+                            a {
+                                color: $team-block-active-color;
+                                border: 1px solid $team-block-active-border;
+                            }
+                        }
+                    }
+                }
+                .team-no-leader {
+                    color: $team-block-active-color !important;
+                }
+                .circle-number {
+                    border-color: $team-block-active-color !important;
+                    p {
+                        color: $team-block-active-color !important;
+                    }
+                }
+                ul::before {
+                    border-color: $team-block-active-border;
+                }
+                li::after {
+                    border-color: $team-block-active-border;
+                    z-index: -1;
+                }
+                li::before {
+                    border-color: $team-block-active-border;
+                }
+                .nav-row {
+                    ul::before {
+                        border-color: $team-block-active-border;
+                    }
+                    li::before {
+                        border-color: $team-block-active-border;
+                    }
+                }
+            }
+            a {
+                display: inline-block;
+                span {
+                    display: inline-block;
+                    width: 100%;
+                    margin: 0;
+                }
+                &:hover {
+                    color: $team-hover-color;
+                    border: 1px solid $team-hover-border;
+                    cursor: default;
+                    + ul {
+                        li {
+                            a {
+                                color: $team-hover-color;
+                                border: 1px solid $team-hover-border;
+                            }
+                            &::after,
+                            &::before {
+                                border-color: $team-hover-border;
+                            }
+                        }
+                        &::before,
+                        ul::before {
+                            border-color: $team-hover-border;
+                        }
+                    }
+                }
+            }
+        }
+        ul {
+            padding-top: 20px;
+            position: relative;
+            transition: all 0.5s;
+            -webkit-transition: all 0.5s;
+            -moz-transition: all 0.5s;
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 50%;
+                border-left: 1px solid $orgChart-tree-line-color;
+                width: 0;
+                height: 20px;
+            }
+        }
+        ul:last-child {
+            //display: none;
+        }
+        .nav-row {
+            > a {
+                width: 100%;
+            }
+            > ul {
+                padding-top: 20px;
+                max-width: 180px;
+                @include respond-to(small-screens) {
+                    max-width: 180px!important;
+                }
+                @include respond-to(medium-screens) {
+                    max-width: 180px!important;
+                }
+                @include respond-to(wide-screens) {
+                    max-width: 180px!important;
+                }
+                &::before {
+                    height: 100%;
+                    left: 30%;
+                    @include respond-to(small-screens) {
+                        left: 30%;
+                    }
+                    @include respond-to(medium-screens) {
+                        left: 30%;
+                    }
+                    @include respond-to(wide-screens) {
+                        left: 40%;
+                    }
+                }
+                > li {
+                    float: none;
+                    a {
+                        position: relative;
+                        margin-left: 125px;
+                        @include respond-to(small-screens) {
+                            margin-left: 55px
+                        }
+                        @include respond-to(medium-screens) {
+                            margin-left: 80px
+                        }
+                        @include respond-to(wide-screens) {
+                            margin-left: 80px;
+                        }
+                    }
+                    &::before {
+                        right: auto;
+                        left: 30%;
+                        top: 50%;
+                        border-left: 0;
+                        border-top: 1px solid $orgChart-tree-line-color;
+                        width: 50px;
+                        @include respond-to(small-screens) {
+                            left: 30%;
+                        }
+                        @include respond-to(medium-screens) {
+                            left: 30%;
+                        }
+                        @include respond-to(wide-screens) {
+                            left: 40%;
+                        }
+                    }
+                    &::after {
+                        right: auto;
+                        left: 50%;
+                        border: 0;
+                    }
+                    &:only-child {
+                        padding-top: 0;
+                        &::after,
+                        &::before {
+                            display: block;
+                        }
+                    }
+                    &:last-child::before {
+                        border-right: 0;
+                        height: 100%;
+                        border-left: 1px solid #FFF;
+                        border-radius: 0 0 0 5px;
+                        -webkit-border-radius: 0 0 0 5px;
+                        -moz-border-radius: 0 0 0 5px;
+                    }
+                    &:first-child::after {
+                        border-right: 0;
+                        border-radius: 0;
+                        -webkit-border-radius: 0;
+                        -moz-border-radius: 0;
+                    }
+                }
+            }
+        }
+    }
+    .rv-chart-info {
+        margin: -200px 0 0 50px;
+        display: none;
+    }
+    .modal {
+        top: 150px !important;
+        z-index: 999;
+        overflow: auto;
+        .widget-timeline-item {
+            .panel-body {
+                b {
+                    color: #FF9800;
+                }
+                i {
+                    color: red;
+                    font-style: normal;
+                    font-weight: 700;
+                }
+                em {
+                    color: green;
+                    font-style: normal;
+                    font-weight: 700;
+                }
+            }
+        }
+    }
+}
+
+.team-block {
+    max-width: $team-block-max-width;
+    min-width: $team-block-min-width;
+    display: inline-block;
+    background: $team-block-default-bg;
+    color: $team-block-default-font;
+    border: 1px solid $team-block-default-border;
+    text-decoration: none;
+    font-family: arial, verdana, tahoma;
+    font-size: $team-block-default-font-size;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    padding: 5px 0;
+    @include linear-gradient(#e0e0e0,
+    #FFF);
+    @include respond-to(small-screens) {
+        max-width: 95px;
+        min-width: 70px;
+    }
+    @include respond-to(medium-screens) {
+        max-width: 100px;
+        min-width: 85px;
+    }
+    @include respond-to(medium-screens) {
+        max-width: 110px;
+        min-width: 100px;
+    }
+    button {
+        @extend .waves-effect,
+        .waves-teal,
+        .btn,
+        .btn-flat;
+        height: 25px;
+        line-height: 25px;
+        color: #000;
+        padding: 0!important;
+        display: inline-block;
+    }
+    .team-name {
+        display: inline-block;
+        color: #757575;
+        font-size: 10px;
+        white-space:nowrap;
+    }
+    .team-leader {
+        font-weight: bold;
+        width: 100%;
+        font-size: 12px;
+        height: $team-leader-height;
+        line-height: $team-leader-height;
+        position: relative;
+        white-space:nowrap;
+        //border-top: 1px solid $team-block-default-border;
+    }
+    .team-no-leader {
+        color: $team-block-default-font;
+        font-weight: normal;
+    }
+    .score-block {
+        width: 100%;
+        margin: 0 auto;
+        //border-top: 1px solid $team-block-active-border;
+        @include respond-to(small-screens) {
+            border-top: 0;
+        }
+        button {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.62);
+            @include respond-to(small-screens) {
+                //background: rgba(204, 204, 204, 0.48);
+                border: 1px solid rgba(255, 255, 255, 0.62);
+                margin: 0 auto;
+            }
+        }
+        // button:nth-child(2) {
+        //     display: none !important;
+        // }
+        .score-history {
+            width: 100%;
+            border: 0;
+            border-top: 1px solid #777;
+            border-radius: 0;
+            @include transition(.5s);
+            &.non-score {
+                color: #000;
+                background: $team-block-nonscore-bg;
+                @include linear-gradient(#eff7fe,
+                #bbdefb);
+            }
+            &.rated {
+                background: $team-block-rated-bg;
+                color: #000;
+                @include linear-gradient(#e5f2d6,
+                #8bc34a);
+            }
+            &.return {
+                background: $team-block-return-bg;
+                @include linear-gradient(#ffdcdc,
+                #ff5252);
+                color: #000 !important;
+            }
+            &.reviewing {
+                background: $team-block-reviewing-bg;
+                color: #000;
+                //@include linear-gradient(#f1fde5, #dcedc8);
+                @include linear-gradient(#fff4d0,
+                #ffd54f);
+            }
+        }
+    }
+    // 沒主管
+    &.noleader {
+        background: $team-block-noleader-bg;
+        color: $team-block-noleader-font-color;
+        //@include linear-gradient(#EEE, #FFF);
+    }
+    // 初步考評狀態(未考評)
+    &.non-score {
+        color: $team-block-nonscore-color;
+        background: $team-block-nonscore-bg;
+        @include linear-gradient(#eff7fe,
+        #bbdefb);
+        .score-sheet {
+            button {
+                @extend .btn,
+                .orange,
+                .darken-1;
+                height: $team-block-button-height;
+                line-height: $team-block-button-height;
+            }
+        }
+    }
+    &.rated {
+        background: $team-block-rated-bg;
+        color: $team-block-rated-color;
+        @include linear-gradient(#e5f2d6,
+        #8bc34a);
+        div{
+          color:#000!important;
+        }
+    }
+    // 退回考評表
+    &.return {
+        background: $team-block-return-bg;
+        @include linear-gradient(#ffdcdc,
+        #ff5252);
+        color:#000;
+        div{
+          color:#000!important;
+        }
+        button {
+            color: #000;
+        }
+    }
+    // 未通過審核
+    &.reviewing {
+        background: $team-block-reviewing-bg;
+        color: $team-block-reviewing-color;
+        //@include linear-gradient(#f1fde5, #dcedc8);
+        @include linear-gradient(#fff4d0,
+        #ffd54f);
+    }
+}
+
+//組織圖info
+.rv-chart-info {
+    position: absolute;
+    h3 {
+        font-size: 14px;
+        font-weight: 700;
+    }
+    ul {
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        li {
+            margin-bottom: 10px;
+            span {
+                vertical-align: middle;
+            }
+            .info-color {
+                display: inline-block;
+                width: 14px;
+                height: 14px;
+                border: 1px solid $team-block-active-border;
+                margin: 0px 10px 0 0;
+                vertical-align: middle;
+                &::before {
+                    content: "";
+                    height: 100%;
+                }
+                &.ready {
+                    background: $team-block-default-bg;
+                }
+                &.noscore {
+                    background: $team-block-nonscore-bg;
+                }
+                &.review {
+                    background: $team-block-reviewing-bg;
+                }
+                &.approved {
+                    background: $team-block-rated-bg;
+                }
+                &.return {
+                    background: $team-block-return-bg;
+                }
+                &.no-leader {
+                    background: $team-block-noleader-bg;
+                }
+                &.circle-number {
+                    border: 0.05em solid $team-block-active-color;
+                    border-radius: 100%;
+                    height: 1.7em;
+                    width: 1.7em;
+                    text-align: center;
+                    margin-right: 5px;
+                    float: left;
+                    p {
+                        margin: 0;
+                        padding: 0;
+                        font-size: 0.5em;
+                        line-height: 1.7em;
+                        font-weight: bold;
+                    }
+                }
+            }
+        }
+    }
+}

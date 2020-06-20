@@ -1,0 +1,1155 @@
+<div id="Year-Evaluation">
+    <div class="had-container rv-year-evaluation">
+        <h1 class="rv-title"> <span>201</span> 年績效待考評單 </h1>
+        <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+            <div class="title">無年績效待考評單</div>
+            <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
+        </div>
+        <div id="YearEvaluationForm" class="section rv-assess">
+            
+            <div id="template-evaluation" style="display: none">
+                <div class="row" v-if="processing == 5">
+                    <div class="col s12">
+                        <ul class="collapsible popout rv-card">
+                            <li>
+                                <input type="hidden">
+                                <div class="collapsible-header truncate card-header own">
+                                    <div class="col info-block">
+                                        <div>
+                                            <p class="top">受評對象</p>
+                                            <h1>{{evaluation.staff_name}}{{evaluation.staff_name_en}}</h1>
+                                        </div>
+                                    </div>
+                                    <div class="col info-block">
+                                        <div>
+                                            <p class="top">職務</p>
+                                            <h1>{{evaluation.staff_post}}</h1>
+                                        </div>
+                                    </div>
+                                    <div class="col info-block right-border">
+                                        <div>
+                                            <p class="top">所屬單位</p>
+                                            <h1>{{evaluation.department_name}}</h1>
+                                        </div>
+                                    </div>
+                                    <div class="col info-block">
+                                        <div class="start-date date">
+                                            <p class="top">考核區間初始日</p>
+                                            <h1>{{evaluation.date_start}}</h1>
+                                        </div>
+                                        <div class="arrow">
+                                            <svg width="55" height="35">
+                                                <path d="M12.6,17.1H9.1c-1,0-1.8,0.8-1.8,1.8c0,1,0.8,1.8,1.8,1.8h3.5c1,0,1.8-0.8,1.8-1.8 C14.4,17.9,13.6,17.1,12.6,17.1z" />
+                                                <path d="M49.9,17.6L39.1,6.8c-0.7-0.7-1.9-0.7-2.6,0c-0.7,0.7-0.7,1.9,0,2.6l7.7,7.7H20.9c-1,0-1.8,0.8-1.8,1.8 c0,1,0.8,1.8,1.8,1.8h23.3l-7.7,7.7c-0.7,0.7-0.7,1.9,0,2.6c0.7,0.7,1.9,0.7,2.6,0l10.8-10.8C50.8,19.3,50.8,18.5,49.9,17.6z" />
+                                            </svg>
+                                        </div>
+                                        <div class="end-date date">
+                                            <p class="top">考核區間結束日</p>
+                                            <h1>{{evaluation.date_end}}</h1>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="collapsible-body card-body">
+                                    <div class="brand-actions">
+                                        <span class="form-actions">
+                                            <a title="儲存" v-on:click="saveYearlyReport(evaluation.id)"><i class="material-icons indigo-text text-accent-2">save</i></a>
+                                            <a title="提交" v-on:click="commitYearlyReport(evaluation.id)" v-if="evaluation._authority.commit"><i class="material-icons yellow-text text-darken-2">arrow_forward</i></a>
+                                            <a title="退回" v-if="evaluation._authority.return" :href="'#ReJectModal-'+rand"><i class="material-icons red-text" >arrow_back</i></a>
+                                        <span class="line"></span>
+                                        <span class="note-btns">
+                                            <a title="意見回饋" :href="'#ReportWord-'+rand" v-on:click="getReportWord(evaluation.id)"><i class="material-icons teal-text">chat_bubble_outline</i></a>
+                                            <a title="歷史記錄" :href="'#HistoryRecordModal-'+rand" v-on:click="getRecords(evaluation.id)"><i class="material-icons indigo-text">library_books</i></a>
+                                        </span>
+                                    </div>
+                                    <div :id="'ReJectModal-'+rand" class="modal">
+                                        <div class="modal-content">
+                                            <div class="rv-page-title">
+                                                <h1 class="rv-title">退回考評單</h1>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col s12" style="padding-left: 10px;">
+                                                    <div class="ml10">退回事由：</div>
+                                                    <p class="ml10">
+                                                        <textarea class="form-control" v-model="rejectReason"></textarea>
+                                                    </p>
+                                                    <div class="row">
+                                                        <div class="pull-right">
+                                                            <button class="btn waves-effect waves-teal lighten-1 red" v-on:click="rejectYearlyReport(evaluation.id)">退回</button>
+                                                            <button class="waves-effect waves-light btn modal-close darken-1 grey">取消</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div :id="'HistoryRecordModal-'+rand" class="modal">
+                                        <div class="modal-content">
+                                            <div class="rv-page-title">
+                                                <h1 class="rv-title">歷史紀錄<button href="#" class="modal-action modal-close btn-flat"><i class="material-icons md-18">close</i></button></h1>
+                                            </div>
+                                            <div class="row">
+                                                <div class="widget-timeline">
+                                                    <div class="widget-timeline-section widget-timeline-first">考評單歷程</div>
+                                                    <div v-for="(record,index) in historyRecords">
+                                                        <div class="widget-timeline-item">
+                                                            <div class="widget-timeline-info">
+                                                                <div class="widget-timeline-bullet bg-primary"></div>
+                                                                <div class="widget-timeline-time bg-primary">{{record.date}}
+                                                                    <br>{{record.time}}</div>
+                                                            </div>
+                                                            <div class="panel">
+                                                                <div class="panel-body">
+                                                                    <div v-if="record.type == '0'">
+                                                                        <span>✧產生考評單</span>
+                                                                        <p>日期：{{record.date}} {{record.time}}</p>
+                                                                    </div>
+                                                                    <div v-if="record.type == '2'">
+                                                                        <span>【{{record.from_name}}{{record.from_name_en}} 】</span>
+                                                                        <span class="commit">→ 送審 →</span>
+                                                                        <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                                                    </div>
+                                                                    <div v-if="record.type == '4'">
+                                                                        <span>【{{record.from_name}}{{record.from_name_en}}】</span>
+                                                                        <span class="return">→ 退回 →</span>
+                                                                        <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                                                        <p>&nbsp;&nbsp;退回原因： {{record.reason}}</p>
+                                                                    </div>
+                                                                    <div v-if="record.type == '3'">
+                                                                        <span class="done">√ </span><span>考評單已完成</span>
+                                                                        <p>日期：{{record.date}}；時間：{{record.time}}</p>
+                                                                    </div>
+                                                                    <div v-if="record.type == '5'">
+                                                                        <span>【{{record.from_name}}{{record.from_name_en}}】</span>
+                                                                        <span class="other">→ 其他 →</span>
+                                                                        <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div :id="'ReportWord-'+rand" class="modal evaluation-modal">
+                                        <div class="modal-content">
+                                            <div class="rv-page-title">
+                                                <h1 class="rv-title">意見回饋<button href="#" class="modal-action modal-close btn-flat"><i class="material-icons md-18">close</i></button></h1>
+                                            </div>
+                                            <div class="tab-area">
+                                                <ul class="tabs tab-feedback">
+                                                    <li class="tab" v-if="evaluation.staff_is_leader"><a :href="'#subordinate'+rand">部屬回饋</a></li>
+                                                    <li class="tab" v-if="evaluation.staff_is_leader"><a :href="'#other'+rand">其它單位回饋</a></li>
+                                                    <li class="tab"><a :href="'#self'+rand">自我評語</a></li>
+                                                    <li class="tab"><a :href="'#supervisor'+rand">主管評語</a></li>
+                                                </ul>
+                                                <div :id="'subordinate'+rand" class="col s12 tab-content" v-if="evaluation.staff_is_leader">
+                                                    <div class="content">
+                                                        <ul class="content-list">
+                                                            <span class="no">讚揚</span>
+                                                            <template v-if="opinionFeedback.question.question_1.length > 0">
+                                                                <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_1">{{opinion.content}}</li>
+                                                            </template>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                        <ul class="content-list">
+                                                            <span class="no">改善</span>
+                                                            <template v-if="opinionFeedback.question.question_2.length > 0">
+                                                                <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_2">{{opinion.content}}</li>
+                                                            </template>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                        <ul class="content-list">
+                                                            <span class="no">建議</span>
+                                                            <template v-if="opinionFeedback.question.question_4.length > 0">
+                                                                <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_4">{{opinion.content}}</li>
+                                                            </template>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div :id="'other'+rand" class="col s12 tab-content" v-if="evaluation.staff_is_leader">
+                                                    <div class="content" v-if="opinionFeedback.question.question_5.length > 0">
+                                                        <ul class="content-list">
+                                                            <span class="no">嘉許/建議</span>
+                                                            <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_5">{{opinion.content}}</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div v-else>無</div>
+                                                </div>
+                                                <div :id="'self'+rand" class="col s12 tab-content">
+                                                    <div class="content">
+                                                        <ul class="content-list single-content">
+                                                            <span class="no">貢獻</span>
+                                                            <li class="text" v-if="opinionFeedback.self_contribution">{{opinionFeedback.self_contribution}}</li>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                        <ul class="content-list single-content">
+                                                            <span class="no">改進</span>
+                                                            <li class="text" v-if="opinionFeedback.self_improve">{{opinionFeedback.self_improve}}</li>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div :id="'supervisor'+rand" class="col s12 tab-content">
+                                                    <div class="content">
+                                                        <ul class="content-list single-content" v-if="opinionFeedback.upper_comment[1]">
+                                                            <span class="no">運維中心主管</span>
+                                                            <li class="text" v-if="opinionFeedback.upper_comment[1].content">{{opinionFeedback.upper_comment[1].content}}</li>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                        <ul class="content-list single-content" v-if="opinionFeedback.upper_comment[2]">
+                                                            <span class="no">部門主管</span>
+                                                            <li class="text" v-if="opinionFeedback.upper_comment[2].content">{{opinionFeedback.upper_comment[2].content}}</li>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                        <ul class="content-list single-content" v-if="opinionFeedback.upper_comment[3]">
+                                                            <span class="no">處主管</span>
+                                                            <li class="text" v-if="opinionFeedback.upper_comment[3].content">{{opinionFeedback.upper_comment[3].content}}</li>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                        <ul class="content-list single-content" v-if="opinionFeedback.upper_comment[4]">
+                                                            <span class="no">組長主管</span>
+                                                            <li class="text" v-if="opinionFeedback.upper_comment[4].content">{{opinionFeedback.upper_comment[4].content}}</li>
+                                                            <p v-else>無</p>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="step"><span class="no">a.</span>考核項目</div>
+                                    <div class="year-evaluation-item-group">
+                                        <table class="table table-fixed">
+                                            <tbody>
+                                                <tr>
+                                                    <th>受評對象</th>
+                                                    <td>{{evaluation.staff_name}} {{evaluation.staff_name_en}} ({{evaluation.staff_no}})</td>
+                                                    <th>到職日</th>
+                                                    <td>{{evaluation.staff_first_day}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>部門</th>
+                                                    <td>{{evaluation.division_name}}</td>
+                                                    <th>處/組單位</th>
+                                                    <td>{{evaluation.department_name}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="year-evalution-table">
+                                            <table class="table table-fixed">
+                                                <thead>
+                                                    <tr>
+                                                        <th>{{currentYear-1}}
+                                                            <br>年考績等級</th>
+                                                        <th>{{currentYear}}
+                                                            <br>月績效均分</th>
+                                                        <th>遲到(次)</th>
+                                                        <th>忘刷(次)</th>
+                                                        <th>忘卡(次)</th>
+                                                        <th>事假(天)</th>
+                                                        <th>全薪病假(天)</th>
+                                                        <th>半薪病假(天)</th>
+                                                        <th>曠職(天)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{evaluation.before_level}}</td>
+                                                        <td>{{evaluation.monthly_average}}</td>
+                                                        <td>{{evaluation.attendance_json.late}}</td>
+                                                        <td>{{evaluation.attendance_json.forgetcard}}</td>
+                                                        <td>{{evaluation.attendance_json.nocard}}</td>
+                                                        <td>{{evaluation.attendance_json.leave}}</td>
+                                                        <td>{{evaluation.attendance_json.sick}}</td>
+                                                        <td>{{evaluation.attendance_json.paysick}}</td>
+                                                        <td>{{evaluation.attendance_json.absent}}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <!-- Leader Table -->
+                                        <div class="year-evalution-table" v-if="evaluation.staff_is_leader">
+                                            <table class="table table-fixed">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="2">項目</th>
+                                                        <th :colspan="item.itemBlock" v-for="(item, index) in leaderThead.titleArray">{{item.title}}</th>
+                                                        <th rowspan="2">總分</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>比重</th>
+                                                        <th>分數類別</th>
+                                                        <th v-for="(topic, index) in leaderTopic">{{topic.name}}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="ready">
+                                                        <td>{{evaluation.assessment_json.under.percent}}%</td>
+                                                        <td>部屬</td>
+                                                        <td colspan="17">部屬回饋問卷</td>
+                                                        <td>
+                                                            <div class="total">{{evaluation.assessment_json.under.total}}</div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr :class="{ ready:evaluation.staff_id != evaluation.owner_staff_id }">
+                                                        <td>{{evaluation.assessment_json.self.percent}}%</td>
+                                                        <td>自評</td>
+                                                        <td v-for="(topic, index) in leaderTopic">
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 1" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[0]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 2" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[1]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 3" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[2]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 4" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[3]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 5" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[4]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <div class="total">{{totalScore(evaluation.assessment_json.self.score)}}</div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-if="evaluation.assessment_json[3] && evaluation.path_lv[3][1] == evaluation.owner_staff_id" :class="{ ready:evaluation.path_lv[3][1] != evaluation.owner_staff_id }">
+                                                        <td>{{evaluation.assessment_json[3].percent}}%</td>
+                                                        <td>處主管評核</td>
+                                                        <td v-for="(topic, index) in leaderTopic">
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 1" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[0]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 2" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[1]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 3" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[2]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 4" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[3]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 5" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.leader[4]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <div v-if="totalScore(personalInfo.assessment_json[3].score) == 0">
+                                                                <a class="copy-button" title="同上" v-on:click="copyData(3)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                            </div>
+                                                            <div class="total" v-else>{{totalScore(evaluation.assessment_json[3].score)}}</div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <!-- Staff Table -->
+                                        <div class="year-evalution-table" v-else>
+                                            <table class="table table-fixed">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="2">項目</th>
+                                                        <th :colspan="item.itemBlock" v-for="(item, index) in staffThead.titleArray">{{item.title}}</th>
+                                                        <th rowspan="2">總分</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>比重</th>
+                                                        <th>分數類別</th>
+                                                        <th v-for="(topic, index) in staffTopic">{{topic.name}}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr :class="{ ready:evaluation.staff_id != evaluation.owner_staff_id }">
+                                                        <td>{{evaluation.assessment_json.self.percent}}%</td>
+                                                        <td>自評</td>
+                                                        <td v-for="(topic, index) in staffTopic">
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 1" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[0]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 2" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[1]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 3" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[2]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json.self.score[index+1]" v-if="topic.type == 4" :disabled="evaluation.staff_id != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[3]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <div class="total">{{totalScore(evaluation.assessment_json.self.score)}}</div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-if="evaluation.assessment_json[4] && evaluation.path_lv[4][1] == evaluation.owner_staff_id" :class="{ ready:evaluation.path_lv[4][1] != evaluation.owner_staff_id }">
+                                                        <td>{{evaluation.assessment_json[4].percent}}%</td>
+                                                        <td>組長初核</td>
+                                                        <td v-for="(topic, index) in staffTopic">
+                                                            <select v-model="evaluation.assessment_json[4].score[index+1]" v-if="topic.type == 1" :disabled="evaluation.path_lv[4][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[0]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[4].score[index+1]" v-if="topic.type == 2" :disabled="evaluation.path_lv[4][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[1]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[4].score[index+1]" v-if="topic.type == 3" :disabled="evaluation.path_lv[4][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[2]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[4].score[index+1]" v-if="topic.type == 4" :disabled="evaluation.path_lv[4][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[3]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <div v-if="totalScore(evaluation.assessment_json[4].score) == 0">
+                                                                <a class="copy-button" title="同上" v-on:click="copyData(4)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                            </div>
+                                                            <div class="total" v-else>{{totalScore(evaluation.assessment_json[4].score)}}</div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-if="evaluation.assessment_json[3] && evaluation.path_lv[3][1] == evaluation.owner_staff_id" :class="{ ready:evaluation.path_lv[3][1] != evaluation.owner_staff_id }">
+                                                        <td>{{evaluation.assessment_json[3].percent}}%</td>
+                                                        <td>處主管覆核</td>
+                                                        <td v-for="(topic, index) in staffTopic">
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 1" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[0]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 2" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[1]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 3" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[2]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                            <select v-model="evaluation.assessment_json[3].score[index+1]" v-if="topic.type == 4" :disabled="evaluation.path_lv[3][1] != evaluation.owner_staff_id">
+                                                                <option value="0">00</option>
+                                                                <option v-for="socre in optionScore.staff[3]" :value="socre">{{socre}}</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <div v-if="totalScore(evaluation.assessment_json[3].score) == 0">
+                                                                <a class="copy-button" title="同上" v-on:click="copyData(3)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                            </div>
+                                                            <div class="total" v-else>{{totalScore(evaluation.assessment_json[3].score)}}</div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="step"><span class="no">b.</span>問答題</div>
+                                    <div class="questions">
+                                        <div class="question-group">
+                                            <div class="question-area" v-if="evaluation.staff_id == evaluation.owner_staff_id">
+                                                <div class="question">今年度在公司的主要貢獻：</div>
+                                                <div class="answer-group">
+                                                    <textarea v-model="evaluation.self_contribution"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="question-area" v-if="evaluation.staff_id == evaluation.owner_staff_id">
+                                                <div class="question">未來需要加強及改進之處：</div>
+                                                <div class="answer-group">
+                                                    <textarea v-model="evaluation.self_improve"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="question-area" v-if="evaluation.assessment_json[4] && evaluation.path_lv[4][1] == evaluation.owner_staff_id">
+                                                <div class="question">組長評語：</div>
+                                                <div class="answer-group">
+                                                    <textarea v-model="evaluation.upper_comment[4].content"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="question-area" v-if="evaluation.assessment_json[3] && evaluation.path_lv[3][1] == evaluation.owner_staff_id">
+                                                <div class="question">處主管評語：</div>
+                                                <div class="answer-group">
+                                                    <textarea v-model="evaluation.upper_comment[3].content"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="template-division-zone" style="display: none">
+                <div class="row" v-if="processing >= 5">
+                    <div class="col s12">
+                        <ul class="collapsible popout rv-card">
+                            <li>
+                                <input type="hidden">
+                                <div class="collapsible-header truncate card-header">
+                                    <div class="col info-block">
+                                        <div>
+                                            <p class="top">受評單位</p>
+                                            <h1>{{divisionData.division_name}}</h1>
+                                        </div>
+                                    </div>
+                                    <div class="col info-block">
+                                        <div>
+                                            <p class="top">進程狀態</p>
+                                            <h1 v-if="divisionData.processing == 0">初始狀態</h1>
+                                            <h1 v-if="divisionData.processing == 1">部長配比</h1>
+                                            <h1 v-if="divisionData.processing == 2">架構發展部確認</h1>
+                                            <h1 v-if="divisionData.processing == 3 || divisionData.processing == 4">執行長評核</h1>
+                                            <h1 v-if="divisionData.processing == 5">完成</h1>
+                                        </div>
+                                    </div>
+                                    <div class="col info-block">
+                                        <div class="start-date date">
+                                            <p class="top">FROM</p>
+                                            <h1>{{divisionData.date_start}}</h1>
+                                        </div>
+                                        <div class="arrow">
+                                            <svg width="55" height="35">
+                                                <path d="M12.6,17.1H9.1c-1,0-1.8,0.8-1.8,1.8c0,1,0.8,1.8,1.8,1.8h3.5c1,0,1.8-0.8,1.8-1.8 C14.4,17.9,13.6,17.1,12.6,17.1z" />
+                                                <path d="M49.9,17.6L39.1,6.8c-0.7-0.7-1.9-0.7-2.6,0c-0.7,0.7-0.7,1.9,0,2.6l7.7,7.7H20.9c-1,0-1.8,0.8-1.8,1.8 c0,1,0.8,1.8,1.8,1.8h23.3l-7.7,7.7c-0.7,0.7-0.7,1.9,0,2.6c0.7,0.7,1.9,0.7,2.6,0l10.8-10.8C50.8,19.3,50.8,18.5,49.9,17.6z" />
+                                            </svg>
+                                        </div>
+                                        <div class="end-date date">
+                                            <p class="top">TO</p>
+                                            <h1>{{divisionData.date_end}}</h1>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="collapsible-body card-body">
+                                    <div class="brand-actions">
+                                        <span class="form-actions">
+                                      <a title="儲存" v-on:click="saveDivisionZone(divisionData.id)" v-if="divisionData._authority.edit"><i class="material-icons indigo-text text-accent-2">save</i></a>
+                                      <a title="提交" v-on:click="commitDivisionZone(divisionData.id)" v-if="divisionData._authority.commit"><i class="material-icons yellow-text text-darken-2">arrow_forward</i></a>
+                                      <a title="退回" v-on:click="rejectDivisionZone(divisionData.id)" v-if="divisionData._authority.return"><i class="material-icons red-text">arrow_back</i></a>
+                                      <a title="匯出excel" v-on:click="downloadExcelDivisionZone(divisionData.division)"><i class="material-icons">vertical_align_bottom</i></a>
+                                  </span>
+                                    </div>
+                                    <div class="year-evaluation-item-group">
+                                        <div class="year-evalution-table">
+                                            <div class="level-group">
+                                                <div class="col s2" v-for="distanceLv in divisionData._distribution">
+                                                    <div class="bs-component">
+                                                        <div class="level-blocks">
+                                                            <div class="level-header">
+                                                                <span class="fs11"><i class="material-icons red-text text-darken-1">arrow_upward</i>
+                                                              <span class="red-text text-darken-1">max</span> <b>人數上限值</b>&nbsp;&nbsp;<span>{{ Math.round(divisionData._reports.length * (distanceLv.rate_limit/100) )}} 人</span></span>
+                                                            </div>
+                                                            <div class="level-body">
+                                                                <h1 class="fs35 mbn scoreA" v-if="distanceLv.name == 'A'">{{distanceLv.name}}：{{distanceLv.count}}人</h1>
+                                                                <h1 class="fs35 mbn scoreB" v-if="distanceLv.name == 'B'">{{distanceLv.name}}：{{distanceLv.count}}人</h1>
+                                                                <h1 class="fs35 mbn scoreC" v-if="distanceLv.name == 'C'">{{distanceLv.name}}：{{distanceLv.count}}人</h1>
+                                                                <h1 class="fs35 mbn scoreD" v-if="distanceLv.name == 'D'">{{distanceLv.name}}：{{distanceLv.count}}人</h1>
+                                                                <h1 class="fs35 mbn scoreE" v-if="distanceLv.name == 'E'">{{distanceLv.name}}：{{distanceLv.count}}人</h1>
+                                                                <h6 class="text-system scoreA" v-if="distanceLv.name == 'A'">{{distanceLv.score_least}} ~{{distanceLv.score_limit}}</h6>
+                                                                <h6 class="text-system scoreB" v-if="distanceLv.name == 'B'">{{distanceLv.score_least}} ~{{distanceLv.score_limit}}</h6>
+                                                                <h6 class="text-system scoreC" v-if="distanceLv.name == 'C'">{{distanceLv.score_least}} ~{{distanceLv.score_limit}}</h6>
+                                                                <h6 class="text-system scoreD" v-if="distanceLv.name == 'D'">{{distanceLv.score_least}} ~{{distanceLv.score_limit}}</h6>
+                                                                <h6 class="text-system scoreE" v-if="distanceLv.name == 'E'">{{distanceLv.score_least}} ~{{distanceLv.score_limit}}</h6>
+                                                            </div>
+                                                            <div class="level-footer">
+                                                                <span class="fs11"><i class="material-icons green-text text-darken-1">arrow_downward</i>
+                                                              <span class="green-text text-darken-1">min</span> <b>人數下限值</b>&nbsp;&nbsp;<span>{{ Math.round(divisionData._reports.length * (distanceLv.rate_least/100) )}}人</span></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <table class="table table-fixed">
+                                                <thead>
+                                                    <tr>
+                                                        <th><span class="tdSpan tdDepartment">單位</span></th>
+                                                        <th><span class="tdSpan">員工</span></th>
+                                                        <th><span class="tdSpan tdPost">職務</span></th>
+                                                        <th><span class="tdSpan tdStatus">狀態</span></th>
+                                                        <th><span class="tdSpan tdTotal">原始總分</span></th>
+                                                        <th v-if="divisionData._canfix_division || divisionData._canfix_ceo"><span class="tdSpan">部級配比</span></th>
+                                                        <th v-if="divisionData._canfix_ceo"><span class="tdSpan tdTotal">總配比</span></th>
+                                                        <th v-if="divisionData._canfix_division || divisionData._canfix_ceo"><span class="tdSpan">調整後總分</span></th>
+                                                        <th><span class="tdSpan">考評單</span></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="(report,index) in divisionData._reports" :class="{
+                                                            ready: report.owner_staff_id != member.id,
+                                                            done: !report._authority.commit && report._authority.isFinished,
+                                                            opppen: (!report._authority.commit && report._authority.isFinished && divisionData._canfix_division && divisionData._authority.commit) || divisionData._canfix_ceo || (report.owner_staff_id == member.id && report.commit)
+                                                        }">
+                                                        <td :title="report.department_name">
+                                                            <span class="tdSpan">{{report.department_code}} </span>
+                                                            <span class="tdSpan tdDepartment">{{report.department_name}}</span>
+                                                        </td>
+                                                        <td :title="report.staff_name+report.staff_name_en">
+                                                            <span class="tdSpan">{{report.staff_name}}</span>
+                                                            <span class="tdSpan">{{report.staff_name_en}}</span>
+                                                        </td>
+                                                        <td :title="report.staff_post"><span class="tdSpan tdPost">{{report.staff_post}}</span></td>
+                                                        <td class="status" title="狀態">
+                                                            <span title="自評" class="tdSpan tdStatus grey-text text-darken-1" v-if="(!report._authority.commit && !report._authority.isFinished) && report.owner_staff_id == report.staff_id">自評</span>
+                                                            <span title="提交中" class="tdSpan tdStatus yellow-text text-darken-2" v-if="(!report._authority.commit && !report._authority.isFinished) && report.owner_staff_id != report.staff_id">提交中</span>
+                                                            <span title="待考評" class="tdSpan tdStatus grey-text text-darken-2" v-if="report._authority.commit && !report._authority.isFinished">待考評</span>
+                                                            <span title="完成考評" class="tdSpan tdStatus blue-text" v-if="!report._authority.commit && report._authority.isFinished && !divisionData._canfix_division && !divisionData._canfix_ceo">完成考評</span>
+                                                            <span title="部級配比" class="tdSpan tdStatus" v-if="divisionData._canfix_division && report.owner_staff_id != report.staff_id && divisionData.processing < 2">部級配比</span>
+                                                            <span title="HR查核" class="tdSpan tdStatus" v-if="divisionData.processing == 2">HR查核</span>
+                                                            <span title="完成考評" class="tdSpan tdStatus blue-text" v-if="!report._authority.commit && report._authority.isFinished && divisionData._canfix_division && !divisionData._canfix_ceo">完成考評</span>
+                                                            <span title="總配比" class="tdSpan tdStatus" v-if="divisionData._canfix_ceo">總配比</span>
+                                                        </td>
+                                                        <td class="total" :title="report.assessment_total+' '+report.leve">
+                                                            <span class="tdSpan tdTotal" v-if="!report._authority.isFinished">-</span>
+                                                            <span class="tdSpan tdTotal" v-else>{{report.assessment_total}} {{report.level}}</span>
+                                                        </td>
+                                                        <td v-if="divisionData._canfix_division">
+                                                            <template v-if="!divisionData._authority.edit">
+                                                                <span class="tdSpan" v-if="report.path_lv[2] && report.path_lv[2][1] == report.staff_id">-</span>
+                                                                <span class="tdSpan" v-else>{{report.assessment_total_division_change}}</span>
+                                                            </template>
+                                                            <div class="stepperInput" v-else>
+                                                                <button class="button button--addOnLeft" v-on:click="minusScore(report,0)">-</button>
+                                                                <input type="text" class="input stepperInput__input" v-model="report.assessment_total_division_change" :disabled="divisionData._authority.edit == false" />
+                                                                <button class="button button--addOnRight" v-on:click="plusScore(report,0)">+</button>
+                                                            </div>
+                                                        </td>
+                                                        <td v-if="divisionData._canfix_ceo">
+                                                            <span class="tdSpan" v-if="report.path_lv[2] && report.path_lv[2][1] == report.staff_id">-</span>
+                                                            <span class="tdSpan" v-else>{{report.assessment_total_division_change}}</span>
+                                                        </td>
+                                                        <td v-if="divisionData._canfix_ceo">
+                                                            <template v-if="!divisionData._authority.edit">
+                                                                <span class="tdSpan" v-if="report.path_lv[2] && report.path_lv[2][1] == report.staff_id">-</span>
+                                                                <span class="tdSpan" v-else>{{report.assessment_total_ceo_change}}</span>
+                                                            </template>
+                                                            <div class="stepperInput" v-else>
+                                                                <button class="button button--addOnLeft" v-on:click="minusScore(report,1)">-</button>
+                                                                <input type="text" class="input stepperInput__input" v-model="report.assessment_total_ceo_change" :disabled="divisionData._authority.edit == false" />
+                                                                <button class="button button--addOnRight" v-on:click="plusScore(report,1)">+</button>
+                                                            </div>
+                                                        </td>
+                                                        <td v-if="(divisionData._canfix_division || divisionData._canfix_ceo) && (report._authority.isFinished || report.path_lv[2][1] == report.staff_id)" :title="report.total">
+                                                            <span class="tdSpan red-text darken-1">{{report.total}}
+                                                                <template v-for="(lv, index) in divisionData._distribution" v-if="report.total<=lv.score_limit && report.total>=lv.score_least">{{lv.name}}</template>
+                                                            </span>
+                                                        </td>
+                                                        <td><a v-if="report._authority.edit || report._authority.isFiinshed && divisionData.owner_staff_id == report.owner_staff_id || divisionData._canfix_ceo" class="btn waves-effect waves-teal lighten-1" v-on:click="personalReport(report.id)">考評單</a></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="template-personal">
+                <div id="mySidenav">
+                    <div class="sidenav rv-assess" :class="{moveleft: hasMove}">
+                        <div class="sideArea">
+                            <h1 class="rv-title">
+                          <span>{{personalInfo.staff_no}} {{personalInfo.staff_name}} {{personalInfo.staff_name_en}} 考評單</span>
+                          <button class="modal-action modal-close btn-flat" v-on:click="closeReport"><i class="material-icons">close</i></button>
+                        </h1>
+                            <div class="card-body">
+                                <div class="brand-actions">
+                                    <span class="form-actions">
+                                      <a title="儲存" v-on:click="savePersonalReport(personalInfo.id)" v-if="personalInfo._authority.edit || personalInfo._authority.edit_comment"><i class="material-icons indigo-text text-accent-2">save</i></a>
+                                      <a title="送審" v-on:click="commitPersonalReport(personalInfo.id)" v-if="personalInfo._authority.commit"><i class="material-icons yellow-text text-darken-2">arrow_forward</i></a>
+                                      <a title="退回" v-if="personalInfo._authority.return" :href="'#ReJectModalPersonal'"><i class="material-icons red-text">arrow_back</i></a>
+                                  </span>
+                                    <span class="line"></span>
+                                    <span class="note-btns">
+                                      <a title="意見回饋" :href="'#ReportWordPersonal'" v-on:click="getReportWord(personalInfo.id)"><i class="material-icons teal-text">chat_bubble_outline</i></a>
+                                      <a title="歷史記錄" :href="'#HistoryModalPersonal'" v-on:click="getRecords(personalInfo.id)"><i class="material-icons indigo-text">library_books</i></a>
+                                  </span>
+                                </div>
+                                <div class="step"><span class="no">a.</span>考核項目</div>
+                                <div class="year-evaluation-item-group">
+                                    <table class="table table-fixed">
+                                        <tbody>
+                                            <tr>
+                                                <th>受評對象</th>
+                                                <td>{{personalInfo.staff_name}} {{personalInfo.staff_name_en}} ( {{personalInfo.staff_no}} )</td>
+                                                <th>到職日</th>
+                                                <td>{{personalInfo.staff_first_day}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>部門</th>
+                                                <td>{{personalInfo.division_name}}</td>
+                                                <th>處/組單位</th>
+                                                <td>{{personalInfo.department_name}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <table class="table table-fixed">
+                                        <thead>
+                                            <tr>
+                                                <th>{{currentYear-1}}
+                                                    <br>年考績等級</th>
+                                                <th>{{currentYear}}
+                                                    <br>月績效均分</th>
+                                                <th>遲到(次)</th>
+                                                <th>忘刷(次)</th>
+                                                <th>忘卡(次)</th>
+                                                <th>事假(天)</th>
+                                                <th>全薪病假(天)</th>
+                                                <th>半薪病假(天)</th>
+                                                <th>曠職(天)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>{{personalInfo.before_level}}</td>
+                                                <td>{{personalInfo.monthly_average}}</td>
+                                                <td>{{personalInfo.attendance_json.late}}</td>
+                                                <td>{{personalInfo.attendance_json.forgetcard}}</td>
+                                                <td>{{personalInfo.attendance_json.nocard}}</td>
+                                                <td>{{personalInfo.attendance_json.leave}}</td>
+                                                <td>{{personalInfo.attendance_json.sick}}</td>
+                                                <td>{{personalInfo.attendance_json.paysick}}</td>
+                                                <td>{{personalInfo.attendance_json.absent}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Leader Table -->
+                                    <div class="year-evalution-table" v-if="personalInfo.staff_is_leader">
+                                        <table class="table table-fixed">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="2">項目</th>
+                                                    <th :colspan="item.itemBlock" v-for="(item, index) in leaderThead.titleArray">{{item.title}}</th>
+                                                    <th rowspan="2">總分</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>比重</th>
+                                                    <th>分數類別</th>
+                                                    <th v-for="(topic, index) in leaderTopic">{{topic.name}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="ready">
+                                                    <td>{{personalInfo.assessment_json.under.percent}}%</td>
+                                                    <td>部屬</td>
+                                                    <td colspan="17">部屬回饋問卷</td>
+                                                    <td>
+                                                        <div class="total">{{personalInfo.assessment_json.under.total}}</div>
+                                                    </td>
+                                                </tr>
+                                                <tr class="ready">
+                                                    <td>{{personalInfo.assessment_json.self.percent}}%</td>
+                                                    <td>自評</td>
+                                                    <td v-for="(score, index) in personalInfo.assessment_json.self.score">{{score}}</td>
+                                                    <td>
+                                                        <div class="total">{{totalScore(personalInfo.assessment_json.self.score)}}</div>
+                                                    </td>
+                                                </tr>
+                                                <tr v-if="personalInfo.assessment_json[3]" :class="{ ready:personalInfo.path_lv[3][1] != personalInfo.owner_staff_id }">
+                                                    <td>{{personalInfo.assessment_json[3].percent}}%</td>
+                                                    <td>處主管評核</td>
+                                                    <td v-for="(topic, index) in leaderTopic">
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 1" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[0]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 2" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[1]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 3" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[2]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 4" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[3]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 5" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[4]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div v-if="totalScore(personalInfo.assessment_json[3].score) == 0">
+                                                            <a class="copy-button" title="同上" v-on:click="copyData(3)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                        </div>
+                                                        <div class="total" v-else>{{totalScore(personalInfo.assessment_json[3].score)}}</div>
+                                                    </td>
+                                                </tr>
+                                                <tr v-if="personalInfo.assessment_json[2]" :class="{ ready:personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0}">
+                                                    <td>{{personalInfo.assessment_json[2].percent}}%</td>
+                                                    <td>部長評核</td>
+                                                    <td v-for="(topic, index) in leaderTopic">
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 1" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[0]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 2" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[1]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 3" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[2]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 4" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[3]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 5" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[4]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div v-if="totalScore(personalInfo.assessment_json[2].score) == 0">
+                                                            <a class="copy-button" title="同上" v-on:click="copyData(2)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                        </div>
+                                                        <div class="total" v-else>{{totalScore(personalInfo.assessment_json[2].score)}}</div>
+                                                    </td>
+                                                </tr>
+                                                <tr v-if="personalInfo.assessment_json[1]" :class="{ ready:personalInfo.path_lv[1][1] != personalInfo.owner_staff_id || personalInfo._authority.edit == false }">
+                                                    <td>{{personalInfo.assessment_json[1].percent}}%</td>
+                                                    <td>Mickey評核</td>
+                                                    <td v-for="(topic, index) in leaderTopic">
+                                                        <select v-model="personalInfo.assessment_json[1].score[index+1]" v-if="topic.type==1" :disabled="personalInfo._authority.edit == false">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[0]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[1].score[index+1]" v-if="topic.type==2" :disabled="personalInfo._authority.edit == false">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[1]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[1].score[index+1]" v-if="topic.type==3" :disabled="personalInfo._authority.edit == false">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[2]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[1].score[index+1]" v-if="topic.type==4" :disabled="personalInfo._authority.edit == false">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[3]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[1].score[index+1]" v-if="topic.type==5" :disabled="personalInfo._authority.edit == false">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.leader[4]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div v-if="totalScore(personalInfo.assessment_json[1].score) == 0">
+                                                            <a class="copy-button" title="同上" v-on:click="copyData(1)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                        </div>
+                                                        <div class="total" v-else>{{totalScore(personalInfo.assessment_json[1].score)}}</div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- Staff Table -->
+                                    <div class="year-evalution-table" v-else>
+                                        <table class="table table-fixed">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="2">項目</th>
+                                                    <th :colspan="item.itemBlock" v-for="(item, index) in staffThead.titleArray">{{item.title}}</th>
+                                                    <th rowspan="2">總分</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>比重</th>
+                                                    <th>分數類別</th>
+                                                    <th v-for="(topic, index) in staffTopic">{{topic.name}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="ready">
+                                                    <td>{{personalInfo.assessment_json.self.percent}}%</td>
+                                                    <td>自評</td>
+                                                    <td v-for="score in personalInfo.assessment_json.self.score">{{score}}</td>
+                                                    <td>
+                                                        <div class="total">{{personalInfo.assessment_json.self.total}}</div>
+                                                    </td>
+                                                </tr>
+                                                <tr v-if="personalInfo.assessment_json[4]" :class="{ ready:personalInfo.path_lv[4][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0}">
+                                                    <td>{{personalInfo.assessment_json[4].percent}}%</td>
+                                                    <td>組長初核</td>
+                                                    <td v-for="(topic, index) in staffTopic">
+                                                        <select v-model="personalInfo.assessment_json[4].score[index+1]" v-if="topic.type == 1" :disabled="personalInfo.path_lv[4][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[0]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[4].score[index+1]" v-if="topic.type == 2" :disabled="personalInfo.path_lv[4][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[1]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[4].score[index+1]" v-if="topic.type == 3" :disabled="personalInfo.path_lv[4][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[2]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[4].score[index+1]" v-if="topic.type == 4" :disabled="personalInfo.path_lv[4][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[3]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div v-if="totalScore(personalInfo.assessment_json[4].score) == 0">
+                                                            <a class="copy-button" title="同上" v-on:click="copyData(4)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                        </div>
+                                                        <div class="total" v-else>{{totalScore(personalInfo.assessment_json[4].score)}}</div>
+                                                    </td>
+                                                </tr>
+                                                <tr v-if="personalInfo.assessment_json[3]" :class="{ ready:personalInfo.path_lv[3][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0}">
+                                                    <td>{{personalInfo.assessment_json[3].percent}}%</td>
+                                                    <td>處主管覆核</td>
+                                                    <td v-for="(topic, index) in staffTopic">
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 1" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[0]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 2" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[1]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 3" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[2]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[3].score[index+1]" v-if="topic.type == 4" :disabled="personalInfo.path_lv[3][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[3]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div v-if="totalScore(personalInfo.assessment_json[3].score) == 0">
+                                                            <a class="copy-button" title="同上" v-on:click="copyData(3)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                        </div>
+                                                        <div class="total" v-else>{{totalScore(personalInfo.assessment_json[3].score)}}</div>
+                                                    </td>
+                                                </tr>
+                                                <tr v-if="personalInfo.assessment_json[2]" :class="{ ready:personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0}">
+                                                    <td>{{personalInfo.assessment_json[2].percent}}%</td>
+                                                    <td>部門主管核定</td>
+                                                    <td v-for="(topic, index) in staffTopic">
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 1" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[0]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 2" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[1]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 3" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[2]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                        <select v-model="personalInfo.assessment_json[2].score[index+1]" v-if="topic.type == 4" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id || personalInfo.processing_lv == 0">
+                                                            <option value="0">00</option>
+                                                            <option v-for="socre in optionScore.staff[3]" :value="socre">{{socre}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div v-if="totalScore(personalInfo.assessment_json[2].score) == 0">
+                                                            <a class="copy-button" title="同上" v-on:click="copyData(2)"><i class="material-icons orange-text text-darkarken-1">content_copy</i><span>As above</span></a>
+                                                        </div>
+                                                        <div class="total" v-else>{{totalScore(personalInfo.assessment_json[2].score)}}</div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="step"><span class="no">b.</span>問答題</div>
+                                <div class="questionnaires-leader-essay-questions questions">
+                                    <div class="question-group">
+                                        <div class="question-area" v-if="personalInfo.upper_comment[2]">
+                                            <div class="question">部門主管評語：</div>
+                                            <div class="answer-group">
+                                                <textarea v-model="personalInfo.upper_comment[2].content" :disabled="personalInfo.path_lv[2][1] != personalInfo.owner_staff_id"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="question-area" v-if="personalInfo.upper_comment[1]">
+                                            <div class="question">運維主管評語：</div>
+                                            <div class="answer-group">
+                                                <textarea v-model="personalInfo.upper_comment[1].content" :disabled="personalInfo.path_lv[1][1] != personalInfo.owner_staff_id"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div :id="'ReJectModalPersonal'" class="modal">
+                        <div class="modal-content">
+                            <div class="rv-page-title">
+                                <h1 class="rv-title">退回考評單</h1>
+                            </div>
+                            <div class="row">
+                                <div class="col s12" style="padding-left: 10px;">
+                                    <div class="ml10">退回事由：</div>
+                                    <p class="ml10">
+                                        <textarea class="form-control" v-model="rejectReason"></textarea>
+                                    </p>
+                                    <div class="row">
+                                        <div class="pull-right">
+                                            <button class="btn waves-effect waves-teal lighten-1 red" v-on:click="rejectPersonalReport(personalInfo.id)">退回</button>
+                                            <button class="waves-effect waves-light btn modal-close darken-1 grey">取消</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div :id="'ReportWordPersonal'" class="modal evaluation-modal">
+                        <div class="modal-content">
+                            <div class="rv-page-title">
+                                <h1 class="rv-title">意見回饋<button href="#" class="modal-action modal-close btn-flat"><i class="material-icons md-18">close</i></button></h1>
+                            </div>
+                            <div class="tab-area">
+                                <ul class="tabs tab-feedback">
+                                    <li class="tab" v-if="personalInfo.staff_is_leader"><a :href="'#subordinate123'">部屬回饋</a></li>
+                                    <li class="tab" v-if="personalInfo.staff_is_leader"><a :href="'#other'">其它單位回饋</a></li>
+                                    <li class="tab"><a :href="'#self'">自我評語</a></li>
+                                    <li class="tab"><a :href="'#supervisor'">主管評語</a></li>
+                                </ul>
+                                <div :id="'subordinate123'" class="col s12 tab-content" v-if="personalInfo.staff_is_leader">
+                                    <div class="content">
+                                        <ul class="content-list">
+                                            <span class="no">讚揚</span>
+                                            <template v-if="opinionFeedback.question.question_1.length > 0">
+                                                <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_1">{{opinion.content}}</li>
+                                            </template>
+                                            <p v-else>無</p>
+                                        </ul>
+                                        <ul class="content-list">
+                                            <span class="no">改善</span>
+                                            <template v-if="opinionFeedback.question.question_2.length > 0">
+                                                <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_2">{{opinion.content}}</li>
+                                            </template>
+                                            <p v-else>無</p>
+                                        </ul>
+                                        <ul class="content-list">
+                                            <span class="no">建議</span>
+                                            <template v-if="opinionFeedback.question.question_4.length > 0">
+                                                <li class="text" v-for="(opinion,index) in opinionFeedback.question.question_4">{{opinion.content}}</li>
+                                            </template>
+                                            <p v-else>無</p>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div :id="'other'" class="col s12 tab-content" v-if="personalInfo.staff_is_leader">
+                                    <div class="content" v-if="opinionFeedback.question.length > 0">
+                                        <ul class="content-list" v-for="(opinion,index) in opinionFeedback.question.question_5">
+                                            <span class="no">{{index+1}}</span>
+                                            <li class="text">{{opinion.content}}</li>
+                                        </ul>
+                                    </div>
+                                    <div v-else>無</div>
+                                </div>
+                                <div :id="'self'" class="col s12 tab-content">
+                                    <div class="content">
+                                        <ul class="content-list">
+                                            <span class="no">貢獻</span>
+                                            <li class="text" v-if="opinionFeedback.self_contribution">{{opinionFeedback.self_contribution}}</li>
+                                            <p v-else>無</p>
+                                        </ul>
+                                        <ul class="content-list">
+                                            <span class="no">改進</span>
+                                            <li class="text" v-if="opinionFeedback.self_improve">{{opinionFeedback.self_improve}}</li>
+                                            <p v-else>無</p>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div :id="'supervisor'" class="col s12 tab-content">
+                                    <div class="content">
+                                        <ul class="content-list" v-if="opinionFeedback.upper_comment[1]">
+                                            <span class="no">運維中心主管</span>
+                                            <li class="text" v-if="opinionFeedback.upper_comment[1].content">{{opinionFeedback.upper_comment[1].content}}</li>
+                                            <p v-else>無</p>
+                                        </ul>
+                                        <ul class="content-list" v-if="opinionFeedback.upper_comment[2]">
+                                            <span class="no">部門主管</span>
+                                            <li class="text" v-if="opinionFeedback.upper_comment[2].content">{{opinionFeedback.upper_comment[2].content}}</li>
+                                            <p v-else>無</p>
+                                        </ul>
+                                        <ul class="content-list" v-if="opinionFeedback.upper_comment[3]">
+                                            <span class="no">處主管</span>
+                                            <li class="text" v-if="opinionFeedback.upper_comment[3].content">{{opinionFeedback.upper_comment[3].content}}</li>
+                                            <p v-else>無</p>
+                                        </ul>
+                                        <ul class="content-list" v-if="opinionFeedback.upper_comment[4]">
+                                            <span class="no">組長主管</span>
+                                            <li class="text" v-if="opinionFeedback.upper_comment[4].content">{{opinionFeedback.upper_comment[4].content}}</li>
+                                            <p v-else>無</p>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div :id="'HistoryModalPersonal'" class="modal">
+                        <div class="modal-content">
+                            <div class="rv-page-title">
+                                <h1 class="rv-title">歷史紀錄<button href="#" class="modal-action modal-close btn-flat"><i class="material-icons md-18">close</i></button></h1>
+                            </div>
+                            <div class="row">
+                                <div class="widget-timeline">
+                                    <div class="widget-timeline-section widget-timeline-first">考評單歷程</div>
+                                    <div v-for="(record,index) in historyRecords">
+                                        <div class="widget-timeline-item">
+                                            <div class="widget-timeline-info">
+                                                <div class="widget-timeline-bullet bg-primary"></div>
+                                                <div class="widget-timeline-time bg-primary">{{record.date}}
+                                                    <br>{{record.time}}</div>
+                                            </div>
+                                            <div class="panel">
+                                                <div class="panel-body">
+                                                    <div v-if="record.type == '0'">
+                                                        <span>✧產生考評單</span>
+                                                        <p>日期：{{record.date}} {{record.time}}</p>
+                                                    </div>
+                                                    <div v-if="record.type == '2'">
+                                                        <span>【{{record.from_name}}{{record.from_name_en}} 】</span>
+                                                        <span class="commit">→ 送審 →</span>
+                                                        <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                                    </div>
+                                                    <div v-if="record.type == '4'">
+                                                        <span>【{{record.from_name}}{{record.from_name_en}}】</span>
+                                                        <span class="return">→ 退回 →</span>
+                                                        <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                                        <p>&nbsp;&nbsp;退回原因： {{record.reason}}</p>
+                                                    </div>
+                                                    <div v-if="record.type == '3'">
+                                                        <span class="done">√ </span><span>考評單已完成</span>
+                                                        <p>日期：{{record.date}}；時間：{{record.time}}</p>
+                                                    </div>
+                                                    <div v-if="record.type == '5'">
+                                                        <span>【{{record.from_name}}{{record.from_name_en}}】</span>
+                                                        <span class="other">→ 其他 →</span>
+                                                        <span>【{{record.to_name}}{{record.to_name_en}}】</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="<?=U('/Public/js/Index/Year-Evaluation.js')?>"></script>

@@ -1,0 +1,194 @@
+.sweet-overlay {
+    background: rgba(41, 47, 51, 0.9);
+}
+
+.sweet-alert {
+    padding: 15px;
+    padding-top: 55px;
+    border-radius: 6px;
+    box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.11), 0px 6px 30px rgba(0, 0, 0, 0.14);
+    text-align: right;
+}
+
+.sweet-alert h2 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    margin: 0;
+    height: 40px;
+    border-bottom: 1px solid #ede7e1;
+    background: #f37b00;
+    color: #fff;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 40px;
+}
+
+.sweet-alert p {
+    display: block;
+    margin-top: 7px;
+    color: #222222;
+    text-align: center;
+    font-weight: 400;
+    font-size: 14px;
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+.sweet-alert .sa-button-container {
+    /* margin: -15px; */
+    /* margin-top: 0; */
+    /* border-top: 1px solid #ede7e1; */
+    background-color: #ffffff;
+    /* box-shadow: 0px -1px 0px white; */
+    text-align: center;
+}
+
+.sweet-alert[data-has-confirm-button=false][data-has-cancel-button=false] {
+    padding-bottom: 10px;
+}
+
+.sweet-alert[data-has-confirm-button=false][data-has-cancel-button=false] .sa-button-container {
+    display: none;
+}
+
+.sweet-alert button {
+    position: relative;
+    margin: 17px 0px;
+    padding: 8px 16px;
+    border-radius: 2px;
+    border-radius: 4px;
+    box-shadow: none !important;
+    text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.sweet-alert button:focus,
+.sweet-alert button.cancel:focus {
+    box-shadow: none !important;
+}
+
+.sweet-alert button:focus::before,
+.sweet-alert button.cancel:focus::before {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    bottom: -5px;
+    left: -5px;
+    border: 1px solid #f2912d;
+    border-radius: 8px;
+    content: "";
+}
+
+.sweet-alert button.confirm {
+    /* margin-right: 15px; */
+    border: 1px solid #e87908;
+    background-color: #f57c00 !important;
+    background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#00000000, endColorstr=#0C000000)";
+}
+
+.sweet-alert button.confirm:hover {
+    border-color: #e87908;
+    background-color: #f57c00;
+    background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.15));
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#00000000, endColorstr=#26000000)";
+}
+
+.sweet-alert button.cancel {
+    margin-right: 9px;
+    border: 1px solid #e1e8ed;
+    background-color: #f5f8fa;
+    background-image: linear-gradient(#fff, #f5f8fa);
+    color: #66757e;
+    text-shadow: 0px -1px 0px white;
+}
+
+.sweet-alert button.cancel:hover,
+.sweet-alert button.cancel:focus:hover {
+    border-color: #e1e8ed;
+    background-color: #e1e8ed;
+    background-image: linear-gradient(#fff, #e1e8ed);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(enabled=false)";
+}
+
+.sweet-alert button.cancel:focus {
+    border-color: #fff;
+    background: #fff;
+}
+
+.sweet-alert .sa-icon:not(.sa-custom) {
+    margin-top: -10px;
+    margin-bottom: -2px;
+    -webkit-transform: scale(0.72);
+    transform: scale(0.72);
+    -ms-transform: scale(0.72);
+}
+
+.sweet-alert input {
+    margin: 10px 0;
+    padding: 10px 7px;
+    height: auto;
+    border: 1px solid #e1e8ed;
+    border-radius: 3px;
+    box-shadow: none;
+    font-size: 13px;
+}
+
+.sweet-alert input:focus {
+    border-color: #EEE;
+    box-shadow: inset 0 0 0 1px rgba(77, 99, 107, 0.7);
+}
+
+.sweet-alert fieldset .sa-input-error {
+    display: none;
+}
+
+.sweet-alert .sa-error-container {
+    margin-bottom: 6px;
+    border: none;
+    background-color: #fbedc0;
+    text-align: center;
+}
+
+.sweet-alert .sa-error-container.show {
+    border: 1px solid #f0e1b9;
+}
+
+.sweet-alert .sa-error-container .icon {
+    display: none;
+}
+
+.sweet-alert .sa-error-container p {
+    margin-top: 0;
+    color: #292f33;
+    font-weight: 600;
+}
+
+@-webkit-keyframes animateErrorIcon {
+    0% {
+        opacity: 0;
+        -webkit-transform: rotateX(100deg), scale(0.5);
+        transform: rotateX(100deg), scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        -webkit-transform: rotateX(0deg), scale(0.5);
+        transform: rotateX(0deg), scale(0.5);
+    }
+}
+
+@keyframes animateErrorIcon {
+    0% {
+        opacity: 0;
+        -webkit-transform: rotateX(100deg), scale(0.5);
+        transform: rotateX(100deg), scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        -webkit-transform: rotateX(0deg), scale(0.5);
+        transform: rotateX(0deg), scale(0.5);
+    }
+}

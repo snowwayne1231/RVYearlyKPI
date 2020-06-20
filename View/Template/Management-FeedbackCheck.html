@@ -1,0 +1,68 @@
+<style>
+.header {
+    padding: 10px;
+    font-size: 21px;
+    padding-bottom: 0;
+}
+
+.list-item {
+    border-top: 1px solid #d8d8d8;
+}
+
+.row {
+    margin-bottom: 0;
+}
+
+.dropdown {
+    display: inline-block;
+}
+
+.action {
+    margin-top: 5px;
+}
+</style>
+<div id="Management-FeedbackCheck">
+    <div class="had-container rv-feeback-check">
+        <h1 class="rv-title">部屬意見管理 (對其它單位主管) </h1>
+        <div class="container">
+            <div class="row filter-date">
+                <div class="year-select">
+                    <h3 class="title">請選擇年份</h3>
+                    <div class="dropdown">
+                        <select id="getYear" class="btn dropdown-button" v-model="currentYear"></select>
+                    </div>
+                </div>
+            </div>
+            <div v-if="config.processing >= 3 && alleader[0]">
+                <div class="card opinion-list" v-for="leader in alleader" v-if="leader.questions && leader.questions.length>0">
+                    <div class="header">{{leader.name}} {{leader.name_en}} </div>
+                    <ul>
+                        <li>
+                            <div class="row list-item" v-for="lq in leader.questions">
+                                <div class="col s8 l8">
+                                    <p>{{lq.content}}</p>
+                                </div>
+                                <div class="col s4 l4 action" v-if="isNotFinished">
+                                    <span>轉移給</span>
+                                    <div class="dropdown">
+                                        <select class="btn dropdown-button" v-model="lq.target_id">
+                                            <option v-for="list in alleader" :value="list.id">{{list.name}}</option>
+                                        </select>
+                                    </div>
+                                    <a class="waves-effect waves-light btn" v-on:click="moveGoGo(lq.qid, lq.target_id)">移動</a>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div v-else>
+                <div id="NoData" class="col s12 l12 no-data nullDataInfo" style="display: block;">
+                    <div class="title">{{currentYear}} 年度部屬回饋尚未關閉或產生</div>
+                    <div class="content">請至【系統設定】>【年考評區間設定】進行相關設定；或詢問相關開發人員。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Management-FeedbackCheck.js')?>"></script>

@@ -1,0 +1,140 @@
+#Overview {
+    .is-release {
+        background-color: #e0f2f1;
+    }
+    table {
+        td {
+            border-radius: 0;
+        }
+        td:last-child >a {
+            max-width: 90px;
+            overflow: visible;
+            white-space: nowrap;
+        }
+    }
+}
+
+.rv-overview {
+    .rv-title {
+        span {
+            font-size: 20px;
+        }
+    }
+    .rv-item {
+        border: 1px solid #212121;
+        .rv-img {
+            top: 20px;
+        }
+        .comment_user {
+            display: block;
+            height: 30px;
+        }
+        .comm-time {
+            position: relative;
+            bottom: 15px;
+            left: 20px;
+            float: right;
+            margin-top: 0;
+        }
+    }
+    .table {
+        .non-scoring {
+            input[type="text"] {
+                width: 75px;
+            }
+            span{
+              width:24px;
+              height:  24px;
+              vertical-align: middle;
+              .note{
+                color: #a8cecc;
+                vertical-align: middle;
+                width:24px;
+                height: 24px;
+                display: inline-block;
+                &.hasNote{
+                  color:#089482;
+                  cursor:   pointer;
+                }
+              }
+            }
+            .checkBlock {
+                background: #FFF;
+            }
+            .btn-little {
+                width: 40px;
+                height: 23px;
+                margin: 0 0 0 5px;
+            }
+            .myinput {
+                &.large {
+                    width: 22px;
+                    height: 15px;
+                    cursor: pointer;
+                }
+                &[type="checkbox"] {
+                    &:before {
+                        position: relative;
+                        display: block;
+                        width: 11px;
+                        height: 11px;
+                        border: 1px solid #808080;
+                        content: "";
+                        background: #FFF;
+                    }
+                    &:after {
+                        position: relative;
+                        display: block;
+                        left: 2px;
+                        top: -11px;
+                        width: 7px;
+                        height: 7px;
+                        border-width: 1px;
+                        border-style: solid;
+                        border-color: #B3B3B3 #dcddde #dcddde #B3B3B3;
+                        content: "";
+                        background-image: linear-gradient(135deg, #FFF 0%, #FFF 100%);
+                        background-repeat: no-repeat;
+                        background-position: center;
+                    }
+                    &:before {
+                        position: relative;
+                        display: block;
+                        width: 11px;
+                        height: 11px;
+                        border: 1px solid #808080;
+                        content: "";
+                        background: #FFF;
+                    }
+                }
+                &.large[type="checkbox"] {
+                    &:before {
+                        width: 20px;
+                        height: 20px;
+                    }
+                    &:after {
+                        top: -18px;
+                        width: 16px;
+                        height: 16px;
+                        left: 2px;
+                    }
+                    &:checked:after {
+                        background: transparent;
+                        left: 5px;
+                        width: 20px;
+                        transform: rotate(-45deg);
+                        -o-transform: rotate(-45deg);
+                        -ms-transform: rotate(-45deg);
+                        -moz-transform: rotate(-45deg);
+                        -webkit-transform: rotate(-45deg);
+                        border-width: 3px;
+                        height: .5rem;
+                        border-color: #FF9800;
+                        border-top: 0;
+                        border-right: 0;
+                    }
+                }
+            }
+        }
+    }
+}

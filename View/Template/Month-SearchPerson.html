@@ -1,0 +1,360 @@
+<script type="text/javascript" src="<?=U('/Public/js/chart/Chart.bundle.min.js')?>"></script>
+<script type="text/javascript" src="<?=U('/Public/js/chart/Chart.min.js')?>"></script>
+<script type="text/javascript" src="<?=U('/Public/js/chart/utils.js')?>"></script>
+<script type="text/javascript" src="<?=U('/Public/js/chart/analyser.js')?>"></script>
+<div id="MonthSearchPerson">
+    <div class="had-container rv-month-search">
+        <h1 class="rv-title">員工績效分析</h1>
+        <div class="filter-date row">
+            <h3 class="title">請選擇查詢區間</h3>
+            <div class="dropdown">
+                <select id="getYearStart" class="btn dropdown-button" type="button" v-model="year_start" v-on:change="checkYM()"></select>
+            </div>
+            <div class="dropdown">
+                <select id="getMonthStart" class="btn dropdown-button" type="button" v-model="month_start" v-on:change="checkYM()"></select>
+            </div>
+            <h3 class="title">至</h3>
+<!--             <div class="dropdown">
+                <select id="getYearEnd" class="btn dropdown-button" type="button" v-model="year_start" v-on:change="checkYM()"></select>
+            </div> -->
+            <div class="dropdown">
+                <select id="getMonthEnd" class="btn dropdown-button" type="button" v-model="month_end" v-on:change="checkYM()"></select>
+            </div>
+            <div class="dropdown">
+                <div class="search-input-article input-field">
+                    <input placeholder="輸入要查看的人員姓名" type="text" class="form-control autocomplete" :value="personName" v-model="personName" @click="getPerosonDate(true)" @keyup="getPerosonDate()">
+                    <input id="perID" name="prodId" type="hidden" :value="personID">
+                    <ul class="autocomplete-content dropdown-content" id="autoContent">
+                        <li v-for="(staff,index) in under_staff" v-if="(
+                               staff.name.indexOf(personName) != -1 || staff.name_en.toLowerCase().indexOf(personName.toLowerCase()) != -1)
+                               " @click="SelectPerson(staff.id,staff.name,staff.name_en)">
+                            <span :title="staff.name+staff.name_en">
+                            <span class="name">{{staff.name}} </span>
+                            <span class="name_en"> {{staff.name_en}}</span>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- <div id="NoData" class="col s12 l12 no-data nullDataInfo show" v-if="!member.is_admin && !member.is_ceo">
+            <div class="title">功能維護中</div>
+            <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
+        </div> -->
+        <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+            <div class="title">査無符合篩選條件的資料</div>
+            <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
+        </div>
+        <div class="not-leader col s12 l12 no-data nullDataInfo" :class="{show:member.is_leader== 0 && member.is_admin==0}">
+            <div class="title">您不是主管人員</div>
+            <div class="content">非主管人員無法使用此功能</div>
+        </div>
+        <div class="month-pinfo">
+            <div class="row mb0">
+                <div class="col s12 l12 card info-card">
+                    <div class="person-info">
+                        <div class="onboard">
+                            <ul>
+                                <li><em>到職日</em>{{thePerson.staff_info.first_day}}</li>
+                            </ul>
+                            <ul class="stay-list-btn">
+                                <template v-if="thePerson.staff_info.staff_stay.length > 1">
+                                    <li>
+                                        <em>留停次數</em>{{thePerson.staff_info.staff_stay.length}} 次
+                                    </li>
+                                </template>
+                                <template v-for="(stay_item, s_index) in thePerson.staff_info.staff_stay" v-else>
+                                    <li><em>留停始日</em>{{stay_item.start_day}}</li>
+                                    <li><em>留停迄日</em>{{stay_item.end_day}}</li>
+                                    <li><em>復職日</em><span v-if="!stay_item.return_day">尚未復職</span><span v-else>{{stay_item.return_day}}</span></li>
+                                </template>
+                            </ul>
+                            <div class="stay-list-area" v-if="thePerson.staff_info.staff_stay.length > 1">
+                                <div class="card horizontal">
+                                    <div class="card-stacked">
+                                        <div class="card-content">
+                                            <template v-for="(stay_item, s_index) in thePerson.staff_info.staff_stay">
+                                                <div>
+                                                    <div>
+                                                        <em>留停始日</em>{{stay_item.start_day}}
+                                                    </div>
+                                                    <div>
+                                                        <em>留停迄日</em>{{stay_item.end_day}}
+                                                    </div>
+                                                    <div>
+                                                        <em>復職日</em><span v-if="!stay_item.return_day">尚未復職</span><span v-else>{{stay_item.return_day}}</span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="num"><span class="staff-code">{{thePerson.staff_info.staff_no}}</span><span class="status">{{thePerson.staff_info.status}}</span></div>
+                        <div class="name">
+                            <span class="group_name">{{thePerson.staff_info.department_name}} - {{thePerson.staff_info.post}}</span> <span class="job_post"></span>
+                            <span class="name_en">{{thePerson.staff_info.name}} {{thePerson.staff_info.name_en}} </span>
+                        </div>
+                        <!-- <div class="status formal">/ {{thePerson.staff_info.status}}</div> -->
+                        <div class="postlv borderline">
+                            <div class="lv">職類</div>
+                            <div class="lvname" v-bind:title="thePerson.staff_info.title">{{thePerson.staff_info.title}}</div>
+                        </div>
+                        <div class="interval">
+                            <div class="title">{{year_start}}年</div>
+                            <div class="time">{{month_start}}月</div>
+                        </div>
+                        <div class="middle_arrow">
+                            <span class="word">查詢區間</span>
+                            <span class="arrow">
+                                <svg width="55" height="35"><path fill="#999999" d="M12.6,17.1H9.1c-1,0-1.8,0.8-1.8,1.8c0,1,0.8,1.8,1.8,1.8h3.5c1,0,1.8-0.8,1.8-1.8 C14.4,17.9,13.6,17.1,12.6,17.1z"></path> <path fill="#999999" d="M49.9,17.6L39.1,6.8c-0.7-0.7-1.9-0.7-2.6,0c-0.7,0.7-0.7,1.9,0,2.6l7.7,7.7H20.9c-1,0-1.8,0.8-1.8,1.8 c0,1,0.8,1.8,1.8,1.8h23.3l-7.7,7.7c-0.7,0.7-0.7,1.9,0,2.6c0.7,0.7,1.9,0.7,2.6,0l10.8-10.8C50.8,19.3,50.8,18.5,49.9,17.6z"></path></svg>
+                            </span>
+                        </div>
+                        <div class="interval border-right">
+                            <div class="title">{{year_start}}年</div>
+                            <div class="time">{{month_end}}月</div>
+                        </div>
+                        <div class="average">
+                            <div class="title">平均分數</div>
+                            <div class="content"> <span>{{Math.round(thePerson.monthly_info['average'])}}分</span></div>
+                        </div>
+                    </div>
+                    <ul class="collapsible mb10" data-collapsible="accordion">
+                        <li>
+                            <div class="collapsible-header">
+                                <i class="material-icons">event_available</i> 出缺勤紀錄資訊
+                            </div>
+                            <div class="collapsible-body">
+                                <div class="person-attendance m10">
+                                    <table class="responsive-table bordered attTable">
+                                        <thead>
+                                            <tr>
+                                                <th rowspan="2">遲到</th>
+                                                <th rowspan="2">早退</th>
+                                                <th rowspan="2">沒帶卡</th>
+                                                <th rowspan="2">忘刷卡</th>
+                                                <th rowspan="2">事假</th>
+                                                <th rowspan="2">有薪病假</th>
+                                                <th rowspan="2">半薪病假</th>
+                                                <th rowspan="2">曠職</th>
+                                                <th rowspan="2">加班</th>
+                                                <th rowspan="2">加班補休</th>
+                                                <th colspan="2">請假時數細節</th>
+                                                <!--<th colspan="4">上班時數細節</th>-->
+                                            </tr>
+                                            <tr><!--
+                                                <th title="正常應上班日工時所加總 之總合">正常工時</th>
+                                                <th title="上班工時數、加班、特別休假、加班補休、公假、出差、員工旅遊、Team Buiding、天然災害假 之總和">實際工時</th>
+                                                <th title="實際工時 ÷ 正常工時">工時比例</th>
+                                                <th title="事假、病假、曠職 ÷ 總共請假時數">事/病假比例</th>-->
+                                                <th>總請假時數</th>
+                                                <th title="事假、病假、曠職 ÷ 總共請假時數">事/病假比例</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>{{thePerson.attendance_info.basic.late}} / 次</td>
+                                                <td>{{thePerson.attendance_info.basic.early}} / 次</td>
+                                                <td>{{thePerson.attendance_info.basic.nocard}} / 次</td>
+                                                <td>{{thePerson.attendance_info.basic.forgetcard}} / 次</td>
+                                                <td>{{thePerson.attendance_info.basic.leave}} / 時</td>
+                                                <td>{{thePerson.attendance_info.basic.paysick}} / 時</td>
+                                                <td>{{thePerson.attendance_info.basic.sick}} / 時</td>
+                                                <td>{{thePerson.attendance_info.basic.absent}} / 時</td>
+                                                <td>{{thePerson.attendance_info.basic.overtime}} / 時</td>
+                                                <td>{{thePerson.attendance_info.basic.relax}} / 時</td>
+                                                <td>{{thePerson.attendance_info.basic.working.total_vocation}} / 時</td>
+                                                <td>{{ ((
+                                                  (thePerson.attendance_info.basic.sick+thePerson.attendance_info.basic.paysick+thePerson.attendance_info.basic.leave+thePerson.attendance_info.basic.absent ) * 100
+                                                  / thePerson.attendance_info.basic.working.total_vocation
+                                                  ).toFixed(2)).replace(/(\.[\d])[\d]$/,'$1') }} %</td>
+                                                
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </li>
+                        <li v-if="ExceptionData">
+                            <div class="collapsible-header">
+                                <i class="material-icons">error_outline</i> 非正常上班資訊 <font style="color:#ff5729;">(依法規規定部份假別不可列示)</font>
+                                <span class="badge">{{thePerson.attendance_info.exception_date.length}} days</span>
+                            </div>
+                            <div class="collapsible-body">
+                                <div class="person-attendance m10">
+                                    <table class="responsive-table bordered attTable">
+                                        <thead>
+                                            <tr>
+                                                <th>日期</th>
+                                                <th>打卡上班</th>
+                                                <th>打卡下班</th>
+                                                <th>當日工時數</th>
+                                                <th>請假時數</th>
+                                                <th>加班時數</th>
+                                                <th>備註</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(exceDate,index) in thePerson.attendance_info.exception_date">
+                                                <td>{{exceDate.date}}</td>
+                                                <td>{{exceDate.checkin_hours}}</td>
+                                                <td>{{exceDate.checkout_hours}}</td>
+                                                <td>{{exceDate.work_hours_total}}</td>
+                                                <td>{{exceDate.vocation_hours}}</td>
+                                                <td>{{exceDate.overtime_hours}}</td>
+                                                <td>{{exceDate.remark}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12 l12 card info-card" v-show="thePerson.monthly_every.length>0">
+                    <div id="LeftChart" class="left-chart pull-left">
+                        <ul class="tabs chartTabs">
+                            <li class="tab col s3"><a class="active" href="#swipe-month-chart">各月份分數圖表</a></li>
+                            <li class="tab col s3"><a href="#swipe-ability-chart">能力分析圖表</a></li>
+                            <li class="tab col s3 score"> 加總特殊貢獻 : <span class="allScore scoreA"> {{thePerson.monthly_info.addedValue}}</span> </li>
+                            <li class="tab col s3 score"> 加總重大缺失 : <span class="allScore scoreE"> {{ thePerson.monthly_info.mistake}}  </span></li>
+                        </ul>
+                        <div id="swipe-month-chart">
+                            <div class="chartBlock">
+                                <div id="mChart" class="mon">
+                                    <div class="no-data col s12 l12 no-data nullDataInfo" :class="{show:monthdata== 0}">
+                                        <div class="title">No Data</div>
+                                        <div class="content">查無資料</div>
+                                    </div>
+                                    <div v-if="monthdata!= 0">
+                                        <p class="pull-left">※ 只顯示計分及已核准之月份</p>
+                                        <p class="pull-right">點選月份可見詳細資料</p>
+                                    </div>
+                                    <canvas id="monChart" class="monChart m100" style="width:100vw;height:100vh"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="swipe-ability-chart" class="col s12">
+                            <div class="chartBlock">
+                                <div class="radar" v-if="thePerson.monthly_info.analysis_leader||thePerson.monthly_info.analysis_normal">
+                                    <div id="radarLeader">
+                                        <canvas id="radarChartLeader" style="width:100vw;height:100vh"></canvas>
+                                    </div>
+                                    <hr v-if="thePerson.monthly_info.analysis_leader_score" class="mb50 mt20">
+                                    <div id="radarNormal" v-if="thePerson.monthly_info.analysis_normal">
+                                        <canvas id="radarChartNormal"  style="width:100vw;height:100vh"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="RightContent" class="right-content info-detail pull-right">
+                        <h4 class="card-title mb50">詳細內容  <a class="subbtn btn waves-effect waves-teal lighten-1 pull-right" @click="showMonth">顯示所有月份資料</a></h4>
+                        <div class="row">
+                            <div class="detail-content">
+                                <!-- 無資料時出現 -->
+                                <div class="no-data" :class="{show:thePerson.monthly_every.length==0}">
+                                    <p class="img"> <img class="responsive-img" src="<?=U('/Public/img/noData.jpg')?>" alt=""></p>
+                                    <p> 查無資料</p>
+                                </div>
+                                <div class="col s12 l12 card info-card mcard mb50" v-for="everyMon in monthEvery" :id="'mm'+everyMon.month">
+                                    <div class="month-card col s12 l12">
+                                        <div class="month col s12 l12 row" :class="{off:everyMon.exception ||everyMon.releaseFlag=='N'}">
+                                            <div class="score  col s4 l4"> <span class="num">{{everyMon.total}}</span> 分</div>
+                                            <div class="date  col s4 l4" :title="everyMon.month+'月'+everyMon.year+'年'"> {{everyMon.month}} 月 {{everyMon.year}} 年</div>
+                                            <div class="info  col s4 l4" v-if="everyMon.exception"> 本月不計分 </div>
+                                            <div title="尚未核准，考評中" class="info  col s4 l4" v-if="everyMon.releaseFlag=='N'"> 尚未核准，考評中 </div>
+                                        </div>
+                                        <div class="reason" v-if="everyMon.exception"> 本月份不計分原因： {{everyMon.exception_reason}} </div>
+                                        <div class="score  col s12 l12 row" v-if="everyMon.attendance_members">
+                                            <table class="responsive-table bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th> 目標達成率</th>
+                                                        <th> 工作品質</th>
+                                                        <th> 工作方法</th>
+                                                        <th> 出錯率</th>
+                                                        <th> 進度追蹤</th>
+                                                        <th> 企劃能力</th>
+                                                        <th> 執行力</th>
+                                                        <th> 判斷力</th>
+                                                        <th>應變能力</th>
+                                                        <th> 出勤率</th>
+                                                        <th> 組員出勤</th>
+                                                        <th> 特殊貢獻</th>
+                                                        <th class="red-text"> 重大缺失</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td> {{(everyMon.target)}}</td>
+                                                        <td> {{(everyMon.quality)}}</td>
+                                                        <td> {{(everyMon.method)}}</td>
+                                                        <td> {{everyMon.error}}</td>
+                                                        <td> {{everyMon.backtrack}}</td>
+                                                        <td> {{everyMon.planning}}</td>
+                                                        <td> {{everyMon.execute}}</td>
+                                                        <td> {{everyMon.decision}}</td>
+                                                        <td> {{everyMon.resilience}}</td>
+                                                        <td> {{everyMon.attendance}}</td>
+                                                        <td> {{everyMon.attendance_members}}</td>
+                                                        <td> {{everyMon.addedValue}}</td>
+                                                        <td class="red-text"> {{everyMon.mistake}}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="score  col s12 l12 row" v-if="everyMon.completeness">
+                                            <table class="responsive-table bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th> 工作品質</th>
+                                                        <th> 工作績效</th>
+                                                        <th> 責任感</th>
+                                                        <th> 配合度</th>
+                                                        <th> 出席率</th>
+                                                        <th> 特殊貢獻</th>
+                                                        <th class="red-text"> 重大缺失</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td> {{everyMon.quality}}</td>
+                                                        <td> {{everyMon.completeness}}</td>
+                                                        <td> {{everyMon.responsibility}}</td>
+                                                        <td> {{everyMon.cooperation}}</td>
+                                                        <td> {{everyMon.attendance}}</td>
+                                                        <td> {{everyMon.addedValue}}</td>
+                                                        <td class="red-text"> {{everyMon.mistake}}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="comment col s12 l12 row">
+                                            <ul class="collapsible" data-collapsible="accordion">
+                                                <li>
+                                                    <div class="collapsible-header"><i class="material-icons">sms</i>當月評論數：<span class="commNo"> {{everyMon._comment_count}} </div>
+                                                    <div class="collapsible-body">
+                                                      <span v-if="everyMon._comment_count==0">  無 </span>
+                                                        <div class="card comment-card" v-if="everyMon._comment_count>0" v-for="(com ,index) in everyMon._comments ">
+                                                            <h3>{{index+1}}. {{com.create_staff_name}}  {{com.create_staff_name_en}}<span class="time">{{com.create_time}}</span></h3>
+                                                            <div class="comment-content"><span style="display: block;">{{com.content}}</span></div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Month-SearchPerson.js')?>"></script>

@@ -1,0 +1,3 @@
+update rv_monthly_report as a set total = (a.quality*5 + a.completeness*5 + a.responsibility*5 + a.cooperation*3 + a.attendance*2)+a.addedValue-a.mistake;
+update rv_monthly_report_leader as b set total = (b.target*2 + b.quality*2 + b.method*2 + b.error*2 + b.backtrack*2 + b.planning*2 + (b.execute*7/5) + (b.decision*7/5) + (b.resilience*6/5) + b.attendance*2 + b.attendance_members*2) + b.addedValue - b.mistake;
+update rv_monthly_report as c left join rv_department as d on c.owner_department_id = d.id set total = (c.quality*5 + c.completeness*5 + c.responsibility*3 + c.cooperation*3 + c.attendance*4)+c.addedValue-c.mistake where d.duty_shift=1;

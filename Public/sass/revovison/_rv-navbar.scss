@@ -1,0 +1,80 @@
+$nav-toggle-bg: #444;
+
+.rv-navbar {
+    height: 48px;
+    min-height: 48px;
+    @extend .white;
+    a {
+        line-height: 48px;
+    }
+}
+
+nav .nav-wrapper i {
+    line-height: 48px;
+    height: 48px;
+}
+
+.rv-nav-toggle {
+    position: absolute;
+    padding: 0;
+    text-align: center;
+    border: none;
+    @include size(56px, 48px);
+    @extend .white;
+    .navbar-toggle-icon {
+        display: block;
+        width: 12px;
+        height: 2px;
+        margin: auto;
+        vertical-align: middle;
+        background: $nav-toggle-bg;
+        &:after {
+            @include size(12px, 2px);
+            color: $nav-toggle-bg;
+            top: 27px;
+            display: block;
+            margin: auto;
+            vertical-align: middle;
+            background: $nav-toggle-bg;
+            position: absolute;
+            content: "";
+        }
+        &:before {
+            @include size(12px, 2px);
+            color: $nav-toggle-bg;
+            top: 19px;
+            display: block;
+            margin: auto;
+            vertical-align: middle;
+            background: $nav-toggle-bg;
+            position: absolute;
+            content: "";
+        }
+    }
+}
+
+.navbar-brand {
+    float: left;
+    height: 48px;
+    padding: 0 10px;
+    line-height: 48px;
+    margin-left: 65px;
+    &.rv-brand {
+        font-size: 14px !important;
+        display: inline-block;
+        @extend .grey-text;
+        @extend .text-darken-1;
+    }
+}
+
+@media only screen and (max-width: 1280px){
+  .side-nav.fixed {
+      -webkit-transform: translateX(-105%);
+      -ms-transform: translateX(-105%);
+      transform: translateX(-105%);
+  }
+  nav a.button-collapse{
+    display: initial;
+  }
+}
+

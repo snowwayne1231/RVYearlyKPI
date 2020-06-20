@@ -1,0 +1,19 @@
+.rv-admin {
+    table {
+        td,
+        th {
+            text-align: left;
+            border-bottom: 1px solid #d8d8d8;
+            border-radius: 0;
+            padding: 8px 0;
+            padding-left: 20px;
+            a {
+                margin-right: 5px;
+            }
+        }
+        th {
+            background-color: #38404a !important;
+            color: #FFF;
+        }
+    }
+}

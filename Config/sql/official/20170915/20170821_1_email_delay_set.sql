@@ -1,0 +1,1 @@
+UPDATE rv_email_template SET title ='【考評通知】 {year}年 {divison_name} {staff_name_en} {staff_name} 年度考核表' WHERE name = 'yearly_assessment_to_delay';

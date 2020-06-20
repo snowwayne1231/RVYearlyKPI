@@ -1,0 +1,118 @@
+.exception-card {
+    padding: 10px;
+    height: 330px;
+    overflow: hidden;
+    label {
+        font-weight: 100;
+        color: #949494;
+        display: block;
+    }
+    .num {
+        @include size(40px, 40px);
+        border-radius: 50%;
+        font-size: 9px;
+        display: inline-block;
+        text-align: center;
+        line-height: 40px;
+        margin: 10px;
+        margin-left: 0;
+    }
+    .status {
+        display: inline-block;
+        vertical-align: middle;
+        &.formal {
+            color: #4CAF50;
+        }
+        &.yuepin {
+            color: #ff8516;
+        }
+        &.try {
+            color: #FFC107;
+        }
+        &.leave {
+            color: #f44336;
+        }
+        &.none {
+            color: #ddd;
+        }
+    }
+    .detail {
+        margin-top: 10px;
+
+        .text {
+            font-size: 15px;
+            max-width: 150px;
+            white-space: normal;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-height: 22px;
+            word-break: break-all;
+        }
+        .border {
+            border: 1px solid #d8d8d8;
+            border-top: 0;
+            border-bottom: 0;
+        }
+    }
+    .reason {
+        border-bottom: 1px solid #d8d8d8;
+        height: 22px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: crosshair;
+    }
+    .exce-name{
+      display:  inline-block;
+      overflow:   hidden;
+      min-width:310px;
+    }
+    .name {
+        font-size: 24px;
+        display: inline-block;
+        vertical-align: sub;
+        margin-right: 10px;
+        max-width: 190px;
+        overflow:   hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height:  0.8em;
+        .name_tw {
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            max-width:80px;
+            display: inline-block;
+            vertical-align: middle;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow:   hidden;
+        }
+    }
+    .month {
+        display: inline-block;
+        border-radius: 50%;
+        border: 2px solid #d8d8d8;
+        width: 35px;
+        height: 35px;
+        text-align: center;
+        line-height: 30px;
+        &.check {
+            border: 2px solid #ff8217;
+            position: relative;
+            cursor: crosshair;
+            &:before {
+                content: '';
+                display: inline-block;
+                background: #ff8217;
+                height: 33px;
+                width: 3px;
+                overflow: hidden;
+                position: absolute;
+                transform: rotate(50deg);
+                margin-top: 0px;
+                margin-left: 6px;
+            }
+        }
+    }
+}

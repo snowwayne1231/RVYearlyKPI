@@ -1,0 +1,2 @@
+alter table rv_year_performance_report change column assessment_json assessment_json varchar(2048) COLLATE utf8_unicode_ci NOT NULL DEFAULT '{}' COMMENT '考積分數json {"[under|self|lv]":{"percent":(int),"total":(int),"score":[id:score,...]}';
+alter table rv_year_performance_report add column sign_json varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '{}' COMMENT '簽名時間戳' after assessment_json;

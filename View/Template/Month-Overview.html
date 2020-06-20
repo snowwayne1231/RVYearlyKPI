@@ -1,0 +1,313 @@
+<style>
+    .already-fix-table .fixedTable {
+        z-index: 5;
+    }
+</style>
+
+<div id="Overview">
+    <div class="had-container rv-overview rv-month-search">
+        <h1 class="rv-title">月績效總覽</h1>
+        <div class="filter-date row">
+            <h3 class="title">請選擇日期</h3>
+            <div class="dropdown">
+                <select id="getYear" class="btn dropdown-button" type="button" v-model="year" v-on:change="Selected()">
+                </select>
+            </div>
+            <div class="dropdown">
+                <select id="getMonth" class="btn dropdown-button" type="button" v-model="month" v-on:change="Selected()">
+                </select>
+            </div>
+
+            <!-- for susan 角色使用，可切換本單位及全公司 HIDE 有新增分組功能了 -->
+            <!-- <div class="dropdown" v-if="member.is_leader && member.is_admin && !depShow">
+                <div class="input-field">
+                    <select id="getStaffCate"  class="btn dropdown-button" v-model="staffCateNo" v-on:change="Selected()">
+                        <option value="1">全公司</option>
+                        <option value="0">本單位</option>
+                    </select>
+                </div>
+            </div> -->
+
+            <div class="dropdown" v-if="month==0 && (member.is_leader || member.is_admin)">
+                <div class="search-input-article input-field">
+                    <input placeholder="輸入要查看的人員姓名" type="text" class="form-control autocomplete" v-model="personName" @click="getPerosonDate(true)"
+                        @keyup="getPerosonDate()">
+                    <ul class="autocomplete-content dropdown-content">
+                        <li v-for="(staff,index) in under_staff" v-if="staff.name.indexOf(personName) != -1 || staff.name_en.toLowerCase().indexOf(personName.toLowerCase()) != -1"
+                            @click="SelectedStaff(staff)">
+                            <span :title="staff.name+staff.name_en">
+                                <span class="name">{{staff.name}} </span>
+                                <span class="name_en"> {{staff.name_en}}</span>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="dropdown"  v-if="member.is_leader || member.is_admin">
+                <select id="getPassReports" class="btn dropdown-button" type="button" v-model="passReports" v-on:change="Selected()">
+                    <option value="1">僅顯示已核准名單</option>
+                    <option value="0">顯示全部資料</option>
+                </select>
+            </div>
+            <div class="dropdown" v-if="depShow">
+                <select  class="btn dropdown-button" type="button" v-model="departmentID" v-on:change="Selected()">
+                    <option value="" :class="{'selected': departmentID ==''}">所有人員</option>
+                    <option :value="dep.id" v-for="(dep,index) in allDep"> {{dep.unit_id}} - {{dep.name}}</option>
+                </select>
+            </div>
+			<!-- <div class="dropdown">
+                <select id="selectDepartmentID" class="btn dropdown-button" type="button" v-model="departmentID" v-on:change="Selected()">
+                    <option value="">請選擇單位</option>
+                    <option :value="allDep" v-for="(dep,index) in allDep">{{dep.lv}} - {{dep.unit_id}} :  {{dep.name}}</option>
+                </select>
+            </div> -->
+            <div class="pull-right" v-if="(member.is_leader || member.is_admin)">
+                <a href="<?=U('/Month-OrganizationChart')?>" class="btn waves-effect waves-teal lighten-1" target="_blank">查看考評狀態</a>
+                <a class="waves-effect waves-light btn teal darken-1" v-on:click="downloadExcel()">匯出 Excel</a>
+            </div>
+        </div>
+        <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+                <div class="title">無資料</div>
+                <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
+            </div>
+        <div class="row" v-show="viewData.leader.length > 0">
+            <h2>單位主管</h2>
+            <div>
+                <div class="card">
+                    <table class="leaderTable table table-striped">
+                        <thead>
+                            <tr>
+                                <th>月份</th>
+                                <th>員工編號</th>
+                                <th>職務</th>
+                                <th>員工姓名</th>
+                                <th>目標達成率</th>
+                                <th>工作品質</th>
+                                <th>工作方法</th>
+                                <th>出錯率</th>
+                                <th>進度追蹤</th>
+                                <th>企劃能力</th>
+                                <th>執行力</th>
+                                <th>判斷力</th>
+                                <th>應變能力</th>
+                                <th>出勤率</th>
+                                <th>組員出勤</th>
+                                <th>特殊貢獻</th>
+                                <th>重大缺失</th>
+                                <th>總分</th>
+                                <th>到職日</th>
+                                <th>離職日</th>
+                                <th>考核天數</th>
+                                <th v-if="member.is_leader || member.is_admin">獎金發放</th>
+                                <th v-if="member.is_admin==1">不計分</th>
+                                <th v-if="member.is_admin==1">原因</th>
+                                <th>評論</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(leader,index) in viewData.leader" :class="{'is-release':leader.releaseFlag=='Y'}">
+                                <td>{{leader.month}}</td>
+                                <td>{{leader.staff_no}}</td>
+                                <td :title="leader.unit_id + leader.unit_name">{{leader.post}}</td>
+                                <td>{{leader.name}} {{leader.name_en}}</td>
+                                <td>{{leader.target}}</td>
+                                <td>{{leader.quality}}</td>
+                                <td>{{leader.method}}</td>
+                                <td>{{leader.error}}</td>
+                                <td>{{leader.backtrack}}</td>
+                                <td>{{leader.planning}}</td>
+                                <td>{{leader.execute}}</td>
+                                <td>{{leader.decision}}</td>
+                                <td>{{leader.resilience}}</td>
+                                <td>{{leader.attendance}}</td>
+                                <td>{{leader.attendance_members}}</td>
+                                <td>{{leader.addedValue}}</td>
+                                <td class="red-text">{{leader.mistake}}</td>
+                                <td>{{leader._total_score}}</td>
+                                <td>{{leader.first_day}}</td>
+                                <td>{{leader.last_day}}</td>
+                                <td>{{leader._work_day}}</td>
+                                <td v-if="member.is_leader || member.is_admin">
+                                    <p v-if="leader.bonus" style="color: green">是</p>
+                                    <p v-else style="color: red">否</p>
+                                </td>
+                                <td class="non-scoring" v-if="member.is_admin==1">
+                                    <span class="checkBlock">
+                                        <input :id="'LeaderNoScore_'+leader.id" :value="leader.id" v-on:change="onChange(1,leader.id,$event)"
+                                            type="checkbox" class="myinput large" :checked="leader.exception == 1">
+                                    </span>
+
+                                </td>
+                                <td class="non-scoring" v-if="member.is_admin==1">
+                                    <span>
+                                        <a class="note hasNote" v-if="leader.exception==1">
+                                            <i class="material-icons md-18 tooltipped" data-position="left" data-delay="50" :data-tooltip="leader.exception_reason">
+                                                assignment</i>
+                                        </a>
+                                        <a class="note" v-else>
+                                            <i class="material-icons md-18">assignment</i>
+                                        </a>
+                                    </span>
+
+
+                                </td>
+                                <td>
+                                    <a class="waves-effect waves-light btn" :href="'#CommentLeaderModal-'+(index+1)" v-on:click="comment(leader.staff_id,leader.month)">{{leader._comment_count}}筆</a>
+
+                                    <div :id="'CommentLeaderModal-'+(index+1)" class="modal comment-record">
+                                        <div class="modal-content">
+                                            <div class="rv-page-title">
+                                                <h1 class="rv-title">
+                                                   <span>{{leader.name}} {{leader.name_en}} </span>的評論紀錄
+                                                    <button class="modal-action modal-close btn-flat">
+                                                        <i class="material-icons md-18">close</i>
+                                                    </button>
+                                                </h1>
+                                            </div>
+                                            <div class="row comment-area">
+                                                <div class="comment-content-area" v-if="!comments.length == 0">
+                                                    <div class="card comment-card" v-for="(comment,index) in comments">
+                                                        <span class="comment-no">
+                                                            <span class="no">{{index+1}}</span>
+                                                        </span>
+                                                        <div class="comment-head">
+                                                            <span class="en">{{comment._created_staff_name_en}} </span>
+                                                            <span class="tw">{{comment._created_staff_name}}</span>
+                                                        </div>
+                                                        <div class="comment-content">
+                                                            <h3>
+                                                                <span class="time">{{comment.create_time}}</span>
+                                                            </h3>
+                                                            <span style="display:block;">{{comment.content}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div v-else>
+                                                    尚未有評論..
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row" v-show="viewData.staff.length > 0">
+            <h2>ㄧ般員工</h2>
+            <div>
+                <div class="card">
+                    <table class="staffTable table table-striped">
+                        <thead>
+                            <tr>
+                                <th>月份</th>
+                                <th>員工編號</th>
+                                <th>職務</th>
+                                <th>員工姓名</th>
+                                <th>工作品質</th>
+                                <th>工作績效</th>
+                                <th>責任感</th>
+                                <th>配合度</th>
+                                <th>出席率</th>
+                                <th>特殊貢獻</th>
+                                <th>重大缺失</th>
+                                <th>總分</th>
+                                <th>到職日</th>
+                                <th>離職日</th>
+                                <th>考核天數</th>
+                                <th v-if="member.is_leader || member.is_admin">獎金發放</th>
+                                <th v-if="member.is_admin==1">不計分</th>
+                                <th v-if="member.is_admin==1">原因</th>
+                                <th>評論</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(staff,index) in viewData.staff" :class="{'is-release':staff.releaseFlag=='Y'}">
+                                <td>{{staff.month}}</td>
+                                <td>{{staff.staff_no}}</td>
+                                <td :title="staff.unit_id + staff.unit_name">{{staff.post}}</td>
+                                <td>{{staff.name}} {{staff.name_en}}</td>
+                                <td>{{staff.quality}}</td>
+                                <td>{{staff.completeness}}</td>
+                                <td>{{staff.responsibility}}</td>
+                                <td>{{staff.cooperation}}</td>
+                                <td>{{staff.attendance}}</td>
+                                <td>{{staff.addedValue}}</td>
+                                <td style="color:red">{{staff.mistake}}</td>
+                                <td>{{staff._total_score}}</td>
+                                <td>{{staff.first_day}}</td>
+                                <td>{{staff.last_day}}</td>
+                                <td>{{staff._work_day}}</td>
+                                <td v-if="member.is_leader || member.is_admin" :class="{'is-no-bonus':!staff.bonus}">
+                                    <p v-if="staff.bonus" style="color: green">是</p>
+                                    <p v-else style="color: red">否</p>
+                                </td>
+                                <td class="non-scoring" v-if="member.is_admin==1">
+                                    <span class="checkBlock">
+                                        <input :id="'StaffNoScore_'+index+1" :value="staff.id" v-on:change="onChange(2,staff.id,$event)"
+                                            type="checkbox" class="myinput large" :checked="staff.exception == 1">
+                                    </span>
+                                </td>
+                                <td class="non-scoring" v-if="member.is_admin==1">
+                                    <span>
+                                        <a class="note hasNote" v-if="staff.exception==1">
+                                            <i class="material-icons md-18 tooltipped" data-position="left" data-delay="50" :data-tooltip="staff.exception_reason">assignment</i>
+                                        </a>
+                                        <a class="note" v-if="staff.exception==0">
+                                            <i class="material-icons md-18">assignment</i>
+                                        </a>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a class="btn waves-effect waves-teal lighten-1" :href="'#CommentStaffModal-'+(index+1)" v-on:click="comment(staff.staff_id,staff.month)">{{staff._comment_count}}筆</a>
+                                    <div :id="'CommentStaffModal-'+(index+1)" class="modal comment-record">
+                                        <div class="modal-content">
+                                            <div class="rv-page-title">
+                                                <h1 class="rv-title">
+                                                    <span>{{staff.name}} {{staff.name_en}} </span>的評論紀錄
+                                                    <button class="modal-action modal-close btn-flat">
+                                                        <i class="material-icons md-18">close</i>
+                                                    </button>
+                                                </h1>
+                                            </div>
+                                            <div class="row comment-area">
+                                                <div class="comment-content-area" v-if="!comments.length == 0">
+                                                    <div class="card comment-card" v-for="(comment,index) in comments">
+                                                        <span class="comment-no">
+                                                            <span class="no">{{index+1}}</span>
+                                                        </span>
+                                                        <div class="comment-head">
+                                                            <span class="en">{{comment._created_staff_name_en}} </span>
+                                                            <span class="tw">{{comment._created_staff_name}}</span>
+                                                        </div>
+                                                        <div class="comment-content">
+                                                            <h3>
+                                                                <span class="time">{{comment.create_time}}</span>
+                                                            </h3>
+                                                            <span style="display:block;">{{comment.content}}</span>
+                                                        </div>
+                                                        <!-- <h3>{{comment.no + 1}}. {{comment._created_staff_name}} {{comment._created_staff_name_en}} <span class="time">{{comment.create_time}}</span></h3>
+                                                        <div class="comment-content">
+                                                            <span>{{comment.content}}</span>
+                                                        </div> -->
+                                                    </div>
+                                                </div>
+                                                <div v-else>
+                                                    尚未有評論..
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Month-EvaluationOverview.js')?>"></script>

@@ -1,0 +1,223 @@
+<div id="Year-Feedback">
+    <div class="had-container">
+        <h1 class="rv-title">
+            <span></span>年度部屬回饋問卷</h1>
+    </div>
+    <div id="YearFeedbackForm" class="section rv-assess rv-yearFeedbackForm">
+        <!-- 樣版1 -->
+        <div id="template-feedback" style="display: none">
+            <div class="row" v-if="processing <= 2">
+                <div class="col s12">
+                    <ul class="collapsible popout rv-card">
+                        <li>
+                            <input type="hidden">
+                            <div class="collapsible-header truncate card-header feedback-header">
+                                <div class="blocks">
+                                    <div class="title">{{currentYear}}年部屬回饋問卷</div>
+                                    <div class="name">受評對象 - {{appraisee.target_staff_name}} {{appraisee.target_staff_name_en}}</div>
+                                </div>
+                            </div>
+                            <div class="collapsible-body card-body">
+                                <div class="brand-actions">
+                                    <span class="form-actions">
+                                        <a title="儲存">
+                                            <i class="material-icons indigo-text text-accent-2" v-on:click="saveYearlyFeedback(appraisee)">save</i>
+                                        </a>
+                                        <a title="提交" v-if="processing>=2">
+                                            <i class="material-icons yellow-text text-darken-2" v-on:click="commitManager(appraisee,$event)">arrow_forward</i>
+                                        </a>
+                                    </span>
+                                </div>
+                                <div class="step">
+                                    <span class="no">a.</span>單選題
+                                    <span class="note">共 {{questionChoice.length}} 題</span>
+                                    <span>
+                                        <input type="checkbox" class="filled-in" :id="'filled-in-box-'+appraisee.target_staff_name_en" v-model="isOpenChoice" checked="checked"
+                                            hidden />
+                                        <label :for="'filled-in-box-'+appraisee.target_staff_name_en">顯示分數</label>
+                                    </span>
+                                </div>
+                                <div class="choice-score">
+                                    <div class="item-area">
+                                        <div class="item" v-bind:class="{ active: isActive[index] }" v-for="(choiceItem,index) in questionChoice" v-on:click="currentTarget(index,1)">
+                                            <div class="no">
+                                                <div v-if="appraisee.multiple_choice_json[index].ans == -1">-</div>
+                                                <div v-else-if="!isOpenChoice" class="material-icons dp48">check</div>
+                                                <div v-else-if="appraisee.multiple_choice_json[index].ans == 0">5</div>
+                                                <div v-else-if="appraisee.multiple_choice_json[index].ans == 1">3</div>
+                                                <div v-else-if="appraisee.multiple_choice_json[index].ans == 2">1</div>
+                                            </div>
+                                            <div class="btn">
+                                                {{choiceItem.title}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="questions-choice questions">
+                                    <div class="question-group">
+                                        <div class="question-area" v-bind:class="{ active: isActive[choiceOptionsIndex] }" v-for="(choiceOptions,choiceOptionsIndex) in questionChoice">
+                                            <div class="question">
+                                                <span class="no">{{choiceOptionsIndex+1}}</span>
+                                                <span>{{choiceOptions.title}}</span>
+                                            </div>
+                                            <div class="answer-group">
+                                                <div class="answer" v-for="(choiceOption, index) in choiceOptions.options_json">
+                                                    <input type="radio" :id="'answer-'+ index + choiceOptionsIndex + num" :value="index" :checked="index == appraisee.multiple_choice_json[choiceOptionsIndex].ans"
+                                                        v-model="appraisee.multiple_choice_json[choiceOptionsIndex].ans">
+                                                    <label :for="'answer-'+ index + choiceOptionsIndex + num">{{choiceOption.name}} ({{(choiceOption.percent)/20}}分)</label>
+                                                </div>
+                                                <a class="btn next-btn-style" v-on:click="previous(choiceOptionsIndex,1)" v-if="choiceOptionsIndex != 0">上一題</a>
+                                                <a class="btn next-btn-style" v-on:click="next(choiceOptionsIndex,1)" v-if="choiceOptionsIndex != 9">下一題</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="no">b.</span>問答題
+                                    <span class="note">共 {{questionNormal.length}} 題</span>
+                                    <span><small class="blue-text text-darken-2"> (請以繁體中文填寫)</small></span></span>
+                                </div>
+                                <div class="questionnaires-block">
+                                    <div class="item-area">
+                                        <div class="item" v-bind:class="{ active: isActiveToQA[index] }" v-for="(questionNormal,index) in appraisee.multiple_normal_json">
+                                            <div class="no">
+                                                <div v-if="questionNormal.content == '' && appraisee.multiple_normal_json[index].noAns == false">-</div>
+                                                <div v-if="questionNormal.content != '' || appraisee.multiple_normal_json[index].noAns == true ">
+                                                    <i class="material-icons">done</i>
+                                                </div>
+                                            </div>
+                                            <div class="btn" v-on:click="currentTarget(index,2)">
+                                                第 {{index+1}} 題
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="questionnaires-essay questions">
+                                    <div class="question-group">
+                                        <div class="question-area" v-bind:class="{ active: isActiveToQA[index] }" v-for="(QN,index) in questionNormal">
+                                            <div class="question">
+                                                <span class="no">{{index+1}}.</span>
+                                                <span>{{QN.description}}</span>
+                                            </div>
+                                            <div class="answer-group m10">
+
+                                                <div class="mb5">
+                                                    <input v-on:change="changeToWrite(appraisee.multiple_normal_json[index])" :checked="appraisee.multiple_normal_json[index].noAns"
+                                                        type="checkbox" v-model="appraisee.multiple_normal_json[index].noAns"
+                                                        class="myinput large mb10">
+                                                    <span>沒有
+                                                        <small class="ml10">(想不出來要寫什麼，請勾選此項)</small>
+                                                    </span>
+                                                </div>
+                                                <transition name="fade">
+                                                    <div v-if="!appraisee.multiple_normal_json[index].noAns">
+                                                        <textarea placeholder="請輸入文字...(字數不可超過255個字元)" v-model="appraisee.multiple_normal_json[index].content" :maxlength="maxlength"></textarea>
+                                                    </div>
+                                                </transition>
+                                                <div>
+                                                    <a class="btn next-btn-style" v-on:click="previous(index,2)" v-if="index != 0">上一題</a>
+                                                    <a class="btn next-btn-style" v-on:click="next(index,2)" v-if="index != 2">下一題</a>
+                                                </div>
+
+
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="no">c.</span>簡答題
+                                    <span class="note">共 2 題</span>
+                                    <span><small class="blue-text text-darken-2"> (請以繁體中文填寫)</small></span></span>
+                                </div>
+                                <div class="choice-score">
+                                    <div class="item-area">
+                                        <div class="question-area">
+                                            <div class="question" v-for="(qac,index) in questionAboutCompany">
+                                                <span class="no">1.</span>
+                                                <span>{{qac.description}}</span>
+                                            </div>
+                                            <div class="answer-group m10">
+                                                <div class="mb5">
+                                                    <input type="checkbox" v-on:change="changeCheckCompany" :checked="noAnsAboutComp" v-model="noAnsAboutComp" class="myinput large mb10">
+                                                    <span>沒有
+                                                        <small class="ml10">(想不出來要寫什麼，請勾選此項)</small>
+                                                    </span>
+                                                </div>
+                                                <transition name="fade">
+                                                    <div v-if="!noAnsAboutComp">
+                                                        <textarea class="maxWord" placeholder="請輸入文字...(字數不可超過255個字元)" v-model="ansAboutCompany" :maxlength="maxlength"></textarea>
+                                                    </div>
+                                                </transition>
+
+
+                                            </div>
+                                        </div>
+                                        <div class="question-area">
+                                            <div class="question" v-for="qo in questionOthers">
+                                                <span class="no">2.</span>
+                                                <span>{{qo.description}}</span>
+                                            </div>
+                                            <div class="answer-group other-manager">
+                                                <div class="custom-fab">
+                                              
+                                                   
+                                                    <a class="btn custom-btn" v-bind:class="classObject(index)"
+                                                        v-for="(leader,index) in newleaderArray"  v-on:click.stop="currentManager(index,newleaderArray)">{{leader.name}}</a>
+                                                    <!-- <textarea placeholder="請輸入文字...(字數不可超過255個字元)" v-bind:class="{ active: isActiveOther[index] }" v-for="(leader,index) in leaderArray"   v-model="ansOthers[index]"></textarea> -->
+
+                                                    <div class="container modal" :id="'modal-leadercomment-'+leader.id" v-for="(leader,index) in newleaderArray">
+                                                        <div class="modal-content">
+                                                            <div class="rv-page-title">
+                                                                <h1 class="rv-title orange-text text-darken-4 ">對【{{leader.name}} 】提出建議
+                                                                    <button href="#" class="modal-action modal-close btn-flat">
+                                                                        <i class="material-icons md-18">close</i>
+                                                                    </button>
+                                                                </h1>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col s10 offset-s1 mb10">
+                                                                    <textarea v-model="ansOthers[index]" placeholder="請輸入文字...(字數不可超過255個字元)" maxlength="255"></textarea>
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+                                                        <div class="modal-footer row">
+                                                            <div class="col s7 mb10">
+                                                                    <a  class="modal-action waves-effect waves-light btn"
+                                                                        v-on:click="saveOtherComm(index)">儲存</a>
+                                                                    <a  class="modal-action modal-close waves-effect waves-light btn teal darken-1">取消</a>
+                                                        
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+
+
+
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+            <div class="title">無部屬回饋問卷</div>
+            <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
+        </div>
+
+
+
+
+    </div>
+</div>
+
+    <script type="text/javascript" src="<?=U('/Public/js/Index/Year-Feedback.js')?>"></script>

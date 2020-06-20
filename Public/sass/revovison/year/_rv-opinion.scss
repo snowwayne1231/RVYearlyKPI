@@ -1,0 +1,43 @@
+.rv-opinion {
+       word-break: break-all;
+    .year-select {
+        h3 {
+            float: none;
+            width: 100%;
+        }
+        .dropdown {
+            float: left;
+            margin: 0;
+        }
+    }
+    .row {
+        margin-bottom: 0;
+    }
+    .opinion-list {
+        position: relative;
+        .header {
+            border-bottom: 1px solid $setting-border-bg;
+            padding: 5px 10px;
+            min-width: 460px;
+            position: relative;
+            line-height: 45px;
+        }
+        ul {
+            margin: 0;
+            li {
+                border-bottom: 1px solid $setting-border-bg;
+                padding: 5px 10px;
+                line-height: 45px;
+                &:hover {
+                    background-color: #F9FAFC;
+                }
+                i {
+                    vertical-align: middle;
+                    margin: 10px 15px;
+                    color: #FF9800;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+}

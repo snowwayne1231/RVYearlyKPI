@@ -1,0 +1,49 @@
+<!-- Dropdown Structure -->
+<div id="Review">
+    <div class="had-container rv-review" style="padding: 20px;">
+        <h1 class="rv-title">員工工作評語</h1>
+        <!-- 非主管才會看到 -->
+        <div id="NoData" class="no-data">
+            <p> 非主管人員無法觀看<br>員工工作評語</p>
+        </div>
+        <!-- 工作評與語區塊 -->
+        <div>
+            <div class="row search-area">
+                <div class="filter-date">
+                    <h3 class="title">請選擇日期以及要查詢的員工</h3>
+                    <div class="dropdown">
+                        <select id="getYear" class="btn dropdown-button" type="button" v-model="year" v-on:change="selected()">
+                        </select>
+                    </div>
+                    <div class="dropdown">
+                        <select id="getMonth" class="btn dropdown-button" type="button" v-model="month" v-on:change="selected()">
+                            <option value="1">1月</option>
+                            <option value="2">2月</option>
+                            <option value="3">3月</option>
+                            <option value="4">4月</option>
+                            <option value="5">5月</option>
+                            <option value="6">6月</option>
+                            <option value="7">7月</option>
+                            <option value="8">8月</option>
+                            <option value="9">9月</option>
+                            <option value="10">10月</option>
+                            <option value="11">11月</option>
+                            <option value="12">12月</option>
+                        </select>
+                    </div>
+                    <div class="search-input-article input-field">
+                        <input placeholder="輸入要查看的人員姓名" type="text" class="form-control autocomplete" id="autocomplete-input">
+                    </div>
+                </div>
+            </div>
+            <div class="row comment-title">
+                <div class="col s12" v-if="currentStaff.name">
+                    <div class="pennant"><span>{{currentStaff.name}} {{currentStaff.name_en}} </span>的所有評論</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="<?=U('/Public/js/Index/Month-ReviewStaff.js')?>"></script>
+
+<?=V('Component/monthly_review.html')?>

@@ -1,0 +1,580 @@
+
+// start of 工作評語的共用區塊
+.comment-area {
+    position: relative;
+    transition-delay: 0.5s;
+    transition-duration: 1s;
+    margin-left: 10px;
+    .no-comment {
+        text-align: center;
+        padding: 8px 0;
+    }
+    .comment-add-area {
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-width: 800px;
+        margin: 10px auto;
+        .comment-add {
+            width: 90%;
+            margin: 10px;
+        }
+        i {
+            transform: rotate(-25deg);
+            color: #9ed7d2;
+            position: relative;
+            top: 1px;
+            left: 2px;
+        }
+        textarea {
+            width: 90%;
+            height: 70px;
+            display: inline-block;
+            vertical-align: middle;
+            border: none;
+            resize: none;
+            padding-top: 10px;
+        }
+        input {
+            width: 650px;
+            display: inline-block;
+        }
+        a {
+            color: #9ed7d2;
+            vertical-align: top;
+            margin: 5px;
+            display: inline-block;
+            border-radius: 50%;
+            border: 1px solid #9ed7d2;
+            padding: 5px;
+            cursor: pointer;
+            position: relative;
+            left: 5px;
+            top: 10px;
+            width: 5%;
+            &:hover {
+                background: #9ed7d2;
+                i {
+                    color: #fff
+                }
+            }
+        }
+    }
+    .comment-card {
+        width: 88%;
+        float: left;
+        margin: 10px;
+        position: relative;
+        h3 {
+            margin: inherit;
+            margin-top: 7px;
+        }
+        textarea {
+            width: 560px;
+            display: none;
+        }
+        .comment-no {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: #000;
+            font-size: 11px;
+            &::before {
+                content: '';
+                border-color: #9ed7d2 transparent transparent #9ed7d2;
+                border-style: solid solid solid solid;
+                border-width: 15px;
+                display: inline-block;
+                position: absolute;
+                border-radius: 5px 0 0 0;
+            }
+            .no {
+                color: #0a6d07;
+                font-size: 11px;
+                z-index: 9999;
+                display: inline-block;
+                position: absolute;
+                margin-left: 5px;
+                background-color: transparent;
+            }
+        }
+        .comment-head {
+            border-radius: 50%;
+            width: 12%;
+            height: 80px;
+            margin: 10px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            float: left;
+            text-align: center;
+            border: 1px solid #DDD;
+            vertical-align: middle;
+            .en {
+                line-height: 20px;
+                display: inline-block;
+                width: 100%;
+                margin-top: 20px;
+            }
+            .tw {
+                line-height: 20px;
+                display: inline-block;
+                width: 100%;
+            }
+        }
+        .comment-content {
+            padding: 15px 15px 10px 15px;
+            height: 100%;
+            word-break: break-all;
+            width: 80%;
+            float: left;
+            text-align: left;
+            span {
+                white-space: pre-wrap;
+            }
+        }
+        .time {
+            position: absolute;
+            right: 0;
+            top: 3px;
+            padding-right: 10px;
+            font-size: 12px;
+            color: #777777;
+        }
+        .tool {
+            position: absolute;
+            width: 80px;
+            right: -80px;
+            top: 0;
+            a {
+                border: 1px solid #d8d8d8;
+                display: block;
+                width: 40px;
+                text-align: center;
+                height: 50px;
+                line-height: 50px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
+            .edit {
+                color: #009688;
+                &:hover {
+                    background: #009688;
+                    color: #fff;
+                }
+            }
+            .delete {
+                color: #f44336;
+                &:hover {
+                    background: #f44336;
+                    color: #fff;
+                }
+            }
+        }
+        .edit-success {
+            display: none;
+            position: absolute;
+            width: 80px;
+            right: -80px;
+            top: 0;
+            a {
+                border: 1px solid #d8d8d8;
+                padding: 10px;
+                display: inline-block;
+                width: 40px;
+                height: 100px;
+                text-align: center;
+                cursor: pointer;
+                border-radius: 3px;
+                &:hover {
+                    background: #039be5;
+                    color: #fff;
+                }
+            }
+        }
+    }
+    .col {
+        float: none;
+        margin: 0 auto;
+    }
+    span.badge {
+        margin-top: 5px;
+        &.new:after {
+            content: "";
+        }
+    }
+}
+.comment-card-area {
+    .card-content {
+        .card-title {
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(160, 160, 160, 0.2);
+        }
+    }
+    .card-action {
+        padding-bottom: 10px;
+        &:after {
+            content: "";
+            display: block;
+            clear: both;
+        }
+        textarea {
+            border: none;
+            padding: 10px;
+            line-height: 18px;
+            height: 36px;
+            outline: none;
+            resize: none;
+            width: 100%;
+            overflow-y: hidden;
+        }
+        button {
+            display: none;
+            float: right;
+            margin: 5px 0px;
+        }
+    }
+}
+.comment-content-area {
+    overflow-y: auto;
+    overflow-x: hidden; //max-height: 700px;
+    max-width: 800px;
+    margin: 10px auto;
+    .comment-content-list {
+        margin-right: 25px;
+        width: 100%;
+        overflow: visible;
+        box-sizing: border-box;
+        >li {
+            position: relative;
+            >div {
+                border: 1px solid #000;
+                margin: 5px;
+            }
+            .rv-item {
+                padding-top: 18px;
+                padding-right: 10px;
+                cursor: default;
+                .rv-img {
+                    background-color: #333333;
+                    top: 12px;
+                }
+                &:after {
+                    content: "";
+                    display: block;
+                    clear: both;
+                }
+                &:hover {
+                    background-color: #fafafa;
+                }
+            }
+            .edit {
+                display: none;
+                input {
+                    width: 75%;
+                    margin: 10px;
+                    display: inline-block;
+                }
+            }
+            .comment_user {
+                font-weight: bolder;
+                line-height: 22px;
+                position: relative;
+                .en {
+                    font-size: 14px;
+                }
+                .tw {
+                    font-size: 16px;
+                }
+            }
+            .commen-tool {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                a {
+                    display: inline-block;
+                    width: 25px;
+                    height: 25px;
+                    margin: 2px;
+                    color: #a9a9a9;
+                    cursor: pointer;
+                }
+            }
+            .comment-content {
+                margin-top: 5px;
+                input {
+                    position: absolute;
+                }
+                .content {
+                    margin: 5px;
+                    margin-left: 0;
+                }
+            }
+            .dropdown-button {
+                border: none;
+                width: 100px;
+                position: absolute;
+                top: 0;
+                right: 10px;
+                background-color: rgba(255, 255, 255, 0.01) !important;
+            }
+            .edit-area {
+                width: 120px;
+                padding: 5px 0px;
+                position: absolute;
+                right: 5px;
+                top: 12px;
+                .tool {
+                    font-size: 15px;
+                    padding: 5px 15px;
+                }
+            }
+        }
+    }
+}
+
+// end of 工作評語的共用區塊
+
+
+
+
+.management-card {
+  padding: 10px;
+  padding-top: 35px;
+  position: relative;
+  overflow: hidden;
+  label {
+    font-weight: 100;
+    color: #949494;
+    font-size: 9px;
+  }
+  .big-title {
+    font-size: 24px;
+  }
+  .status {
+    .dot {
+      vertical-align: middle;
+    }
+    span {
+      vertical-align: middle;
+      margin: 5px;
+    }
+  }
+  .path {
+    position: relative;
+  }
+  .card-path {
+    position: absolute;
+    top: 55px;
+    left: 15px;
+    width: 2px;
+    height: 23px;
+    border-color: #ef5350;
+    background: -webkit-repeating-linear-gradient(
+      #ef5350,
+      #ef5350 3px,
+      transparent 3px,
+      transparent 6px
+    );
+    background: repeating-linear-gradient(
+      #ef5350,
+      #ef5350 3px,
+      transparent 3px,
+      transparent 6px
+    );
+    &:before {
+      content: "";
+      position: absolute;
+      left: -3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 2px solid;
+      border-color: inherit;
+      top: -12px;
+    }
+    &:after {
+      content: "";
+      position: absolute;
+      left: -3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 2px solid;
+      border-color: inherit;
+      bottom: -12px;
+    }
+  }
+  .card-from-to {
+    padding-left: 20px;
+    position: relative;
+    &:before {
+      content: "";
+      position: absolute;
+      top: 52%;
+      width: 90%;
+      height: 1px;
+      background: #ececec;
+    }
+    p {
+      font-size: 14px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+  .status {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .text {
+    overflow: hidden;
+    padding-top: 4px;
+    padding-bottom: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  .icon-unenable {
+    opacity: 0.8;
+    width: 200px;
+    position: absolute;
+    top: 45px;
+    right: 140px;
+    transform-origin: right bottom;
+    transform: rotate(10deg);
+    .icon {
+      img {
+        width: 100%;
+      }
+    }
+  }
+  &.viod {
+    .path {
+      opacity: 0.7;
+    }
+    .card-from-to {
+      color: #737373;
+    }
+    .card-path {
+      border-color: #737373;
+      background: #737373;
+    }
+  }
+}
+
+.feedback-card {
+  .fbk-info {
+    padding: 15px;
+    padding-bottom: 0;
+    position: relative;
+    padding-top: 30px;
+    .dep {
+      font-size: 12px;
+      color: #888;
+      position: absolute;
+      margin: -22px 0 0 -10px;
+      width: 100%;
+      background: #eee;
+      padding-left: 5px;
+      height: 20px;
+      line-height: 20px;
+    }
+    .info-content {
+    }
+    label {
+      margin: 0;
+      font-weight: 100;
+      color: #949494;
+      font-size: 9px;
+    }
+    svg {
+      position: relative;
+      top: 20px;
+      left: 8px;
+    }
+    .name {
+      font-size: 26px;
+      line-height: 22px;
+      height: 60px;
+      margin-top: 5px;
+      &.target {
+        color: #1f66e9;
+      }
+      .name_tw {
+        font-size: 12px;
+        color: #949494;
+        display: inline-block;
+        line-height: 30px;
+        width: 100%;
+        text-align: left;
+      }
+    }
+    .border-right {
+      border-right: 1px solid #d8d8d8;
+    }
+    .total-score {
+      min-width: 90px;
+      .score {
+        font-size: 26px;
+        display: inline-block;
+        color: #1f66e9;
+        background: #d5e7f9;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        text-align: center;
+        vertical-align: middle;
+        padding-top: 5px;
+      }
+      .score-name {
+        font-size: 9px;
+        vertical-align: bottom;
+      }
+    }
+  }
+  .horizontal {
+    border-top: 1px solid #d8d8d8;
+    position: relative;
+    .title {
+      border-radius: 300px 300px;
+      border: 1px solid #d8d8d8;
+      position: absolute;
+      top: -15px;
+      left: 34px;
+      padding: 2px 12px;
+      background: #fff;
+      text-align: center;
+      color: #949494;
+    }
+  }
+  .fbk-score {
+    background: #fafafa;
+    margin: 0;
+    label {
+      text-align: center;
+    }
+  }
+  .first {
+    padding-top: 20px;
+  }
+  .second {
+    padding-bottom: 15px;
+  }
+  .score {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 300;
+    color: #888;
+    margin-bottom: 10px;
+  }
+}
+
+@media only screen and (max-width: 1280px) {
+  .exception-card {
+    height: 350px;
+  }
+}

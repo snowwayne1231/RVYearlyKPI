@@ -1,0 +1,64 @@
+<div id="Organization">
+    <div class="had-container">
+        <!-- 組織圖, 以mickey為例 -->
+        <div class="rv-chart-content ">
+            <h1 class="rv-title">月績效組織圖</h1>
+            <div class="rv-chart-map">
+                <!-- 選擇要看的年月，預設出現當月份 -->
+                <div class="filter-date row" id="SelectMonth">
+                    <h3 class="title">請選擇年月</h3>
+                    <div class="dropdown">
+                        <select id="ChartYear" class="btn dropdown-button"></select>
+                    </div>
+                    <div class="dropdown">
+                        <select id="ChartMonth" class="btn dropdown-button"></select>
+                    </div>
+                </div>
+                <div class="rv-chart">
+                    <ul id="RvChart" data-department-id="0"></ul>
+                </div>
+                <!-- 組織圖顏色示意 -->
+                <div class="rv-chart-info">
+                    <h3>考評單狀態顏色示意圖：</h3>
+                    <ul>
+                        <li><span class="info-color ready"></span> <span>草稿階段: 系統尚未開放送審功能，只有初評主管可以進行編輯</span></li>
+                        <li><span class="info-color noscore"></span> <span>初評階段: 系統開放送審功能，但未送審的考評單</span></li>
+                        <li><span class="info-color review"></span> <span>審核階段: 完成初步考評，待各層級主管審核的考評單</span></li>
+                        <li><span class="info-color approved"></span> <span>核准狀態: 決策主管已核准的考評單</span></li>
+                        <li><span class="info-color return"></span> <span>退回狀態: 上級主管退回給指定主管重新處理的考評單</span></li>
+                        <li><span class="info-color no-leader"></span> <span>暫無主管: 此單位暫無主管與員工，故無考評單</span></li>
+                    </ul>
+                </div>
+                <div class="no-data">
+                    <p>查無資料</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="cell-1" style="display:none;">
+        <li data-unitid="{unit_id}">
+            <a class="team-block" data-unitid="{unit_id}">
+                <div class="team-leader">{manager_name_en}</div>
+                <div class="team-name">{name}</div>
+                <div class="score-block" rv-if="{record_if}"></div>
+            </a>
+            <ul data-department-id="{id}"></ul>
+        </li>
+    </div>
+    <div id="cell-2" style="display: none">
+        <div class="widget-timeline-item">
+            <div class="widget-timeline-info">
+                <div class="widget-timeline-bullet bg-primary"></div>
+                <div class="widget-timeline-time bg-primary" data-process="date">{update_date}</div>
+            </div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div data-process="info">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Month-OrganizationChart.js')?>"></script>
+<?=V('Component/monthly_history.html')?>

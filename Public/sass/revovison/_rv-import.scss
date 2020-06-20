@@ -1,0 +1,32 @@
+.import-block {
+    .upload-block {
+        @extend .grey,
+        .lighten-3;
+        padding: 15px;
+        background: #ffffff !important;
+        .att-title {
+            border-bottom: 0px;
+        }
+    }
+    .att-title {
+        line-height: 45px;
+        height: 40px;
+        border-bottom: 1px solid #999;
+    }
+    .view-import {
+        margin: 5px 0;
+        padding: 0 15px;
+        .filter-date {
+            width: 100%;
+            min-width: 645px;
+            margin: 5px 0;
+            padding: 10px 0;
+        }
+    }
+}
+
+.dropzone {
+    .dz-remove {
+        color: #55940d;
+    }
+}

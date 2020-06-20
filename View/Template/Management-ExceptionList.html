@@ -1,0 +1,69 @@
+<style>
+td {
+    border: 1px solid #d8d8d8;
+}
+</style>
+<div id="Management-ExceptionList">
+    <div class="had-container rv-admin">
+        <h1 class="rv-title">特殊人員列表</h1>
+        <div class="filter-date row">
+            <h3 class="title">請選擇日期</h3>
+            <div class="dropdown">
+                <select id="getYear" type="button" class="btn dropdown-button"  v-model="year" v-on:change="initData()"></select>
+            </div>
+            <div class="pull-right"> <a href="<?=U('/Month-Overview')?>" class="waves-effect waves-light btn teal darken-1">編輯不計分月份人員</a></div>
+        </div>
+        <div id="NoData" class="col s12 l12 no-data nullDataInfo">
+            <div class="title">{{year}} 年度特殊人員列表尚無資料</div>
+            <div class="content">
+                請至【月份考評】>【月績效總覽表單】進行相關設定。
+            </div>
+        </div>
+        <div class="row exception-container" v-if="exceptionalStaffs.length">
+            <div class="col s12 l4" v-for="(staff,index) in exceptionalStaffs">
+                <div class="card exception-card">
+                    <div class="type"></div>
+                    <div class="row">
+                        <div class="col s12 l12 exce-name">
+                            <div class="num" style="background: #F44336;color: #ffffff;"> {{staff.staff_no}} </div>
+                            <div class="name" :title="staff.staff_name_en + staff.staff_name"> {{staff.staff_name_en}}  <span class="name_tw">{{staff.staff_name}}</span></div>
+                            <div class="status formal" v-if="staff.staff_status==1">/ 正式</div>
+                            <div class="status yuepin" v-if="staff.staff_status==2">/ 約聘</div>
+                            <div class="status try" v-if="staff.staff_status==3">/ 試用</div>
+                            <div class="status leave" v-if="staff.staff_status==4">/ 離職</div>
+                            <div class="status leave" v-if="staff.staff_status==5">/ 留停</div>
+                            <div class="status none" v-if="staff.staff_status==0">/ 無</div>
+                        </div>
+                    </div>
+                    <div class="row detail">
+                        <div class="col s4 l4">
+                            <label>部門</label>
+                            <div class="text" :title="staff.department_name"> {{staff.department_name}} </div>
+                        </div>
+                        <div class="col s4 l4 border">
+                            <label>職務</label>
+                            <div class="text" :title="staff.staff_post"> {{staff.staff_post}} </div>
+                        </div>
+                        <div class="col s4 l4">
+                            <label>職類</label>
+                            <div class="text" :title="staff.staff_tilte"> {{staff.staff_tilte}} </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 l12">
+                            <label>原因</label>
+                            <div class="reason" :title="staff.exception_reason_list"> {{staff.exception_reason_list}} </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 l12">
+                            <label>不列入計分的月份</label>
+                            <div v-for="(m,index) in month" class="month" data-position="top" data-delay="50" :data-tooltip="staff.dictionaryReason[index+1]" :class="{check:staff.dictionaryReason[index+1],tooltipped:staff.dictionaryReason[index+1]}">{{(index>=9)? index+1:'0'+(index+1)}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Management-ExceptionList.js')?>"></script>

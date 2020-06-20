@@ -1,0 +1,1 @@
+UPDATE `rv_staff_event` SET `name` = '留停結束日期異動' WHERE `rv_staff_event`.`id` = 6;

@@ -1,0 +1,117 @@
+<header id="Header">
+    <div class="navbar-fixed">
+        <nav>
+            <div class="nav-wapper">
+                <div class="col s12">
+                    <a href="<?=U('/')?>" class="logo">
+                        <img src="<?=U('/Public/img/logo.png')?>" alt="">
+                    </a>
+                    <ul class="right" data-template="header-right">
+                        <li class="headway">
+                            <a v-on:click="toggleNotification"><i class="material-icons" >notifications_none</i><b class="notification-cycle" v-if="undo_info.nosee>0">{{undo_info.nosee}}</b></a>
+                            <div class="right-notification" v-if="undo.length>0">
+                                <div class="widget-notifications-item" v-for="(value, key) in undo" v-on:click="go(value)" style="width: 240px;">
+                                    <div class="widget-notifications-title text-danger" style="color: #bb2e1d !important;">SYSTEM</div>
+                                    <div class="widget-notifications-description"><strong>通知</strong>：{{value.title}}有{{value.length}}筆 .</div>
+                                    <div class="widget-notifications-icon red darken-3">
+                                        <i class="material-icons white-text" v-if="value.length <=9">filter_{{value.length}}</i>
+                                        <i class="material-icons white-text" v-if="value.length > 9">filter_9_plus</i>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="hide-on-small-and-down headway">
+                            <a>{{name}} {{name_en}}</a>
+                        </li>
+                        <li>
+                            <a href="#" data-toggle="logout">登出</a>
+                        </li>
+                    </ul>
+                    <a href="#" data-activates="slide-out" class="button-collapse"><i class="material-icons">dehaze</i></a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <ul id="slide-out" class="side-nav fixed rv-nav-side">
+        <ul class="collapsible collapsible-accordion" data-collapsible="accordion">
+            <li class="bold active">
+                <a class="collapsible-header waves-effect waves-orange"><i class="material-icons dp48" style="color:#4285f4;">event_note</i>月份考評</a>
+                <div class="collapsible-body">
+                    <ul>
+                        <li v-if="is_leader || is_admin"><a href="<?=U('/Template/index')?>">考評單</a></li>
+                        <li v-if="is_leader || is_admin"><a href="<?=U('/Template/Month-ReviewStaff')?>">工作評語</a></li>
+                        <li v-if="is_leader || is_admin"><a href="<?=U('/Template/Month-OrganizationChart')?>">組織圖</a></li>
+                        <li><a href="<?=U('/Template/Month-Overview')?>">總覽</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+        <ul class="collapsible collapsible-accordion" data-collapsible="accordion">
+            <li class="bold">
+                <a class="collapsible-header waves-effect waves-orange"><i class="material-icons dp48" style="color:#eeaf23;">assignment_turned_in</i>年度考評</a>
+                <div class="collapsible-body">
+                    <ul>
+                        <!-- CEO 不需填問卷 -->
+                        <li v-if="!is_ceo"><a href="<?=U('/Template/Year-Feedback')?>">部屬回饋問卷</a></li>
+                        <li><a href="<?=U('/Template/Year-Evaluation')?>">考評單</a></li>
+                        <li><a href="<?=U('/Template/Management-YearChat')?>" v-if="is_leader == 1 || is_admin == 1">組織圖</a></li>
+                        <li><a href="<?=U('/Template/Year-EvaluationOverview')?>">總覽</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+        <ul class="collapsible collapsible-accordion" v-if="is_leader == 1 || is_admin == 1" data-collapsible="accordion">
+            <li class="bold active">
+                <a class="collapsible-header waves-effect waves-orange"><i class="material-icons dp48" style="color:#d74838;">timeline</i>數據分析</a>
+                <div class="collapsible-body">
+                    <ul>
+                        <li><a href="<?=U('/Template/Month-SearchPerson')?>">員工績效分析</a></li>
+                        <li><a href="<?=U('/Template/Year-OpinionOverview')?>" v-if="is_admin == 1 || is_ceo">員工意見</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+        <ul class="collapsible collapsible-accordion" v-if="is_admin == 1" data-collapsible="accordion">
+            <li class="bold">
+                <a class="collapsible-header waves-effect waves-orange"><i class="material-icons dp48" style="color:#049085;">perm_data_setting</i> 考評管理</a>
+                <div class="collapsible-body">
+                    <ul>
+                        <li><a href="<?=U('/Template/Setting-MonthAdmin')?>">月份考評單管理</a></li>
+                        <li><a href="<?=U('/Template/Management-ExceptionList')?>">特殊人員列表</a></li>
+                        <li><a href="<?=U('/Template/Management-Feedback')?>">部屬回饋問卷管理</a></li>
+                        <li><a href="<?=U('/Template/Management-FeedbackCheck')?>">部屬意見管理</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+        <ul class="collapsible collapsible-accordion" v-if="is_admin == 1" data-collapsible="accordion">
+            <li class="bold">
+                <a class="collapsible-header waves-effect waves-orange"><i class="material-icons">settings</i> 系統設定</a>
+                <div class="collapsible-body">
+                    <ul>
+                        <li><a href="<?=U('/Template/Setting-Organization')?>">系統組織設定</a></li>
+                        <li><a href="<?=U('/Template/Setting-ImportBatchStaff')?>">批次匯入員工</a></li>
+                        <li><a href="<?=U('/Template/Management-ImportAttendance')?>">出缺勤匯入</a></li>
+                        <li><a href="<?=U('/Template/Management-ForgetCard')?>">匯入忘卡出勤紀錄</a></li>
+                        <li><a href="<?=U('/Template/Setting-MonthEvaluation')?>">月考評區間設定</a></li>
+                        <li><a href="<?=U('/Template/Setting-YearEvaluation')?>">年考評區間設定</a></li>
+                        <li><a href="<?=U('/Template/Management-OperationRecord')?>">操作紀錄</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </ul>
+      <?php
+          if(IS_DEBUG_MODE){
+      ?>
+ <script type="text/javascript" src="<?=U('/Public/js/vue.dev.2.2.6.js')?>"></script>
+      <?php
+          }else{
+      ?>
+    <script src="<?=U('/Public/js/vue.2.2.6.js')?>"></script>
+
+        <?php
+              }
+        ?>
+    <script src="<?=U('/Public/js/Index/header.js')?>"></script>
+</header>
