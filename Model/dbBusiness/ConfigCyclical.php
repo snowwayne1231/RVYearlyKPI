@@ -94,6 +94,68 @@ class ConfigCyclical extends DBPropertyObject{
 	}
 
 	/**
+	 * 用日期 取得設定在哪個月份
+	 */
+	public function getWhichYearMonthWithDate($date) {
+		$date_ary = preg_split('/[\s\-\/]+/', $date);
+		$year = (int) $date_ary[0];
+		$month = (int) $date_ary[1];
+		$day = (int) $date_ary[2];
+
+		$possible_ym = [];
+		for ($m = $month-1; $m <= $month+1; $m++) {
+			if ($m <= 0) {
+				$possible_ym[] = [$year -1, 12];
+			} else if ($m > 12) {
+				$possible_ym[] = [$year +1, 1];
+			} else {
+				$possible_ym[] = [$year, $m];
+			}
+		}
+
+		$where_ary = [];
+
+		foreach ($possible_ym as $ym) {
+			$y = $ym[0];
+			$m = $ym[1];
+			$where_ary[] = "(year = $y AND month = $m)";
+		}
+
+		$where_str = join(' OR ', $where_ary);
+
+		$data = $this->sql("SELECT year, month, day_start, day_end FROM {table} WHERE $where_str")->data;
+
+		$time = strtotime("$year-$month-$day");
+
+		$final_year = $year;
+		$final_month = $month;
+
+		foreach ($data as $d) {
+			$d_year = $d['year'];
+			$d_month = $d['month'];
+			$d_day_start = $d['day_start'];
+			$d_day_end = $d['day_end'];
+
+			$before_month = $d_month == 1 ? 12 : $d_month -1;
+			$before_year = $d_month == 1 ? $d_year -1 : $d_year;
+
+			$full_date_end = "$d_year-$d_month-$d_day_end";
+			$full_date_start = "$before_year-$before_month-$d_day_start";
+
+			$time_end = strtotime($full_date_end);
+			$time_start = strtotime($full_date_start);
+
+			if ($time_start <= $time && $time <= $time_end) {
+				$final_year = $d_year;
+				$final_month = $d_month;
+				break;
+			}
+		}
+
+		return [$final_year, $final_month];
+	}
+
+	/**
 	 * 是否啟動考評
 	 * @return boolean 判斷結果
 	 */

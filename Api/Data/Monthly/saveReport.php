@@ -10,6 +10,7 @@ $api = new ApiCore($_POST);
 // use Model\Business\Multiple\ProcessReport;
 use Model\Business\MonthlyReportEvaluating;
 use Model\Business\MonthlyProcessing;
+use Model\Business\AttendanceMonthlySpecial;
 
 $reports = $api->post('report');
 $length_report = count($reports);
@@ -19,6 +20,7 @@ if( $reports && $length_report>0 && $api->SC->isLogin()){
   $count = 0;
   $mre = new MonthlyReportEvaluating();
   $mp = new MonthlyProcessing();
+  $adms = new AttendanceMonthlySpecial();
 
   $report_ids = array();
   $process_ids = array();
@@ -39,7 +41,7 @@ if( $reports && $length_report>0 && $api->SC->isLogin()){
 
   //檢查是不是每張表都是自己的
   $self_staff_id = $api->SC->getId();
-  $all_eva_reports = $mre->select(['id', 'report_id', 'json_data', 'submitted', 'should_count'], "where report_id in (".join(',',$report_ids).") and staff_id_evaluator = $self_staff_id and report_type = $report_type");
+  $all_eva_reports = $mre->select(['id', 'report_id', 'json_data', 'submitted', 'should_count', 'year', 'month', 'staff_id'], "where report_id in (".join(',',$report_ids).") and staff_id_evaluator = $self_staff_id and report_type = $report_type");
   // dd($all_eva_reports);
   if (count($all_eva_reports) != count($report_ids)) {
     $api->denied('Wrong Report Id.');
@@ -49,9 +51,11 @@ if( $reports && $length_report>0 && $api->SC->isLogin()){
   // LG($pr_process);
 
   $result = [];
+  $prepare_update_ary = [];
   foreach ($all_eva_reports as $eva_report) {
     $eva_rid = $eva_report['id'];
     $rid = $eva_report['report_id'];
+    $staff_id = $eva_report['staff_id'];
     $update_data = $reports[$rid];
     $next_data = [];
     // if (isset($update_data['submitted'])) {
@@ -67,13 +71,22 @@ if( $reports && $length_report>0 && $api->SC->isLogin()){
       }
     }
     $next_data['json_data'] = $origin_json_data;
-    $result[] = $mre->update($next_data, $eva_rid);
+
+    if (!$adms->read(['id'], ['year'=> $eva_report['year'], 'month'=> $eva_report['month'], 'staff_id'=> $staff_id])->checkAttendanceScoreAllowed($origin_json_data['attendance'])) {
+      $api->denied("[出勤分數異常] Staff: $staff_id , Attendance: ".$origin_json_data['attendance']);
+    }
+
+    $prepare_update_ary[] = [$next_data, $eva_rid];
     // $report_item = $pr->updateReport( $loc, $pr_process[$pid], $staff );
     $count++;
     
   }
+
   //成功結果
   if($count == $length_report){
+    foreach ($prepare_update_ary as $loc) {
+      $result[] = $mre->update($loc[0], $loc[1]);
+    }
     $api->setArray($result);
   }else{
     $api->sqlError('No Complete Update.'.$count.'=='.$all);

@@ -97,20 +97,30 @@ class MailCenter {
     }
     // $this->Mailer->addAddress($target, $name);
   }
+
+  public function addAddressByStaffArray($staff_ids) {
+    foreach ($staff_ids as $id) {
+      $this->addAddress($id);
+    }
+  }
   
   public function addAddressGroup($type='monthly_process',$data=array()){
     $staff_table = $this->Staff->table_name;
+    $process_table = $this->Process->table_name;
     $year = isset($data['year'])?$data['year']:date('Y');
     $month = isset($data['month'])?$data['month']:date('m');
     switch($type){
       case 'monthly_process':
-        $result = $this->Process->sql(" select b.id, b.name , b.name_en, b.email, b.passwd, b.staff_no, b.is_admin, b.is_leader 
-        from {table} as a right join $staff_table as b on a.owner_staff_id = b.id where (a.year = $year and a.month = $month) or (b.is_admin=1 and status_id < 4) 
-        group by b.id ")->data;
+        // $result = $this->Process->sql(" select b.id, b.name , b.name_en, b.email, b.passwd, b.staff_no, b.is_admin, b.is_leader 
+        // from {table} as a right join $staff_table as b on a.owner_staff_id = b.id where (a.year = $year and a.month = $month) or (b.is_admin=1 and b.status_id < 4) 
+        // group by b.id ")->data;
+        $result = $this->Staff->sql(" select a.id, a.name , a.name_en, a.email, a.passwd, a.staff_no, a.is_admin, a.is_leader, a.department_id
+        from {table} as a left join $process_table as b on a.department_id = b.owner_department_id where (b.year = $year and b.month = $month and a.is_leader=1) or (a.is_admin=1 and a.status_id < 4) 
+        group by a.id order by a.department_id ")->data;
         break;
       default:$result = array();
     }
-    // LG($result);
+    // dd($result);
     foreach($result as &$v){
       if($v['is_admin']==1 && $v['is_leader']==0){
         $this->addCC($v['email']);

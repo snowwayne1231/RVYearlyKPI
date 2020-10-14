@@ -21,27 +21,32 @@ if($api->checkPost(array("year","month"))){
     $DateRangeEnd = $config['RangeEnd'];
     
     $attendance = new Model\Business\Multiple\DepartmentAttendance();
+    $monthly_special_attendance = new Model\Business\AttendanceMonthlySpecial();
+    
     
     $result = array();
     
     if( $team_id ){
       $team_id = preg_replace('/[\[\]\)\(]+/','',$team_id);
+
       $result = $attendance->getWithDate($DateRangeStart, $DateRangeEnd, $team_id);
+
+      $special_atten_map = $monthly_special_attendance->read(['staff_id', 'date', 'time', 'type', 'reason', 'remark'], ['year'=> $year, 'month'=> $month, 'department_id'=> $team_id])->getMapStaffDate();
     }else if( $staff_id ){
       
       $staff_id = preg_replace('/[\s\r\n!@#%$\[\]]+/i','',$staff_id);
       
       $result = $attendance->getWithDate($DateRangeStart, $DateRangeEnd, null, $staff_id );
+
+      $special_atten_map = $monthly_special_attendance->read(['staff_id', 'date', 'time', 'type', 'reason', 'remark'], ['year'=> $year, 'month'=> $month, 'staff_id'=> $staff_id])->getMapStaffDate();
     }else{
       
       $result = $attendance->getWithDate($DateRangeStart, $DateRangeEnd);
+      $special_atten_map = $monthly_special_attendance->read(['staff_id', 'date', 'time', 'type', 'reason', 'remark'], ['year'=> $year, 'month'=> $month])->getMapStaffDate();
     }
     
     $result = $attendance->staffList();
-    // LG($result);
-    // $api->setArray($result);
-    // print $api->getJSON();
-    // exit;
+    // dd($result);
     
     
     $colMapping = str_split("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -85,26 +90,31 @@ if($api->checkPost(array("year","month"))){
     // LG($result);
     //標題頭
     $col = 2;
+    $every_col = 5;
     foreach($result as &$val){
       //每個員工
       
       // $sheet->getRowDimension($row)->setRowHeight(22);
       $nowPosition = str_fetchColRow($col,1);
-      $sheet->mergeCells($nowPosition.":".str_fetchColRow($col+2,1));
+      $sheet->mergeCells($nowPosition.":".str_fetchColRow($col+$every_col-1,1));
       $sheet->setCellValue($nowPosition, $val['unit_id'].'-'.$val['unit_name']);
       
       $nowPosition = str_fetchColRow($col,2);
-      $sheet->mergeCells($nowPosition.":".str_fetchColRow($col+2,2));
+      $sheet->mergeCells($nowPosition.":".str_fetchColRow($col+$every_col-1,2));
       $sheet->setCellValue($nowPosition, $val['name'].' '.$val['name_en']);
       
       $nowPosition = str_fetchColRow($col,3);
       $sheet->setCellValue($nowPosition, '上班');
       $nowPosition = str_fetchColRow($col+1,3);
-      $sheet->setCellValue($nowPosition, '下班');
+      $sheet->setCellValue($nowPosition, '狀態');
       $nowPosition = str_fetchColRow($col+2,3);
+      $sheet->setCellValue($nowPosition, '下班');
+      $nowPosition = str_fetchColRow($col+3,3);
+      $sheet->setCellValue($nowPosition, '狀態');
+      $nowPosition = str_fetchColRow($col+4,3);
       $sheet->setCellValue($nowPosition, '備註');
       
-      $col+=3;
+      $col+=$every_col;
       
     }
     
@@ -137,14 +147,37 @@ if($api->checkPost(array("year","month"))){
         $absence = $val['_absence'];
         if( isset($absence[$date]) ){
           $dataset = $absence[$date];
+          $staff_id = $dataset['staff_id'];
+          $special_status_data = ['', ''];
+          if (isset($special_atten_map[$staff_id]) && isset($special_atten_map[$staff_id][$date])) {
+            $loc = $special_atten_map[$staff_id][$date];
+            // dd($loc);
+            
+            foreach ($loc as $c) {
+              $remark = $c['remark'];
+              
+              if (preg_match('/ 上班/', $remark) || preg_match('/加班上班/', $remark)) {
+                $special_status_data[0] = '補卡';
+              } else if (preg_match('/ 下班/', $remark) || preg_match('/加班下班/', $remark)) {
+                $special_status_data[1] = '補卡';
+              }
+            }
+          }
+          
           //上班
           $pcr = str_fetchColRow($col,$row);
           $sheet->setCellValue($pcr, $dataset['checkin_hours'] );
-          //下班
+          //上班 狀態
           $pcr = str_fetchColRow($col+1,$row);
-          $sheet->setCellValue($pcr, $dataset['checkout_hours'] );
-          //備註
+          $sheet->setCellValue($pcr, $special_status_data[0] );
+          //下班
           $pcr = str_fetchColRow($col+2,$row);
+          $sheet->setCellValue($pcr, $dataset['checkout_hours'] );
+          //下班 狀態
+          $pcr = str_fetchColRow($col+3,$row);
+          $sheet->setCellValue($pcr, $special_status_data[1] );
+          //備註
+          $pcr = str_fetchColRow($col+4,$row);
           $remark = $dataset['remark'];
           if(empty($remark)){
             if($dataset['late']>0){$remark.='遲到 : '.$dataset['late'].' 分,';}
@@ -153,7 +186,7 @@ if($api->checkPost(array("year","month"))){
           }
           $sheet->setCellValue($pcr, $remark);
         }
-        $col+=3;
+        $col+=$every_col;
       }
       
       $row++;

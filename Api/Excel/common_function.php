@@ -67,8 +67,8 @@
       $tmp = [];
       for($c=$col,$cm=0; $c <= $max_col; $c++,$cm++){
         $key = $col_map[$cm];
-        $val = $s->getCell(p($c,$r))->getValue();
-        $tmp[$key]=$val;
+        $val = $s->getCell(p($c,$r))->getFormattedValue();
+        $tmp[$key]= $val;
       }
       if($has_key){
         $res[$tmp[$key_name]]=$tmp;

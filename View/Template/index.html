@@ -2,6 +2,10 @@
   .assess {
     z-index: 996;
   }
+  .input-error {
+    border-color: brown;
+    background-color: #ffb9b9;
+  }
 </style>
 
 <div id="Assess" class="block-layer">
@@ -12,7 +16,7 @@
     <p>您目前無考評單</p>
   </div>
   <div id="AssessForm" class="section rv-assess">
-    <div id="template-1" style="display: none;">
+    <div id="template-1" style="display: none">
       <div
         :class="{ row:true, report:true, canDrawing:isAuthority('drawing') }"
         :data-vue="rand"
@@ -27,7 +31,12 @@
               >
                 <div class="col s12 m12 l3 info-block area-1">
                   <div class="team-info right-align">
-                    <p class="white-text" style="line-height: 12px; padding-left: 0;">0</p>
+                    <p
+                      class="white-text"
+                      style="line-height: 12px; padding-left: 0"
+                    >
+                      0
+                    </p>
                     <h1>{{recvice.created_department_name}}</h1>
                     <p>
                       <span class="orange-text" v-if="recvice.type==1"
@@ -72,10 +81,12 @@
                 </div>
                 <div class="col s12 m12 l3 info-block area-4">
                   <div class="start">
-                    <p class="white-text" style="line-height: 12px; ">-</p>
+                    <p class="white-text" style="line-height: 12px">-</p>
                     <div>
-                      <h2>{{member.name}}<!-- {{recvice._path_staff[ recvice.owner_staff_id ].name}}  --></h2>
-                      <p class="grey-text" style="line-height: 12px;">
+                      <h2>
+                        {{member.name}}<!-- {{recvice._path_staff[ recvice.owner_staff_id ].name}}  -->
+                      </h2>
+                      <p class="grey-text" style="line-height: 12px">
                         {{member.name_en}}<!-- {{recvice._path_staff[ recvice.owner_staff_id ].name_en}} --><!-- now --><!-- {{recvice._path_staff[ recvice.owner_staff_id].name_en}} -->
                       </p>
                     </div>
@@ -94,16 +105,36 @@
                   </div>
                   <div class="end">
                     <template v-if="recvice._next_staff">
-                      <p class="white-text" style="line-height: 12px; padding-left: 0;">-</p>
+                      <p
+                        class="white-text"
+                        style="line-height: 12px; padding-left: 0"
+                      >
+                        -
+                      </p>
                       <div>
                         <h2>{{recvice._next_staff.department_name}}</h2>
-                        <p class="grey-text" style="line-height: 12px; padding-left: 0;">next</p>
+                        <p
+                          class="grey-text"
+                          style="line-height: 12px; padding-left: 0"
+                        >
+                          next
+                        </p>
                       </div>
                     </template>
                     <div v-else>
-                      <p class="white-text" style="line-height: 12px; padding-left: 0;">-</p>
+                      <p
+                        class="white-text"
+                        style="line-height: 12px; padding-left: 0"
+                      >
+                        -
+                      </p>
                       <h2>核准</h2>
-                      <p class="grey-text" style="line-height: 12px; padding-left: 0;">Approval</p>
+                      <p
+                        class="grey-text"
+                        style="line-height: 12px; padding-left: 0"
+                      >
+                        Approval
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -189,7 +220,17 @@
                   <template
                     v-if="typeof recvice[departmentScoreLeaderNumberKey] != 'undefined' && recvice[departmentScoreLeaderNumberKey] > 1"
                   >
-                    <span style="vertical-align: super; display: inline-block; padding: 2px 6px; margin-left: 12px; border: 1px solid rgb(240, 240, 240); color: rgb(187, 187, 187);">此單需所有單位管理者皆提交才會送至下一階段。</span>
+                    <span
+                      style="
+                        vertical-align: super;
+                        display: inline-block;
+                        padding: 2px 6px;
+                        margin-left: 12px;
+                        border: 1px solid rgb(240, 240, 240);
+                        color: rgb(187, 187, 187);
+                      "
+                      >此單需所有單位管理者皆提交才會送至下一階段。</span
+                    >
                   </template>
                   <div :id="'ReJectModal-'+rand" class="modal">
                     <div class="modal-content">
@@ -291,9 +332,7 @@
                             <template v-if="!checkScoreState">
                               <i class="material-icons dp48">report_problem</i>
                             </template>
-                            <template v-else>
-                              {{report.staff_no}}
-                            </template>
+                            <template v-else> {{report.staff_no}} </template>
                           </div>
                           <div
                             class="staff-info"
@@ -329,6 +368,8 @@
                               type="checkbox"
                               :disabled="isDisabled()"
                               :id="'toscore_'+index"
+                              v-model="report.should_count"
+                              v-on:change="collectBackData(report,$event,'should_count')"
                             />
                           </td>
                         </template>
@@ -514,7 +555,7 @@
                               :disabled="isDisabled()"
                               type="number"
                               min="0"
-                              max="5"
+                              :max="report.attendance_max"
                               class="form-control"
                               v-model.number="report.attendance"
                               v-on:change="collectBackData(report,$event,'attendance')"
@@ -582,9 +623,7 @@
                           >
                             <span class="deep-orange-text">-</span>
                           </template>
-                          <template v-else>
-                            {{ total(report) }}
-                          </template>
+                          <template v-else> {{ total(report) }} </template>
                         </td>
                         <td>
                           <template
@@ -820,11 +859,13 @@
                               :disabled="isDisabled()"
                               type="number"
                               min="0"
-                              max="5"
+                              :max="report._attendance_max"
+                              :title="'補卡次數: '+report._special_attendance_times +', 上限為: '+ report._attendance_max"
                               class="form-control"
+                              :class="{'input-error': report.attendance > report._attendance_max}"
                               v-model.number="report.attendance"
-                              v-on:change="collectBackData(report,$event,'attendance')"
-                              v-on:keyup="decideFloat(this,report.attendance)"
+                              @change="collectBackData(report,$event, 'attendance')"
+                              @keyup="decideFloat(this, report.attendance, report._attendance_max)"
                             />
                           </template>
                         </td>
@@ -889,11 +930,11 @@
                           </template>
                         </td>
                         <td>
-                            <a
-                              class="btn waves-effect waves-teal lighten-1 comment-num"
-                              v-on:click="comment(report)"
-                              >{{report._comment_count}}筆</a
-                            >
+                          <a
+                            class="btn waves-effect waves-teal lighten-1 comment-num"
+                            v-on:click="comment(report)"
+                            >{{report._comment_count}}筆</a
+                          >
                         </td>
                       </tr>
                     </tbody>

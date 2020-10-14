@@ -344,3 +344,20 @@ self.getDepartmentLeadership = function(data) {
 self.upsertDepartmentLeadership = function(data) {
   return $.post(Setting_PATH+"upsertDepartmentLeadership", data);
 }
+
+
+/**
+ * 
+ */
+
+ self.uploadForgetCardMonthly = function(data) {
+  return $.ajax({
+    url : Excel_PATH+"uploadMonthlyForgetCard",
+    type : "POST",
+    data : data,
+    dataType : "JSON",
+    cache : false,
+    contentType : false,
+    processData: false
+  });
+ }

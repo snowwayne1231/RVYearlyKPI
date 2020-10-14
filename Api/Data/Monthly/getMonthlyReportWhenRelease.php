@@ -44,7 +44,7 @@ use Model\Business\Multiple\MonthlyReport;
 			//有跨部門的主管
 			$rgt = array('general'=>array(),'leader'=>array());
 			foreach($team_id as $t_id){
-				$tmp = $report->getTotallyShow($filter,$t_id, $forcs_staff, $select_staff_id );
+				$tmp = $report->getTotallyShow($filter, $t_id, $forcs_staff, $select_staff_id );
 				$rgt['general'] = array_merge($rgt['general'], $tmp['general']);
 				$rgt['leader'] = array_merge($rgt['leader'], $tmp['leader']);
 			}

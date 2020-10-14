@@ -116,6 +116,7 @@ class DepartmentAttendance extends MultipleSets{
       $res[$val['unit_id']]['unit_id'] = $val['unit_id'];
       
       
+      $res[$val['unit_id']][$staff_][$val['staff_no']]['id'] = $val['id'];
       $res[$val['unit_id']][$staff_][$val['staff_no']]['name'] = $val['name'];
       $res[$val['unit_id']][$staff_][$val['staff_no']]['name_en'] = $val['name_en'];
       $res[$val['unit_id']][$staff_][$val['staff_no']]['title'] = $val['title'];

@@ -15,7 +15,7 @@ if( $api->SC->isLogin() && ( $api->checkPost(array('report_id','report_type')) |
   $leadership = new Leadership($self_id);
 
   if ($target_staff_id && !$leadership->isMyUnderStaff($target_staff_id)) {
-    if (!$api->SC->isAdmin()) {
+    if (!$api->SC->isAdmin() && $target_staff_id != $self_id) {
       $api->denied('Is Not My Subordinate.');
     }
   }

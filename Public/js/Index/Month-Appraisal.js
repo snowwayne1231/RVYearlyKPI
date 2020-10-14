@@ -1,8 +1,8 @@
-var $assessForm = $('#Assess').generalController(function() {
+var $assessForm = $('#Assess').generalController(function () {
     var ts = this;
     ts.templateArray = [];
     ts.vuesObj = {};
-    ts.onLogin(function(member) {
+    ts.onLogin(function (member) {
         // fix();
         var today = new Date();
         var currentYear = today.getFullYear();
@@ -11,7 +11,10 @@ var $assessForm = $('#Assess').generalController(function() {
             // year: currentYear,
             staff_id: member.id
         }
-        API.getMonthlyProcessWithOwner(init).then(function(json) {
+        // 取得當前手上考評單所有人員的出勤
+
+
+        API.getMonthlyProcessWithOwner(init).then(function (json) {
             var collectHasForm = API.format(json);
             var getMonthlyData = 0;
             var count = 1;
@@ -26,7 +29,7 @@ var $assessForm = $('#Assess').generalController(function() {
                     }
                     apiArray.push(API.getMonthlyReport(data));
                 }
-                $.when.all(apiArray).then(function(data) {
+                $.when.all(apiArray).then(function (data) {
                     var newData = (typeof data[1] == "string") ? [data] : data;
                     for (var i in newData) {
                         var loc = newData[i];
@@ -34,13 +37,17 @@ var $assessForm = $('#Assess').generalController(function() {
                         for (var r in result) {
                             result[r]['current_viewer'] = member.id;
                             var getMonthlyData = result[r];
-                            //切換_report 結構 從陣列 轉成 物件
-                            var report_transform = function(reports) {
-                              var transform = {};
-                              for (var i = reports.length - 1; i >= 0; i--) {
-                                transform[reports[i]['id']] = reports[i];
-                              }
-                              return transform;
+                            // 切換_report 結構 從陣列 轉成 物件
+                            var report_transform = function (reports) {
+                                var transform = {};
+                                for (var i = reports.length - 1; i >= 0; i--) {
+                                    let curr = reports[i];
+                                    // 依補卡紀錄判斷出缺勤率
+                                    curr = checkAbsenceStatue(curr);
+
+                                    transform[reports[i]['id']] = curr;
+                                }
+                                return transform;
                             }
                             getMonthlyData._reports = report_transform(getMonthlyData._reports);
                             callVueRender(getMonthlyData);
@@ -52,6 +59,30 @@ var $assessForm = $('#Assess').generalController(function() {
                 });
             } else {
                 ts.q('#NoData').show();
+            }
+
+            function checkAbsenceStatue(report) {
+                // attendance
+                let range = [5, 5, 4, 3, 2, 1, 0];
+
+                var sa = report._special_attendance,
+                    res_list = [],
+                    res = 0;
+                for (var i in sa) {
+                    let curr = sa[i];
+                    if (res_list.indexOf(curr.date) == -1) {
+                        res_list.push(curr.date);
+                        res++;
+                    }
+                }
+                report['_special_attendance_times'] = res;
+                report['_attendance_max'] = res > 6 ? 0 : range[res];
+                report['_attendance_max_reason'] = '補卡次數: ' + report['_special_attendance_times'] + ' ,上限: ' + report['_attendance_max'];
+                console.log(report);
+                // if () {
+
+                // }
+                return report;
             }
 
             function callVueRender(param) {
@@ -71,99 +102,107 @@ var $assessForm = $('#Assess').generalController(function() {
                         member: member,
                         recvice: param,
                         changed: {},
-                        totalScore:'',
+                        totalScore: '',
                         modal: _vue_modal,
-                        state:'wait',  //wait :可以進行任何操作， running :正在執行前一個動作，不能執行
+                        state: 'wait',  //wait :可以進行任何操作， running :正在執行前一個動作，不能執行
                         toScoreKey: 'should_count',
                         departmentScoreLeaderNumberKey: '_owner_department_leader_number',
                     },
-                    mounted: function() {
-                        ts.q(this.$el).q('table').each(function(i) {
+                    mounted: function () {
+                        ts.q(this.$el).q('table').each(function (i) {
                             var table = ts.q(this);
                             var trs = table.q('tr').length;
                             if (trs > 4) { table.fixMe(); }
                         })
                     },
                     methods: {
+                        checkMaxNumber(report) {
+                            var vm = this;
+                            // 員工ID 取得該員工的補卡紀錄來判定最高分
+                            console.log(report);
+
+                        },
                         checkScoreState(score) {
                             var vm = this,
                                 res = true;
                             score.mistake == 0 && vm.total(score) == 0 ? res = false : res = true;
                             return res;
                         },
-                        stateCheck:function() {
-                          if (this.state == 'wait') {
-                            return true;
-                          } else {
-                            swal("操作失敗", "請先等待上一個操作完成", "error");
-                            return false;
-                          }
+                        stateCheck: function () {
+                            if (this.state == 'wait') {
+                                return true;
+                            } else {
+                                swal("操作失敗", "請先等待上一個操作完成", "error");
+                                return false;
+                            }
                         },
-                        stateChange:function(state) {
-                          this.state = state; // wait or running
+                        stateChange: function (state) {
+                            this.state = state; // wait or running
                         },
-                        reportChange:function() {
+                        reportChange: function () {
 
                         },
-                        extends: function(res,to) {
-                          if (typeof(res) != "string") {
-                            this.recvice = $.extend(this.recvice, res);
-                          }
-                          //修改權限
-                          switch(to){
-                            case 1:
-                              this.recvice._authority.commit  =false;
-                              this.recvice._authority.comment =false;
-                              this.recvice._authority.editor  =false;
-                              this.recvice._authority.drawing =true;
-                              this.recvice._authority.return  =false;
-                            break;
-                            case -1:
-                              this.recvice._authority.commit  =true;
-                              this.recvice._authority.comment =true;
-                              this.recvice._authority.editor  =true;
-                              this.recvice._authority.drawing =false;
-                              this.recvice._authority.return  =this.recvice.created_staff_id!=this.recvice.owner_staff_id;
-                            break;
-                            default:
-                          }
+                        extends: function (res, to) {
+                            if (typeof (res) != "string") {
+                                this.recvice = $.extend(this.recvice, res);
+                            }
+                            //修改權限
+                            switch (to) {
+                                case 1:
+                                    this.recvice._authority.commit = false;
+                                    this.recvice._authority.comment = false;
+                                    this.recvice._authority.editor = false;
+                                    this.recvice._authority.drawing = true;
+                                    this.recvice._authority.return = false;
+                                    break;
+                                case -1:
+                                    this.recvice._authority.commit = true;
+                                    this.recvice._authority.comment = true;
+                                    this.recvice._authority.editor = true;
+                                    this.recvice._authority.drawing = false;
+                                    this.recvice._authority.return = this.recvice.created_staff_id != this.recvice.owner_staff_id;
+                                    break;
+                                default:
+                            }
 
 
                         },
-                        save: function() {
+                        save: function () {
 
                             if (!this.stateCheck()) {
-                              return false;
+                                return false;
                             }
 
                             var vss = this;
                             vss.stateChange('running');
                             var def = $.Deferred();
-                            def.then(function(){ vss.stateChange('wait'); });
+                            def.then(function () { vss.stateChange('wait'); });
                             if (!this.isEmptyObject(this.changed)) {
 
-                                var changedObj = JSON.parse(JSON.stringify(this.changed))
+                                var changedObj = JSON.parse(JSON.stringify(this.changed));
                                 var insertData = {
                                     report: changedObj
                                 };
                                 // 確認是否存至新表
-                                API.saveReport(insertData).then(function(e) {
+                                API.saveReport(insertData).then(function (e) {
                                     var success = API.format(e);
                                     if (success.is) {
-                                      if (typeof(e.result) != "string") {
-                                        for (var key in e.result) {
-                                          if (vss.recvice._reports[key] != undefined) {
-                                            vss.recvice._reports[key] = Object.assign(vss.recvice._reports[key], e.result[key]);
-                                          }
+                                        if (typeof (e.result) != "string") {
+                                            for (var key in e.result) {
+                                                if (vss.recvice._reports[key] != undefined) {
+                                                    vss.recvice._reports[key] = Object.assign(vss.recvice._reports[key], e.result[key]);
+                                                }
+                                            }
                                         }
-                                      }
-                                      Materialize.toast('已儲存完畢您的變更', 2000);
-                                      vss.changed = {};
+                                        Materialize.toast('已儲存完畢您的變更', 2000);
+                                        vss.changed = {};
+                                        def.resolve();
                                     } else {
-                                      Materialize.toast('儲存錯誤，原因:'+e.msg, 2000);
+                                        Materialize.toast('儲存錯誤，原因:' + e.msg, 2000);
+                                        vss.stateChange('wait');
+                                        def.fail();
                                     }
                                     // vss.stateChange('wait');
-                                    def.resolve();
                                 })
                             } else {
                                 Materialize.toast('資料尚未變更', 2000);
@@ -172,7 +211,7 @@ var $assessForm = $('#Assess').generalController(function() {
 
                             return def;
                         },
-                        collectBackData: function(report, e, field) {
+                        collectBackData: function (report, e, field) {
                             if (field == 'bonus' || field == 'should_count') {
                                 if (report[field]) { //true
                                     report[field] = 1;
@@ -202,21 +241,24 @@ var $assessForm = $('#Assess').generalController(function() {
                             }
                             this.changed[report.id][field] = report[field];
                         },
-                        commit: function() {
+                        commit: function () {
                             if (!this.stateCheck()) {
-                              return false;
+                                return false;
                             }
-                            var vss = this;
-                            var commitId = { processing_id: this.recvice.id }
-                            var isAllDone = 1;
-                            var noCheckedBonus = [];
-                            var nonZeroAddedValue = [];
-                            var nonZeroMistake = [];
-                            var nonZeroShouldnotCount = [];
-                            var report = this.recvice._reports;
+                            var vss = this,
+                                commitId = { processing_id: this.recvice.id },
+                                isAllDone = 1,
+                                error = 0,
+                                noCheckedBonus = [],
+                                nonZeroAddedValue = [],
+                                nonZeroMistake = [],
+                                nonZeroShouldnotCount = [],
+                                attendanceOverMax = [],
+                                report = this.recvice._reports;
 
                             for (var r in report) {
-                                
+                                let currReport = report[r];
+
                                 if (!report[r].should_count) {
                                     nonZeroShouldnotCount.push(report[r].name_en);
                                     isAllDone = 0;
@@ -236,11 +278,16 @@ var $assessForm = $('#Assess').generalController(function() {
                                     nonZeroMistake.push(report[r].name_en);
                                     isAllDone = 0;
                                 }
-                            }
 
-                            if (isAllDone) {
+                                if (currReport.attendance > currReport._attendance_max) {
+                                    error++;
+                                    attendanceOverMax.push(report[r].name_en);
+                                }
+                            }
+                            
+                            if (isAllDone && !error) {
                                 commitMonthly();
-                            } else {
+                            } else if (!error) {
 
                                 if (nonZeroShouldnotCount.length != 0) {
                                     var nameShouldCount = nonZeroShouldnotCount.join("、");
@@ -258,13 +305,13 @@ var $assessForm = $('#Assess').generalController(function() {
                                 if (nonZeroAddedValue.length != 0) {
                                     var nameAddedValue = nonZeroAddedValue.join("、");
                                     var addedValueHTML = "<li style='text-align: left;'>特殊貢獻名單：" + nameAddedValue + "</li>";
-                                }else {
+                                } else {
                                     var addedValueHTML = "";
                                 }
                                 if (nonZeroMistake.length != 0) {
                                     var nameMistake = nonZeroMistake.join("、");
                                     var mistakeHTML = "<li style='text-align: left;'>重大缺失名單：" + nameMistake + "</li>";
-                                }else {
+                                } else {
                                     var mistakeHTML = "";
                                 }
                                 swal({
@@ -279,56 +326,64 @@ var $assessForm = $('#Assess').generalController(function() {
                                     closeOnConfirm: false,
                                     closeOnCancel: false
                                 },
-                                function(isConfirm) {
-                                    if (isConfirm) {
-                                        commitMonthly();
-                                        swal("送審", "您已經成功提交", "success");
-                                    } else {
-                                        swal("取消", "協助檢查是否已完成填寫評語", "error");
-                                    }
-                                });
+                                    function (isConfirm) {
+                                        if (isConfirm) {
+                                            commitMonthly();
+                                            swal("送審", "您已經成功提交", "success");
+                                        } else {
+                                            swal("取消", "協助檢查是否已完成填寫評語", "error");
+                                        }
+                                    });
+                            } else if (error > 0) {
+                                Materialize.toast('提交失敗，評分紅框問題還沒被處理', 2000)
                             }
 
                             function commitMonthly() {
                                 //等待儲存完畢
-                                vss.save().then(function(){
-                                  API.commitMonthly(commitId).then(function(e) {
-                                      var success = API.format(e);
-                                      if (success.is) {
-                                        if (e.result == 'Already Done.') {
-                                          $(vss.$el).remove();
+                                vss.save().then(function () {
+                                    API.commitMonthly(commitId).then(function (e) {
+                                        var success = API.format(e);
+                                        if (success.is) {
+                                            if (e.result == 'Already Done.') {
+                                                $(vss.$el).remove();
+                                            } else {
+                                                vss.extends(e.result, 1);
+                                            }
+                                            $(vss.$el).remove();
+                                            Materialize.toast('已提交送審', 2000)
                                         } else {
-                                          vss.extends(e.result,1);
+                                            Materialize.toast('提交失敗', 2000)
                                         }
-                                          $(vss.$el).remove();
-                                          Materialize.toast('已提交送審', 2000)
-                                      }else{
-                                        Materialize.toast('提交失敗', 2000)
-                                      }
-                                  });
+                                    });
+                                }).catch(function() {
+                                    alert('有 fail');
                                 });
                             }
                         },
-                        open: function(param) {
-                            
+                        open: function (param) {
+
                             ts.q('#ReJectModal-' + rand).modal({
                                 dismissible: false
                             });
                             var processingId = {
                                 processing_id: param.id
                             }
-                            API.getMonthlyRejectList(processingId).then(function(e) {
+                            API.getMonthlyRejectList(processingId).then(function (e) {
                                 var result = API.format(e);
                                 if (result.is) {
-                                    var list = result.get();
+                                    var list = result.res();
                                     var rj = ts.q('#ReJectModal-' + rand).find("select").empty();
+                                    // console.log(list);
+                                    // if (typeof list.length == 'undefined') {
+                                    //     list = [list];
+                                    // }
                                     for (var l in list) {
                                         rj.append('<option value="' + list[l].id + '">' + list[l].department_name + '</option>');
                                     }
                                 }
                             })
                         },
-                        reject: function(param) {
+                        reject: function (param) {
                             var def = this.save();
                             var ownerId = param.id
                             var backId = ts.q('#ReJectModal-' + rand + ' option:selected').val()
@@ -344,15 +399,15 @@ var $assessForm = $('#Assess').generalController(function() {
                                     ts.q('#ReJectModal-' + rand).modal("close")
                                     $(this.$el).remove();
                                     //
-                                    def.then( function(){
-                                      API.rejectMonthly(rejectData).then(function(e) {
+                                    def.then(function () {
+                                        API.rejectMonthly(rejectData).then(function (e) {
                                             var success = API.format(e);
                                             if (success.is) {
                                                 Materialize.toast('已退回該表單', 2000)
                                             }
                                         });
 
-                                    } );
+                                    });
 
                                 } else {
                                     ts.q('#ReJectModal-' + rand).modal("close")
@@ -362,10 +417,10 @@ var $assessForm = $('#Assess').generalController(function() {
                                 swal("Hi", "請輸入退回原因!");
                             }
                         },
-                        history: function() {
+                        history: function () {
                             this.modal.monthly_history.show(this.recvice.id);
                         },
-                        absence: function() {
+                        absence: function () {
                             var after;
                             if (this.recvice.type == 1) {
                                 after = "&staff=";
@@ -379,15 +434,15 @@ var $assessForm = $('#Assess').generalController(function() {
                             }
                             window.open("None/Frame/absence?year=" + this.year + "&month=" + this.month + after);
                         },
-                        comment: function(report) {
+                        comment: function (report) {
                             this.modal.monthly_review.show(report, 1);
                         },
-                        leaderSumScore:function(report){
+                        leaderSumScore: function (report) {
                             var score_total = (report.target * 2) + (report.quality * 2) + (report.method * 2) + (report.error * 2) + (report.backtrack * 2) + (report.planning * 2) + (report.execute * 1.4) + (report.decision * 1.4) + (report.resilience * 1.2) + (report.attendance * 2) + (report.attendance_members * 2);
-                            score_total = Math.min(score_total, 100) ;
+                            score_total = Math.min(score_total, 100);
                             return score_total;
                         },
-                        staffSumScore:function(report){
+                        staffSumScore: function (report) {
                             if (report.duty_shift == 0) {
                                 // 一般員工的總分
                                 var score_total = (report.quality * 5) + (report.completeness * 5) + (report.responsibility * 5) + (report.cooperation * 3) + (report.attendance * 2);
@@ -399,7 +454,25 @@ var $assessForm = $('#Assess').generalController(function() {
                             score_total = Math.min(score_total, 100);
                             return Math.round(score_total);
                         },
-                        total: function(report) {
+
+                        // attendanceMax(report) {
+                        //     var vm = this,
+                        //         range = [2, 3, 4, 5],
+                        //         reward = [4, 3, 2, 1],
+                        //         spn = vm.specilAttendance(report),
+                        //         index = range.indexOf(spn),
+                        //         res;
+
+                        //     if (index != -1) {
+                        //         res = reward[index];
+                        //     } else if (spn < range[0]) {
+                        //         res = 5;
+                        //     } else if (spn > range[range.length -1]) {
+                        //         res = 0;
+                        //     }
+                        //     return res;
+                        // },
+                        total: function (report) {
                             if (this.recvice.type == 1) {
                                 // 主管們的總分
                                 var score_total = (report.target * 2) + (report.quality * 2) + (report.method * 2) + (report.error * 2) + (report.backtrack * 2) + (report.planning * 2) + (report.execute * 1.4) + (report.decision * 1.4) + (report.resilience * 1.2) + (report.attendance * 2) + (report.attendance_members * 2);
@@ -422,12 +495,12 @@ var $assessForm = $('#Assess').generalController(function() {
                                 score_total = Math.min(score_total, 100) + report.addedValue - report.mistake;
                                 if (score_total < 0) {
                                     return score_total = 0
-                                }else {
+                                } else {
                                     return Math.round(score_total)
                                 }
                             }
                         },
-                        isEmptyObject: function(obj) {
+                        isEmptyObject: function (obj) {
                             for (var name in obj) {
                                 if (obj.hasOwnProperty(name)) {
                                     return false;
@@ -435,13 +508,13 @@ var $assessForm = $('#Assess').generalController(function() {
                             }
                             return true;
                         },
-                        isDisabled:function() {
-                          return !this.isAuthority('editor');
+                        isDisabled: function () {
+                            return !this.isAuthority('editor');
                         },
-                        isAuthority:function(key){
-                          return this.recvice['_authority'][key] || false;
+                        isAuthority: function (key) {
+                            return this.recvice['_authority'][key] || false;
                         },
-                        draw: function(param) {
+                        draw: function (param) {
                             var ownerId = param.id;
                             var vss = this;
                             var backReason = ts.q('#DrawModal-' + rand + ' textarea').val()
@@ -453,13 +526,13 @@ var $assessForm = $('#Assess').generalController(function() {
                             }
                             if (backReason != '') {
                                 var that = this;
-                                API.drawSingle(rejectData).then(function(e) {
+                                API.drawSingle(rejectData).then(function (e) {
                                     var success = API.format(e);
                                     if (success.is) {
                                         Materialize.toast('已抽回該表單', 2000);
-                                        vss.extends(e.result,-1);
+                                        vss.extends(e.result, -1);
                                     } else {
-                                      Materialize.toast('抽單失敗 ，原因:' + e.msg, 2000)
+                                        Materialize.toast('抽單失敗 ，原因:' + e.msg, 2000)
                                     }
                                 })
                                 ts.q('#DrawModal-' + rand).modal("close");
@@ -467,11 +540,16 @@ var $assessForm = $('#Assess').generalController(function() {
                                 swal("Hi", "請輸入退回原因!");
                             }
                         },
-                        decideFloat: function(e, pnumber) {
-                            if (!/^\+?[0-5]*$/.test(pnumber)) {
-                                e.value = /\+?[0-5]*/.exec(e.value);
-                                swal("!", "請輸入0~5的整數");
+                        decideFloat(e, pnumber, max) {
+                            max = (max != 0 && !max) ? 5 : max;
+                            if (pnumber < 0 || pnumber > max) {
+                                e.value = pnumber < 0 ? 0 : max;
+                                swal("!", "請輸入0~"+max+"的整數");
                             }
+                            // if (!/^\+?[0-max]*$/.test(pnumber)) {
+                            //     e.value = /\+?[0-max]*/.exec(e.value);
+                            //     swal("!", "請輸入0~"+max+"的整數");
+                            // }
                             return false;
                         }
                     }
@@ -481,23 +559,23 @@ var $assessForm = $('#Assess').generalController(function() {
                 var ele = tmp1.$el;
                 ts.q(".modal").modal();
                 ts.q(ele).q('.collapsible').collapsible();
-                ts.q("#CommentText").focus(function() {
+                ts.q("#CommentText").focus(function () {
                     ts.q("#CommentText" + (index + 1) + "-" + rand).siblings().show();
                 });
             }
 
 
             function contentMunu() {
-                ts.$.on('contextmenu', '.rv-assess >div.row', function(e) {
+                ts.$.on('contextmenu', '.rv-assess >div.row', function (e) {
                     e.preventDefault();
                     $t = ts.q(this);
                     var vueKey = $t.data('vue');
                     var vue_object = ts.vuesObj[vueKey];
                     contextmenu.appendTo(document.body).show().css({ left: e.pageX, top: e.pageY });
                     contextmenu.targetVue = vue_object;
-                }).parents(window).on('click', function() { contextmenu.detach(); });
+                }).parents(window).on('click', function () { contextmenu.detach(); });
 
-                var contextmenu = $('<div class="content-menu"> <li class="save">儲存</li> <li class="absence">出缺席記錄</li> <li class="history">歷史記錄</li> <li class="top">回到此單頂部</li> </div>').on('click', 'li', function() {
+                var contextmenu = $('<div class="content-menu"> <li class="save">儲存</li> <li class="absence">出缺席記錄</li> <li class="history">歷史記錄</li> <li class="top">回到此單頂部</li> </div>').on('click', 'li', function () {
                     var vue = contextmenu.targetVue;
                     switch (this.className) {
                         case "save":
@@ -521,7 +599,7 @@ var $assessForm = $('#Assess').generalController(function() {
             function mouseWheel() {
                 var inputEvent = new Event('input');
                 var changeEvent = new Event('change');
-                ts.$.on('mousewheel', '.rv-assess .card-cell', function(e) {
+                ts.$.on('mousewheel', '.rv-assess .card-cell', function (e) {
                     var $t = ts.q(this);
                     var $input = $t.q('input[type=number]'),
                         input = $input[0];

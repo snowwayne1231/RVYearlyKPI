@@ -205,10 +205,18 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 				$send_emails = [];
 				$admin_emails= [];
 
+
 				//組合部門管理者的 E-mail
 				foreach($teamsData as $send_team){
 					if( isset($staffsData[ $send_team['manager_staff_id'] ]) ){
 						$send_emails[] = $staffsData[ $send_team['manager_staff_id'] ]['email'];
+					}
+
+					if ( isset($mapDepartmentToLeadership[$send_team['id']])) {
+						$leaders = $mapDepartmentToLeadership[$send_team['id']];
+						foreach ($leaders as $_leader_id) {
+							$send_emails[] = $staffsData[ $_leader_id ]['email'];
+						}
 					}
 				}
 

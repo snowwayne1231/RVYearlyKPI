@@ -178,7 +178,7 @@ class MonthlyReport extends MultipleSets{
 		return $map;
 	}
 
-	public function getTotallyShow($release=false,$manager_team_id_id=false, $member_data=[], $select_staff_id=0){
+	public function getTotallyShow($release=false, $manager_team_id_id=false, $member_data=[], $select_staff_id=0){
 
 		$leader = $this->leader->table_name;
 		$general = $this->general->table_name;
@@ -191,14 +191,21 @@ class MonthlyReport extends MultipleSets{
 
 
 		if($manager_team_id_id){    //被限制觀看部門的
-
+			$manager_team_id_id = (int) $manager_team_id_id;
 			if(empty($member_data['id'])){$this->error('Not Found Member.');}
 			$my_id = $member_data['id'];
-			$lower_teams = $this->team->read()->getLowerIdArray($manager_team_id_id);
+			
 			// $teams[] = $manager_team_id_id;
 
-			if($member_data['is_leader']==1 && $month>0){ //要看所有下屬的
-				
+			if($member_data['is_admin'] ==1) {	// 管理者看該部分
+
+				$lower_teams = $this->team->read()->getLowerIdArray($manager_team_id_id, true);
+
+				$staffwhere = " and ( staff.department_id in (".(join(',',$lower_teams)).") ) ";
+
+			} else if($member_data['is_leader']==1 && $month>0) { //要看所有下屬的
+
+				$lower_teams = $this->team->read()->getLowerIdArray($manager_team_id_id);
 
 				if (count($lower_teams) > 0) {
 					$staffwhere = " and ( staff.department_id in (".(join(',',$lower_teams)).") or ( staff.department_id = $manager_team_id_id and staff.is_leader = 0 ) or (staff.id = $my_id) ) ";
@@ -206,7 +213,7 @@ class MonthlyReport extends MultipleSets{
 					$staffwhere = " and ( (staff.department_id = $manager_team_id_id and staff.is_leader = 0) or (staff.id = $my_id) ) ";
 				}
 
-			}else{    //看個人
+			} else {    //看個人
 				if(empty($select_staff_id) || $select_staff_id==$my_id){ //是自己
 					$staffwhere = " and main.staff_id = $my_id ";
 				}else{

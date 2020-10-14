@@ -8,6 +8,7 @@ $api = new ApiCore($_REQUEST);
 
 use Model\Business\Multiple\ProcessRouting;
 use Model\Business\Department;
+use Model\Business\Multiple\Leadership;
 
 $process_id = $api->post('processing_id');
 $staff_id = $api->post('staff_id');
@@ -31,13 +32,19 @@ if( $process_id && ($staff_id || ($api->SC->isAdmin() && $turnback)) ){
   //退回
   $ok = $routing->rejectToStaff( $staff_id, $reason, $self_id, $api->SC->isAdmin() );
   if(!$ok){$api->denied('Error Staff Id.');}
+
+  // 找到同層主管
+  $Leadership = new Leadership($staff_id);
+  $leaders = $Leadership->getSameDepartmentLeaders(true);
   
   //20170807 改成 process 的單位名稱
   $team = $routing->getTeam();
   //mail
   require_once BASE_PATH.'/Model/MailCenter.php';
+
   $mail = new Model\MailCenter;
-  $mail->addAddress($staff_id);
+  // $mail->addAddress($staff_id);
+  $mail->addAddressByStaffArray($leaders);
   $res = $mail->sendTemplate('monthly_return',array(
     'unit_name' => $team['name'],
     'unit_id' => $team['unit_id'],

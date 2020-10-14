@@ -13,6 +13,7 @@ if($api->SC->isLogin()){
   
   $report = new MonthlyReport( );
   $eva = new MonthlyReportLeadershipEvaluating();
+  $monthly_attendance = new Model\Business\AttendanceMonthlySpecial();
   
   $result = array();
   
@@ -47,11 +48,17 @@ if($api->SC->isLogin()){
   }
   
   if(count($processing_id)>0){
+
     $result = $report->getReportWithProcess( $processing_id, $self_id, $department_id );
     foreach ($result as $pid => &$process) {
       $_reports = &$process['_reports'];
+      $year = $process['year'];
+      $month = $process['month'];
       foreach ($_reports as &$report) {
         $report = $eva->replaceByReportData($report, $self_id);
+        $staff_id = $report['staff_id'];
+        $monthly_atten_data = $monthly_attendance->select(['date', 'time', 'type', 'reason', 'remark'], ['year'=> $year, 'month'=> $month, 'staff_id'=> $staff_id]);
+        $report['_special_attendance'] = $monthly_atten_data;
       }
     }
   }

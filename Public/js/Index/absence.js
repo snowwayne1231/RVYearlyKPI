@@ -121,7 +121,7 @@ var $Absence = $('#Absence').generalController(function() {
     API.getAbsence(submit).then(function(data) {
         var rec = API.format(data).get();
         if (rec) {
-            // console.log(rec);
+            console.log(rec);
             
             //先找到所有日期 與 所有員工
             var time_1 = new Date();
@@ -177,7 +177,7 @@ var $Absence = $('#Absence').generalController(function() {
             // console.log(allStaff);
 
             var time_2 = new Date();
-            console.log('Loop Parse Data Waste Time: '+(time_2 - time_1));
+            // console.log('Loop Parse Data Waste Time: '+(time_2 - time_1));
             var html = dataBlock.html();
             dataBlock.empty();
 

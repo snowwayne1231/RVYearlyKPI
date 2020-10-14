@@ -6,7 +6,7 @@ include_once __DIR__.'/Common/DBPropertyObject.php';
 class AttendanceSpecial extends DBPropertyObject{
   
   const TYPE_NOCARD = 1;        //沒帶卡
-  const TYPE_FORGETCARD = 2;    //忘卡
+  const TYPE_FORGETCARD = 2;    //忘刷卡
   const TYPE_LATE = 3;          //特殊遲到
   
   

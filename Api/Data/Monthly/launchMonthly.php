@@ -36,7 +36,7 @@ if( $api->checkPost(array('year','month')) && $api->SC->isAdmin() ){
 
 
   //發送 email
-  if ($change > 0) {
+  if ($change > 0 || true) {
     $config_data['cut_off_date'] = str_replace('-','/',$cutOffDate);
 
     require_once BASE_PATH.'/Model/MailCenter.php';

@@ -21,6 +21,7 @@ if($api->checkPost(array("year","month"))){
     $DateRangeEnd = $config['RangeEnd'];
     
     $attendance = new Model\Business\Multiple\DepartmentAttendance();
+    $monthly_attendance = new Model\Business\AttendanceMonthlySpecial();
 
     $self_id = $api->SC->getId();
     $seld_data = $api->SC->getMember();
@@ -62,6 +63,41 @@ if($api->checkPost(array("year","month"))){
     
     // $api->setArray($result);
     $newResult = $attendance->bTree();
+
+    // add forget card data
+    $monthly_atten_data = $monthly_attendance->select(['staff_id', 'date', 'time', 'type', 'reason', 'remark', 'outside_number'], ['year'=> $year, 'month'=> $month]);
+    $monthly_atten_map = [];
+    foreach ($monthly_atten_data as $mad) {
+      $has = isset($monthly_atten_map[$mad['staff_id']]) && isset($monthly_atten_map[$mad['staff_id']][$mad['date']]);
+      if ($has) {
+        $monthly_atten_map[$mad['staff_id']][$mad['date']][] = $mad;
+      } else {
+        $monthly_atten_map[$mad['staff_id']][$mad['date']] = [$mad];
+      }
+    }
+
+    foreach ($newResult as $unit_id => &$results) {
+      foreach ($results['_staff'] as $staff_code => &$staff_meta) {
+        $staff_id = $staff_meta['id'];
+        $has_staff = isset($monthly_atten_map[$staff_id]);
+        
+        if ($has_staff) {
+          $monthly_atten_staff_map = $monthly_atten_map[$staff_id];
+          
+          foreach ($staff_meta['_attendance'] as &$atten) {
+            $date = $atten['date'];
+            if (isset($monthly_atten_staff_map[$date])) {
+              $atten['_special'] = $monthly_atten_staff_map[$date];
+            }
+          }
+        }
+      }
+    }
+
+    // dd([
+    //   'monthly_atten_map' => $monthly_atten_map,
+    //   'newResult' => $newResult,
+    // ]);
     
     $api->setArray($newResult);
 }

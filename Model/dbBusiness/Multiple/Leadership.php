@@ -61,6 +61,21 @@ class Leadership extends MultipleSets{
 
     return $result;
   }
+
+
+  public function getSameDepartmentLeaders($include_self=false) {
+    // $staff = $this->staff->find($staff_id);
+    $leaders = [];
+    $department_id = $this->self_data['department_id'];
+    $leader_obj = $this->departmentLeadership->select(['staff_id'], ['department_id' => $department_id, 'status' => 1]);
+    foreach ($leader_obj as $obj) {
+      $leaders[] = $obj['staff_id'];
+    }
+    if ($include_self) {
+      $leaders[] = $this->self_data['id'];
+    }
+    return array_unique($leaders);
+  }
   
 }
 ?>

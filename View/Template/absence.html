@@ -43,17 +43,19 @@ body {
                     <thead>
                         <tr>
                             <td colspan='2'>部門</td>
-                            <td v-for="(val,ix) in staff" colspan='3' :pos="ix">{{val.unit_code}} {{val.unit_name}}</td>
+                            <td v-for="(val,ix) in staff" colspan='5' :pos="ix">{{val.unit_code}} {{val.unit_name}}</td>
                         </tr>
                         <tr>
                             <td colspan='2'>姓名</td>
-                            <td v-for="(val,ix) in staff" colspan='3' :pos="ix">{{val.name}} {{val.name_en}}</td>
+                            <td v-for="(val,ix) in staff" colspan='5' :pos="ix">{{val.name}} {{val.name_en}}</td>
                         </tr>
                         <tr>
                             <td colspan='2'>日期</td>
                             <td class="template" v-for="(item,ix) in staff">
                                 <td :pos="ix">上班</td>
+                                <td :pos="ix">狀態</td>
                                 <td :pos="ix">下班</td>
+                                <td :pos="ix">狀態</td>
                                 <td :pos="ix">備註</td>
                                 <td class="/template"></td>
                             </td>
@@ -65,7 +67,21 @@ body {
                             <td class="val-day">{{val.day}}</td>
                             <td class="template" v-for="(item,ix) in staff">
                                 <td :pos="ix" :class="item._attendance_map[key]&&item._attendance_map[key].remark.length==0? {late:item._attendance_map[key].late>0,nocard:item._attendance_map[key].nocard>0,single:item._attendance_map[key]._sig==1} :false">{{(item._attendance_map[key])?item._attendance_map[key].checkin_hours:''}}</td>
+                                <td>
+                                    <template v-if="Object.keys(item._attendance_map[key]).indexOf('_special') != -1">
+                                        <template v-for="(s, s_i) in item._attendance_map[key]['_special']">
+                                            <span style="color: rgb(82 137 209); display: inline-block;" v-if="s.remark.indexOf(' 上班') != -1 || s.remark.indexOf('加班上班') != -1">補卡</span>
+                                            <!-- <span style="color: #858585; display: inline-block;" v-else>正常</span> -->
+                                        </template>
+                                    </template>
+                                </td>
                                 <td :pos="ix" :class="item._attendance_map[key]&&item._attendance_map[key].remark.length==0? {early:item._attendance_map[key].early>0,nocard:item._attendance_map[key].nocard>0,single:item._attendance_map[key]._sig==1} :false">{{(item._attendance_map[key])?item._attendance_map[key].checkout_hours:''}}</td>
+                                <td>
+                                    <template v-for="(s, s_i) in item._attendance_map[key]['_special']">
+                                        <span style="color: rgb(82 137 209); display: inline-block;" v-if="s.remark.indexOf(' 下班') != -1 || s.remark.indexOf('加班下班') != -1">補卡</span>
+                                        <!-- <span style="color: #858585; display: inline-block;" v-else>正常</span> -->
+                                    </template>
+                                </td>
                                 <td :pos="ix" class="td-remark" v-if="item._attendance_map[key]">
                                     <span v-if="item._attendance_map[key].remark">{{item._attendance_map[key].remark}}</span>
                                     <span v-else>

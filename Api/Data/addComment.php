@@ -10,6 +10,12 @@ $api = new ApiCore($_REQUEST);
 if( $api->SC->isLogin() && ( $api->checkPost(array('report_id','report_type','content')) || $api->checkPost(array('staff_id','year','month','content')) ) ){
   
   $target_staff_id = $api->post('staff_id');
+  $content = $api->post('content');
+
+  if (is_numeric($content)) {
+    $content = $content. "\r\n";
+  }
+
   $param = array(
     'mode' => ($target_staff_id) ? 1 : 2,
     'self_id' => $api->SC->getId(),
@@ -18,7 +24,7 @@ if( $api->SC->isLogin() && ( $api->checkPost(array('report_id','report_type','co
     'month' => $api->post('month'),
     'report_id' => $api->post('report_id'),
     'report_type' => $api->post('report_type'),
-    'content' => $api->post('content')
+    'content' => $content
   );
   
   $comment = new CommentCenter();

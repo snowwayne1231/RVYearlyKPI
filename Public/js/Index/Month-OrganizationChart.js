@@ -235,7 +235,7 @@ var $Organization = $('#Organization').generalController(function() {
 
                             } //for.. lloc2.processing..
 
-                            console.log(loc2.name, loc2, btn_1_non);
+                            // console.log(loc2.name, loc2, btn_1_non);
 
                         } // for ivarray.loc..  lv
 

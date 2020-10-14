@@ -1,11 +1,12 @@
 <?php
 
 include __DIR__."/../../ApiCore.php";
-include BASE_PATH.'/Model/dbBusiness/Multiple/ProcessRouting.php';
+// include BASE_PATH.'/Model/dbBusiness/Multiple/ProcessRouting.php';
 
 $api = new ApiCore($_REQUEST);
 
 use Model\Business\Multiple\ProcessRouting;
+
 
 $process_id = $api->post('processing_id');
 $commit_by_admin = $api->post('admin');
@@ -55,22 +56,30 @@ if( $process_id ){
       //取得上司
       $staff_id = $routing->supervisor;
 
+      $Leadership = new Model\Business\Multiple\Leadership($staff_id);
+      $leaders = $Leadership->getSameDepartmentLeaders(true);
+
       $team = $routing->getTeam();//20170807 改成取 processing 的部門名
       // $team = $routing->team->map('manager_staff_id')[$staff_id];
 
       //發送 E-mail
       require_once BASE_PATH.'/Model/MailCenter.php';
       $mail = new Model\MailCenter;
-      $mail->addAddress($staff_id);
+      $mail->addAddressByStaffArray($leaders);
       $res = $mail->sendTemplate('monthly_arrive',array(
         'unit_name' => $team['name'],
         'unit_id'   => $team['unit_id'],
         'year'      => date('Y'),
         'month'     => date('m')
       ));
-    }
 
-    $api->setArray($is_next);
+      $api->setArray($is_next);
+
+    } else {
+
+      $api->denied();
+
+    }
   }
 
 }else{

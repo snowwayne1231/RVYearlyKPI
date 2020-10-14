@@ -16,6 +16,7 @@ use \Model\Business\MonthlyReportEvaluating;
 use \Exception;
 use Model\MailCenter;
 use Model\Business\Multiple\ProcessReport;
+use Model\Business\Multiple\Leadership;
 
 
 class ProcessRouting extends MultipleSets{
@@ -418,6 +419,11 @@ class ProcessRouting extends MultipleSets{
         $staff = $staff_model->select(['id', 'name', 'name_en', 'department_id'], ['id' => $self_id]);
         $staff = array_pop($staff);
 
+        $target_staff_id = $this->process->data[0]['owner_staff_id'];
+
+        $Leadership = new Leadership($target_staff_id);
+        $target_leaders = $Leadership->getSameDepartmentLeaders(true);
+
         $department = $this->team->select(['name'], ['id' => $staff['department_id'] ]);
         $department = array_pop($department);
         $mail_data = [
@@ -427,7 +433,8 @@ class ProcessRouting extends MultipleSets{
           'department' => $department['name']
         ];
         $mail = new \Model\MailCenter;
-        $mail->addAddress($this->process->data[0]['owner_staff_id']);
+        // $mail->addAddress($this->process->data[0]['owner_staff_id']);
+        $mail->addAddressByStaffArray($target_leaders);
         $res = $mail->sendTemplate('monthly_draw', $mail_data);
         //去抓最新的process
         $return = $this->process->read($this->id)->data;

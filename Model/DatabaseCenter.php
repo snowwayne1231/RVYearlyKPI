@@ -91,7 +91,9 @@ class DatabaseCenter {
 
 		$orderBY = $this->stringParseOrderBy($order);
 
-		$sql = "select $cols from $table $case $orderBY limit ".$this->limit_record;
+		$limit = $this->limit_record ? " limit ".$this->limit_record : "";
+
+		$sql = "select $cols from $table $case $orderBY $limit";
 		return $this->doSQL($sql);
 	}
 
@@ -294,9 +296,18 @@ class DatabaseCenter {
 	}
 
 	private function parseWhereValue($v){
+		$should_parse_string = true;
 		if(is_array($v)){
-			$symbol='in';
-			$val = '('.join(',',$v).')';
+			$first_order = strtolower($v[0]);
+			if ($first_order == 'between') {
+				$symbol = 'BETWEEN';
+				$val = "'".$v[1]."' AND '".$v[2]."'";
+				$should_parse_string = false;
+			} else {
+				$symbol='in';
+				$val = '('.join(',',$v).')';
+			}
+			
 		}else{  //string
 			$val = trim($v);
 			$match = preg_match("/^[\>\<\=i\s\!]/",$val); //have symbol
@@ -308,8 +319,10 @@ class DatabaseCenter {
 				$symbol = '=';
 			}
 		}
-		$val = $this->valueParseForSQL($val);
-
+		if ($should_parse_string) {
+			$val = $this->valueParseForSQL($val);
+		}
+		
 		return $symbol.' '.$val;
 	}
 
