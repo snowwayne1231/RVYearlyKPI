@@ -72,7 +72,7 @@ if( $reports && $length_report>0 && $api->SC->isLogin()){
     }
     $next_data['json_data'] = $origin_json_data;
 
-    if (!$adms->read(['id'], ['year'=> $eva_report['year'], 'month'=> $eva_report['month'], 'staff_id'=> $staff_id])->checkAttendanceScoreAllowed($origin_json_data['attendance'])) {
+    if (!$adms->read(['id', 'date'], ['year'=> $eva_report['year'], 'month'=> $eva_report['month'], 'staff_id'=> $staff_id])->checkAttendanceScoreAllowed($origin_json_data['attendance'])) {
       $api->denied("[出勤分數異常] Staff: $staff_id , Attendance: ".$origin_json_data['attendance']);
     }
 

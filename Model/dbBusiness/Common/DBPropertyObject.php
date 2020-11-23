@@ -541,6 +541,41 @@ class DBPropertyObject extends PropertyObject
 		}
 	}
 
+	public function copyTmpByWhere($where = null) {
+		$data = [];
+		if (empty($where)) {
+			$this->sql('DROP TABLE IF EXISTS {table}_tmp');
+			$this->sql('CREATE TABLE {table}_tmp SELECT * FROM {table}');
+			$data = $this->select();
+		} else {
+			$this->sql('CREATE TABLE IF NOT EXISTS {table}_tmp LIKE {table}');
+			$this->sql('TRUNCATE {table}_tmp');
+			$data = $this->select([], $where);
+			
+			if (count($data) > 0) {
+				$fist_data = $data[0];
+				$arrUPDATE = [];
+				$fieldKeys = array_keys($fist_data);
+				$fieldName = "(" . implode(", ", $fieldKeys) . ")";
+
+				foreach ($data as $d) {
+					foreach ($d as $key => $val) {
+						if (gettype($val) == 'array') {
+							$d[$key] = json_encode($val);
+						}
+					}
+					$arrUPDATE[] = "('" . implode("', '", $d) . "')";
+				}
+			}
+
+			$strUPDATE = implode(',', $arrUPDATE);
+
+			$this->sql("INSERT INTO {table}_tmp $fieldName VALUES $strUPDATE");
+		}
+
+		return $data;
+	}
+
 }
 
 ?>

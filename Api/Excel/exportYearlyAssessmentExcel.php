@@ -43,6 +43,7 @@ if( $api->checkPost(array('year'))  && $api->SC->isLogin()){
   $my_lv = $is_admin ? 0 : ($is_leader==1? $myself['_department_lv'] : $myself['_department_lv']+1);
 
   $is_super_user = $api->SC->isSuperUser();
+  $is_division_leader = $myself['_is_division_leader'];
 
 
   //年考績
@@ -53,6 +54,13 @@ if( $api->checkPost(array('year'))  && $api->SC->isLogin()){
 
   //預處理資料  基本資料
   $all_reports = $ya->getAssessmentWithDDS( $dds, $self_id );
+  if ($dds[0]==0) {
+
+    $all_reports = array_filter($all_reports, function($report) {
+      return !!$report['_authority']['view'];
+    });
+  }
+  // dd($all_reports);
   $leader = [];
   $general = [];
   foreach($all_reports as &$arsv){
@@ -70,7 +78,6 @@ if( $api->checkPost(array('year'))  && $api->SC->isLogin()){
       $general[]=$arsv;
     }
   }
-
 
   $topic = $ya->getFullTopic($year);
   //$topic = ForeachTopic($topic);
@@ -118,6 +125,7 @@ if( $api->checkPost(array('year'))  && $api->SC->isLogin()){
   $excel = new PHPExcel();
   $column_score_lv_map = ['under'=>'部屬回饋','self'=>'自評','4'=>'組長評核','3'=>'處主管評核','2'=>'部門主管核定','1'=>'決策者核定','0'=>'HK核定'];
   $column_rate_map = ['A'=>'優秀','B'=>'良好','C'=>'普通','D'=>'尚需努力','E'=>'不符標準'];
+  // $column_rate_map = ['A+'=>'優秀','A'=>'良好','B'=>'普通','C'=>'尚需努力','D'=>'不符標準'];
   $column_team_caller_map = ['0'=>'系統','1'=>'運維主管','2'=>'部門主管','3'=>'處主管','4'=>'組長','5'=>'員工'];
   include __DIR__."/common_function.php";
 
@@ -186,7 +194,7 @@ function ForeachTopic($t){
 
 //建立一個 excel分頁
 function createSheetByData($report, $topic, $rate, $index=1){
-  global $excel, $column_score_lv_map, $column_rate_map, $question_map, $questionTitle_map, $column_team_caller_map,$staff_map,$is_super_user, $my_lv;
+  global $excel, $column_score_lv_map, $column_rate_map, $question_map, $questionTitle_map, $column_team_caller_map,$staff_map,$is_super_user, $my_lv, $is_division_leader, $is_admin;
 
   $t1 = microtime(true);
   if($index==0){
@@ -291,8 +299,17 @@ function createSheetByData($report, $topic, $rate, $index=1){
 
     //總分
     $no_total = $isCEO || $report['processing_lv']>0; //執行長或還沒結束的單子不給總分
+    // dd([$is_division_leader, $is_admin]);
+    if ($is_division_leader || $is_admin) {
+      $score_total = $no_total ? '':(int)$report['assessment_total'];
+      $score_fix = $no_total ? '' : (int)$report['assessment_total_division_change'] + (int)$report['assessment_total_ceo_change']; //加減分
+      $score_final = $no_total ? '' : $score_total + $score_fix; //核定總分
+    } else {
+      $score_total = '?';
+      $score_fix = '?';
+      $score_final = '?'; 
+    }
 
-    $score_total = $no_total ? '':(int)$report['assessment_total'];
     $final_col = $aj_col[1]-1;
     $sheet->mergeCells( str_fetchColRow(1, $row, 4, $row) );
     $sheet->setCellValue( p(1, $row), '總分' );
@@ -304,16 +321,12 @@ function createSheetByData($report, $topic, $rate, $index=1){
       $sheet->setCellValue( p($ajm_col, $row), $total );
     }
     $row++;
-    //加減分
-    $score_fix = $no_total ? '' : (int)$report['assessment_total_division_change'] + (int)$report['assessment_total_ceo_change'];
     $sheet->mergeCells( str_fetchColRow(1, $row, 4, $row) );
     $sheet->setCellValue( p(1, $row), '加減分數' );
     $sheet->setCellValue( p(5, $row), $score_fix );
     $sheet->setCellValue( p(6, $row), '說明' );
     $sheet->mergeCells( str_fetchColRow(6, $row, 10, $row) );
     $row++;
-    //核定總分
-    $score_final = $no_total ? '' : $score_total + $score_fix;
 
   }else{
     //核定總分
@@ -351,7 +364,17 @@ function createSheetByData($report, $topic, $rate, $index=1){
 
   foreach($report['upper_comment'] as $uc_lv => $uc_ary){
     $uc_name = $column_team_caller_map[$uc_lv];
-    $row = addCommentBySheet($sheet, $row, $uc_name.'評語：', $uc_ary['content']);
+    // $row = addCommentBySheet($sheet, $row, $uc_name.'評語：', $uc_ary['content']);
+    if (is_array($uc_ary['staff_id'])) {
+      foreach ($uc_ary['staff_id'] as $_uc_idx => $_uc_staff_id) {
+        $staff_name = $staff_map[$_uc_staff_id]['name'];
+        $uc_title = "$uc_name ($staff_name)";
+        $row = addCommentBySheet($sheet, $row, $uc_title, $uc_ary['content'][$_uc_idx]);
+      }
+    } else {
+      $row = addCommentBySheet($sheet, $row, $uc_name.'評語：', $uc_ary['content']);
+    }
+    
   }
 
   if( isset($question_map[$report['staff_id']]) ){
@@ -405,15 +428,23 @@ function createSheetByData($report, $topic, $rate, $index=1){
     foreach($sign_run as $sign_key=>$sign_name){
       if(empty($report['sign_json'][$sign_key])){continue;}
       $sign = $report['sign_json'][$sign_key];
-      $staff = $staff_map[$sign[0]];
-      $time = date('Y/m/d H:i',(int)$sign[1]);
-      $sheet->mergeCells( str_fetchColRow($col, $row, $col+1, $row) );
-      $sheet->mergeCells( str_fetchColRow($col, $row+1, $col+1, $row+1) );
-      $sheet->mergeCells( str_fetchColRow($col, $row+2, $col+1, $row+2) );
-      $sheet->setCellValue( p($col,$row), $sign_name );
-      $sheet->setCellValue( p($col,$row+1), $staff['name'].' / '.$staff['name_en'] );
-      $sheet->setCellValue( p($col,$row+2), $time );
-      $col+=2;
+      $staff_name = '';
+      foreach ($sign as $_sidx => $_st) {
+        $_is_even = $_sidx % 2 == 0;
+        if ($_is_even) {
+          $staff = $staff_map[$_st];
+          $staff_name = $staff['name'].' / '.$staff['name_en'];
+        } else {
+          $time = date('Y/m/d H:i', (int)$_st);
+          $sheet->mergeCells( str_fetchColRow($col, $row, $col+1, $row) );
+          $sheet->mergeCells( str_fetchColRow($col, $row+1, $col+1, $row+1) );
+          $sheet->mergeCells( str_fetchColRow($col, $row+2, $col+1, $row+2) );
+          $sheet->setCellValue( p($col,$row), $sign_name );
+          $sheet->setCellValue( p($col,$row+1), $staff_name );
+          $sheet->setCellValue( p($col,$row+2), $time );
+          $col+=2;
+        }
+      }
     }
   }
   $t3 = microtime(true);
@@ -576,7 +607,11 @@ function addCommentBySheet(&$s, $r, $title, $content){
     $str = '';
     $now_r = $r; $i = 1;
     foreach($content as $cv){
-      $str .= ("$i . ".$cv['content']." 。\r\n");
+      if (isset($cv['content'])) {
+        $str .= ("$i . ".$cv['content']." 。\r\n");
+      } else {
+        $str .= ("$i . ".$cv." 。\r\n");
+      }
       $r++; $i++;
     }
     $s->mergeCells( str_fetchColRow(1, $now_r, 10, $r) );

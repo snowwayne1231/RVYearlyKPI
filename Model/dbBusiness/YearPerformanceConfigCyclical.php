@@ -139,7 +139,7 @@ class YearPerformanceConfigCyclical extends DBPropertyObject{
     return $this->getFullConstruct($json);
   }
   //解析 員工資料
-  private $conStaffCol = ['id','title_id','post_id','_can_feedback','_can_assessment'];
+  private $conStaffCol = ['id','title_id','post_id','is_leader','_can_feedback','_can_assessment'];
   private $end_time;
   private function getConByStaff($sv){
     $ary = [];
@@ -149,8 +149,8 @@ class YearPerformanceConfigCyclical extends DBPropertyObject{
       foreach($this->conStaffCol as $v){
         $ary[] = isset($sv[$v]) ? $sv[$v] : 0;
       }
-      $ary[3] = ($sv['department_id']==1&&$sv['lv']==1)?0:1; // CEO以外 都可以填問卷
-      $ary[4] = ($sv['rank'] >0 && $first<=$end && in_array($sv['status_id'], array(1,2,3,5)))? 1:0;  // _can_assessment 是否為正職
+      $ary[4] = ($sv['department_id']==1&&$sv['lv']==1)?0:1; // CEO以外 都可以填問卷
+      $ary[5] = ($sv['rank'] >0 && $first<=$end && in_array($sv['status_id'], array(1,2,3,5)))? 1:0;  // _can_assessment 是否為正職
     }else if(is_array($sv)){
       foreach($sv as $i => $v){
         $key = $this->conStaffCol[$i];
@@ -191,15 +191,21 @@ class YearPerformanceConfigCyclical extends DBPropertyObject{
     $json = $this->department_construct_json;
     $stop = false;
     $tmp = null;
+    $idx_can_fb = 4;
+    $idx_can_as = 5;
+    $idx_staffs = 5;
+    $idx_staff_id = 0;
+    $idx_is_leader = 3;
+
     foreach($json as &$v){
-      foreach($v[5] as $i => &$sv){
-        if($sv[0]==$staff_id){  // find out
-          if(is_numeric($can_fb)){ $sv[3]= (int)$can_fb; }
-          if(is_numeric($can_as)){ $sv[4]= (int)$can_as; }
+      foreach($v[$idx_staffs] as $i => &$sv){
+        if($sv[$idx_staff_id]==$staff_id){  // find out
+          if(is_numeric($can_fb)){ $sv[$idx_can_fb]= (int)$can_fb; }
+          if(is_numeric($can_as)){ $sv[$idx_can_as]= (int)$can_as; }
           if(is_numeric($team_id) && $team_id>0 && $team_id != $v[0]){  // change department
-            if($staff_id==$v[3]){ $this->error("The Leader Can Not Change Department."); }   //主管不能換部門
+            if($sv[$idx_is_leader]){ $this->error("The Leader Can Not Change Department."); }   //主管不能換部門
             $tmp = $sv;
-            array_splice($v[5],$i,1);
+            array_splice($v[$idx_staffs],$i,1);
           }
           $stop = true; break;
         }

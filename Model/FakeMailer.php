@@ -35,6 +35,10 @@ class FakeMailer extends \PHPMailer {
      return true;
   }
 
+  public function smtpConnect($ary = []) {
+    return false;
+  }
+
   private function getMailWithName($array)
   {
     $return = [];

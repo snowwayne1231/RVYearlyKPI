@@ -1,15 +1,15 @@
-var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
+var $YearEvaluationPage = $('#Year-Evaluation').generalController(function () {
     var ts = this,
         myself;
     var current = $.ym.get(),
-        y_codition = { year: undoYear || current.year};
-    ts.q('.rv-title span').text(undoYear|| current.year); //設定年
+        y_codition = { year: undoYear || current.year };
+    ts.q('.rv-title span').text(undoYear || current.year); //設定年
     var deferred = [];
     var DEPARTMENT_CENTER = 1;
     var TOPIC_KEY = "Year_Evaluation_TOPIC";
     var topics = API.cache(TOPIC_KEY),
         config, division_data; //取得題目主題
-     console.log(y_codition) // from header.js
+    // console.log(y_codition) // from header.js
 
 
     //樣版
@@ -32,16 +32,16 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
     deferred[0] = API.getYearlyConfig(y_codition);
     if (!topics) { //快取主題
         deferred[1] = API.getYearlyTopic(y_codition);
-        deferred[1].then(function(e) { var f = API.format(e); if (f.is) { topics = f.res(); } });
+        deferred[1].then(function (e) { var f = API.format(e); if (f.is) { topics = f.res(); } });
     } else {
         deferred[1] = $.Deferred();
         deferred[1].resolve();
     }
 
     //有登入
-    ts.onLogin(function(member) {
+    ts.onLogin(function (member) {
         myself = member;
-        API.when(deferred).then(function(a) {
+        API.when(deferred).then(function (a) {
             config = API.format(a[0][0]).get();
             // console.log(config);
             if (!topics) { console.log(topics); return generalFail(); }
@@ -78,7 +78,6 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
             topics.thead = thead;
             API.cache(TOPIC_KEY, topics);
         }
-
         launchByProcessing(config['processing']);
     }
 
@@ -87,7 +86,13 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
         ts.modal.word = buildModal($('#ReportWordPersonal')[0], {
             'staff_is_leader': true,
             'staff_is_ceo': false,
-            'opinionFeedback': { upper_comment: { 1: {}, 2: {}, 3: {}, 4: {} }, question: { 'question_1': [], 'question_2': [], 'question_4': [], 'question_5': [] } }
+            'opinionFeedback': { upper_comment: { 1: {}, 2: {}, 3: {}, 4: {} }, question: { 'question_1': [], 'question_2': [], 'question_4': [], 'question_5': [] } },
+            'upperCommentForm': [
+                { key: 1, title: "運維中心" },
+                { key: 2, title: "部層級" },
+                { key: 3, title: "處層級" },
+                { key: 4, title: "組層級" },
+            ]
         });
 
         ts.modal.reject = buildModal($('#ReJectModalPersonal')[0], {
@@ -109,8 +114,8 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
             el: el,
             data: data,
             methods: {
-                setData: function(data) { for (var i in data) { this._data[i] = data[i]; }; },
-                rejectReport: function(id, reason) {
+                setData: function (data) { for (var i in data) { this._data[i] = data[i]; }; },
+                rejectReport: function (id, reason) {
                     generalRejectReport(id, reason);
                     $(this.$el).modal('close');
                 }
@@ -130,16 +135,32 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
             if (loc['processing_lv'] == 0) { meta.info.finished++; }
             if (!meta.team[loc.department_code]) { meta.team[loc.department_code] = { name: loc.department_code + loc.department_name, overme: 0, total: 0, sub: {} }; }
             meta.team[loc.department_code].total++;
-            if (loc['processing_lv'] < mylv) {
+
+            var _AEJinMyLv = loc['assessment_evaluating_json'][mylv];
+            if (_AEJinMyLv) {
+                var leader_idx = _AEJinMyLv['leaders'].indexOf(myself['id']);
+                if (leader_idx >= 0) {
+                    var commited = _AEJinMyLv['commited'][leader_idx];
+                    overme(commited, loc);
+                    continue;
+                }
+            }
+            overme(loc['processing_lv'] < mylv, loc);
+        }
+
+        function overme(isgood, report) {
+            if (isgood) {
                 meta.info.overme++;
-                meta.team[loc.department_code].overme++;
-            } else { meta.team[loc.department_code].sub[loc.id] = loc; }
+                meta.team[report.department_code].overme++;
+            } else {
+                meta.team[report.department_code].sub[report.id] = report;
+            }
         }
         ts.leaderDetail = new Vue({
             el: '#YearLeaderDetail',
             data: meta,
             methods: {
-                totalNoCommit: function(team) {
+                totalNoCommit: function (team) {
                     var tmp = [];
                     for (var i in team) { tmp.push(team[i]['staff_name_en'] + ' / ' + team[i]['staff_name']); }
                     return tmp.length > 0 ? ('未提交人員：\r\n' + (tmp.join(' \r\n'))) : '完成';
@@ -151,7 +172,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
         API.hook('commitYearlyAssessment', updateOverme);
 
         function updateOverme(a) {
-            this.then(function(e) {
+            this.then(function (e) {
                 var f = API.format(e);
                 if (!f.is) { return; }
                 var id = a.assessment_id;
@@ -172,7 +193,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
     //共用  退回報表
     function generalRejectReport(id, reason) {
         var api = API.rejectYearlyAssessment({ assessment_id: id, reason: reason });
-        api.then(function(e) {
+        api.then(function (e) {
             var result = API.format(e);
             if (result.is) {
                 swal('退回成功', '已為您退回考評單', 'success');
@@ -191,7 +212,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
             case 5:
             case 6: //個人單
                 ts.q('#YearProcessingBar').q('.inactive').eq(0).addClass('active').removeClass('inactive');
-                API.getYearlyAssessment(y_codition).then(function(e) {
+                API.getYearlyAssessment(y_codition).then(function (e) {
                     var report_data = API.format(e).res();
                     if (report_data.length == 0) { return generalFail(); }
                     for (var i in report_data) {
@@ -209,7 +230,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
             case 7: //部門單
                 ts.q('#YearProcessingBar').q('.stepper-step').eq(1).addClass('active').removeClass('inactive');
                 ts.q('#YearLeaderDetail').remove();
-                API.getYearlyDivisionZone(y_codition).then(function(e) {
+                API.getYearlyDivisionZone(y_codition).then(function (e) {
                     var report_data = API.format(e).res();
                     if (report_data.length == 0) { return generalFail(); }
                     division_data = report_data;
@@ -235,30 +256,73 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
         ts.q('#YearProcessingBar').hide();
     }
     // 前端資料初始化
-    var aj_name_map = { 'under': '部屬', 'self': '自評', '1': '運維評核', '2': '部長評核', '3': '處主管評核', '4': '組長評核' };
+    var aj_name_map = { 'under': '部屬', 'self': '自評', '1': '運維評核', '2': '部門評核', '3': '處評核', '4': '組評核' };
     var uc_name_map = { '1': '運維主管評語：', '2': '部門主管評語：', '3': '處主管評語：', '4': '組長評語：' };
 
     function adjReportData(data) {
         var can_fix_lv = parseInt(myself['_department_lv']) + (myself['is_leader'] == 1 ? 0 : 1);
-        var is_onwer = data['owner_staff_id'] == myself['id'] && data['_authority'].edit;
+        var my_edit_lv_alloweds = getAllowedEditLvevls();
+
+        function getAllowedEditLvevls() {
+            var _my_id = myself['id'];
+            var _pll = data.path_lv_leaders;
+            var _pl = data.path_lv;
+            var resultary = [];
+            for (var _lv in _pl) {
+                var _leaders = _pll[_lv];
+                var _manager = _pl[_lv][1];
+                if (_manager == _my_id) {
+                    resultary.push(_lv);
+                } else if (_leaders && _leaders.includes(_my_id)) {
+                    resultary.push(_lv);
+                }
+            }
+            return resultary;
+        }
+
+
         for (var pd in data.assessment_json) {
             var aj = data.assessment_json[pd];
 
             aj.name = aj_name_map[pd];
-            if (pd == 'undex') { continue; }
+            if (pd == 'under') { continue; }
+
+            aj.view = pd == 'self' ? true : parseInt(pd) >= can_fix_lv;
+            aj.edit = data['_authority'].edit && (pd == 'self' ? myself['id'] == data['staff_id'] : my_edit_lv_alloweds.includes(pd));
+            // 如果還能編輯又有多主管 取assessment_evaluating_json
+            if (aj.edit && data.assessment_evaluating_json && data.assessment_evaluating_json[pd]) {
+                var aej = data.assessment_evaluating_json[pd];
+                var my_idx = aej.leaders.indexOf(myself['id']);
+                if (my_idx >= 0) {
+                    var score = aej.scores[my_idx];
+                    var total = aej.totallist[my_idx];
+                    aj.score = score;
+                    aj.total = total;
+                }
+            }
+
             for (var s in aj.score) {
                 if (aj.score[s] < 0) { aj.score[s] = 0; }
             }
-            aj.view = pd == 'self' ? true : parseInt(pd) >= can_fix_lv;
-            aj.edit = is_onwer && (pd == 'self' ? myself['id'] == data['staff_id'] : aj.view && data['path_lv'][pd][1] == myself['id']);
+
             aj.preAbove = aj.edit && (aj.total == 0);
         }
         for (var u in data.upper_comment) {
             var uc = data.upper_comment[u];
+            var intu = parseInt(u);
             uc.name = uc_name_map[u] || '';
-            uc.view = parseInt(u) >= can_fix_lv;
-            uc.edit = uc.view && data['path_lv'][u][1] == myself['id'] && data['owner_staff_id'] == myself['id'];
+            uc.view = intu >= can_fix_lv;
+            uc.edit = intu == can_fix_lv && data['_authority'].edit_comment;
+            if (Array.isArray(uc.staff_id)) {
+                uc.my_edit_idx = uc.edit ? uc.staff_id.indexOf(myself['id']) : -1;
+            } else {
+                uc.my_edit_idx = 0;
+                us.staff_id = [us.staff_id];
+                us.content = [us.content];
+            }
+
         }
+        // console.log('adjReportData: ', JSON.parse(JSON.stringify(data)));
         return data;
     }
     var level_map = {},
@@ -282,7 +346,6 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
     //個人報表 產生 Vue
     function callVueRenderReport(data, template) {
         data = adjReportData(data);
-        // console.log(data);
         var personal, underStaff, division;
         if (myself.id == data.staff_id) {
             personal = 1;
@@ -306,11 +369,13 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
             var loc = topic[t];
             topic_map[loc.id] = loc;
         }
+        // console.log(template);
         // create vue
         var vm = new Vue({
             template: template.html(),
             el: '#' + rand,
             data: {
+                currUser: myself,
                 processing: config.processing,
                 currentYear: current.year,
                 main: data,
@@ -324,18 +389,36 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                 historyRecords: {},
                 feedback: {},
                 rejectReason: '',
-                opinionFeedback: { upper_comment: { 1: {}, 2: {}, 3: {}, 4: {} }, question: { 'question_1': [], 'question_2': [], 'question_4': [], 'question_5': [] } }
+                opinionFeedback: { upper_comment: { 1: {}, 2: {}, 3: {}, 4: {} }, question: { 'question_1': [], 'question_2': [], 'question_4': [], 'question_5': [] } },
+                qb1Length: 0,
+                qb2Length: 0,
+                qbLengthMax: 500
             },
+            // beforeUpdate(){
+            //     var st = new Date().getTime();
+            //     this.st = st;
+            // },
+            // updated() {
+            //     var spt = new Date().getTime() - this.st;
+            //     console.log('on updated vue: ', spt);
+            // },
             methods: {
-                saveReport: function(id) {
+                checkLength(event, key) {
+                    console.log(event);
+                    let curr = event.target
+                        length = curr.textLength;
+                    vm[key] = length;
+                },
+                saveReport(id) {
                     // self=自己, 4=組, 3=處, 2=部, 1=中心
                     var vm = this;
-                    return new Promise(function(resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         var data = {
                             assessment_id: id,
                             assessment_json: {},
                             comment: {}
-                        }
+                        };
+                        let go = true;
                         for (var i in vm.main.assessment_json) {
                             var loc = vm.main.assessment_json[i];
                             if (!loc.edit) { continue; }
@@ -344,26 +427,44 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                         for (var i in vm.main.upper_comment) {
                             var loc = vm.main.upper_comment[i];
                             if (!loc.edit) { continue; }
-                            data.comment[i] = loc.content;
+                            var my_content = loc.content[loc.my_edit_idx];
+                            data.comment[i] = String(my_content);
                         }
                         // 自評儲存
                         if (vm.main.staff_id == vm.main.owner_staff_id) {
                             data['self_contribution'] = vm.main.self_contribution;
                             data['self_improve'] = vm.main.self_improve;
-                        }
+                        } else {
+                            // console.log(data);
+                            let res = data.assessment_json;
+                            for (var i in res) {
+                                let curr = res[i],
+                                    vals = Object.values(curr);
+                                const reducer = (accumulator, currentValue) => accumulator + currentValue;
 
-                        API.saveYearlyAssessment(data).then(function(e) {
-                            var result = API.format(e);
-                            if (result.is || result.get() == "Nothing Changed.") {
-                                Materialize.toast('已為您儲存當前資料', 2000);
-                                resolve('ok');
-                            } else {
-                                swal('儲存失敗', result.get(), 'error');
+                                let total = vals.reduce(reducer);
+
+                                if (total == 0 && vm.main["_should_count"]) { go = false }
                             }
-                        });
+
+                        }
+                        if (go) {
+                            data["should_count"] = vm.main["_should_count"] ? 1 : 2;
+                            API.saveYearlyAssessment(data).then(function (e) {
+                                var result = API.format(e);
+                                if (result.is || result.get() == "Nothing Changed.") {
+                                    Materialize.toast('已為您儲存當前資料', 2000);
+                                    resolve('ok');
+                                } else {
+                                    swal('儲存失敗', result.get(), 'error');
+                                }
+                            });
+                        } else { 
+                            swal('無法儲存', "總分必須大於 0", 'error');
+                        }
                     });
                 },
-                copyData: function(value, e) {
+                copyData: function (value, e) {
                     // $(e.target).closest('tr').q('select').eq(0).focus();
                     var $e = $(e.target).closest('.copy-group');
                     // if($e.hasClass('active')){
@@ -376,24 +477,24 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                     }
                     aj[value]['total'] = aj[prev]['total'];
                 },
-                commitReport: function(id) {
+                commitReport: function (id) {
                     var vm = this;
                     if (vm.main.self_contribution.length < 2 || vm.main.self_improve.length < 2) {
                         return swal('資料錯誤', '問答題( 主要貢獻, 加強改進之處 )不能為空', 'error');
                     }
                     swal({
-                            title: "送審年度績效單",
-                            text: "送審後，將不可變更，確認要執行?!",
-                            type: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "執行",
-                            cancelButtonText: "取消",
-                            closeOnConfirm: false
-                        },
-                        function() {
-                            vm.saveReport(id).then(function(e) {
-                                API.commitYearlyAssessment({ assessment_id: id }).then(function(e) {
+                        title: "送審年度績效單",
+                        text: "送審後，將不可變更，確認要執行?!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "執行",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: false
+                    },
+                        function () {
+                            vm.saveReport(id).then(function (e) {
+                                API.commitYearlyAssessment({ assessment_id: id }).then(function (e) {
                                     var result = API.format(e);
                                     if (result.is) {
                                         swal('送審成功', '已為您送審考評單', 'success');
@@ -405,25 +506,25 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                             });
                         });
                 },
-                rejectReport: function(id) {
+                rejectReport: function (id) {
                     var vm = this;
                     // console.log(id);
                     ts.modal.reject.setData({ 'rejectReason': '', 'assessment_id': id });
                     // console.log(ts.modal.reject);
                     $(ts.modal.reject.$el).modal('open');
                 },
-                totalScore: function(scoreData) {
+                totalScore: function (scoreData) {
                     var total = 0;
                     for (var score in scoreData) {
                         total += parseInt(scoreData[score]);
                     }
-                    console.log(scoreData);
-                    console.log(total);
+                    // console.log(scoreData);
+                    // console.log(total);
                     return total;
                 },
-                getFeedbackDetail: function() {
+                getFeedbackDetail: function () {
                     var vm = this;
-                    API.getFeedbackDetailByStaff({ year: this.currentYear, staff_id: this.main.staff_id }).then(function(e) {
+                    API.getFeedbackDetailByStaff({ year: this.currentYear, staff_id: this.main.staff_id }).then(function (e) {
                         var result = API.format(e);
                         var size = Math.pow(10, 2);
                         if (result.is) {
@@ -437,9 +538,9 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                         }
                     });
                 },
-                getRecords: function(id) {
+                getRecords: function (id) {
                     var vm = this;
-                    API.getYearlyHistoryRecord({ assessment_id: id }).then(function(e) {
+                    API.getYearlyHistoryRecord({ assessment_id: id }).then(function (e) {
                         var result = API.format(e);
                         if (result.is) {
                             var record = result.res();
@@ -454,9 +555,9 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                         }
                     });
                 },
-                getReportWord: function(id) {
+                getReportWord: function (id) {
                     var vm = this;
-                    API.getYearlyAllReportWord({ assessment_id: id }).then(function(e) {
+                    API.getYearlyAllReportWord({ assessment_id: id }).then(function (e) {
                         var result = API.format(e);
                         if (result.is) {
                             vm.opinionFeedback = result.get();
@@ -486,20 +587,20 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
 
                             // console.log(vm.opinionFeedback);
                             $(ts.modal.word.$el).modal('open');
-                            var timer = setTimeout(function() {
+                            var timer = setTimeout(function () {
                                 $(ts.modal.word.$el).q('.tab a').eq(0).click();
                                 // $(ts.modal.word.$el).q('.tabs').tabs();
                             }, 100);
                         }
                     });
                 },
-                closeReport: function() {
+                closeReport: function () {
                     $(this.$el).q('.rv-assess').removeClass('moveleft');
                 },
-                openReport: function() {
+                openReport: function () {
                     $(this.$el).q('.rv-assess').addClass('moveleft');
                 },
-                updateMainData: function(data) {
+                updateMainData: function (data) {
                     this.main = data;
                     // console.log(this);
                     // for(var i in data){
@@ -508,14 +609,14 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                     // }
                     // }
                 },
-                shutdown: function() {
+                shutdown: function () {
                     $(this.$el).remove();
                 }
             },
-            created: function() {
+            created: function () {
                 this.getFeedbackDetail();
             },
-            mounted: function() {
+            mounted: function () {
                 var ele = this.$el;
                 ts.q(ele).q('.collapsible').collapsible();
                 ts.q(ele).q('textarea').attr('maxlength', 2000);
@@ -545,24 +646,24 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                 origin_fix_map: origin_fix_map,
                 report_sort: { 'department_code': 1, 'staff_name': 1, 'staff_post': 1, '_status': 1, 'assessment_total': 1, 'assessment_total_division_change': 1, 'assessment_total_ceo_change': 1, 'total': 1 },
                 report_sort_now: 'department_code',
-                canSubmit: true
+                canSubmit: true,
             },
             methods: {
-                plusScore: function(v, m) {
+                plusScore: function (v, m) {
                     m = m == 1 ? 'assessment_total_division_change' : 'assessment_total_ceo_change';
                     if (isNaN(v[m])) { v[m] = 0; } else { v[m]++; }
                     this.countTotal(v);
                 },
-                minusScore: function(v, m) {
+                minusScore: function (v, m) {
                     m = m == 1 ? 'assessment_total_division_change' : 'assessment_total_ceo_change';
                     if (isNaN(v[m])) { v[m] = 0; } else { v[m]--; }
                     this.countTotal(v);
                 },
-                countError: function(msg) {
+                countError: function (msg) {
                     this.canSubmit = false;
                     swal('分數錯誤', msg, 'error');
                 },
-                countTotal: function(v) {
+                countTotal: function (v) {
                     if (v && !isNaN(v.total)) {
                         v.assessment_total_ceo_change = parseInt(v.assessment_total_ceo_change);
                         v.assessment_total_division_change = parseInt(v.assessment_total_division_change);
@@ -589,13 +690,13 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                     // var t2 = new Date().getTime();
                     // console.log(t2-t1);
                 },
-                rateLimit: function(r) {
+                rateLimit: function (r) {
                     return Math.ceil(this.divisionData._reports.length * (r.rate_limit / 100));
                 },
-                rateLeast: function(r) {
+                rateLeast: function (r) {
                     return Math.floor(this.divisionData._reports.length * (r.rate_least / 100));
                 },
-                totalOverByKey: function(type) {
+                totalOverByKey: function (type) {
                     // var total = this.divisionData._reports.length;
                     var count = 0;
                     for (var i in this.divisionData._distribution) {
@@ -609,10 +710,10 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                     }
                     return count;
                 },
-                saveDivisionZone: function(id) {
+                saveDivisionZone: function (id) {
                     var vm = this;
                     if (!vm.canSubmit) { return swal('錯誤', '分數尚未修正不能儲存', 'error'); }
-                    return new Promise(function(resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         var data = { division_id: id, assessment_change: {} },
                             data_tmp = { has: false, totals: {} };
                         for (var ddr in vm.divisionData._reports) {
@@ -624,7 +725,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                             data_tmp.totals[loc.id] = loc.total;
                         }
                         if (data_tmp.has) {
-                            API.setFinallyScoreFix(data).then(function(e) {
+                            API.setFinallyScoreFix(data).then(function (e) {
                                 var result = API.format(e);
                                 if (result.is) {
                                     swal('儲存成功', '已為您儲存數據', 'success');
@@ -642,10 +743,10 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                         }
                     });
                 },
-                commitDivisionZone: function(id) {
+                commitDivisionZone: function (id) {
                     var vm = this;
-                    this.saveDivisionZone(id).then(function(e) {
-                        API.commitDivisionZone({ division_id: id }).then(function(e) {
+                    this.saveDivisionZone(id).then(function (e) {
+                        API.commitDivisionZone({ division_id: id }).then(function (e) {
                             var result = API.format(e);
                             if (result.is) {
                                 swal('送出成功', '已為您送出數據', 'success');
@@ -656,20 +757,20 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                         });
                     });
                 },
-                rejectDivisionZone: function(id) {
+                rejectDivisionZone: function (id) {
                     var vm = this;
                     swal({
-                            title: "退回部門單",
-                            text: "即將為您退回部門單，確認要執行?!",
-                            type: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "執行",
-                            cancelButtonText: "取消",
-                            closeOnConfirm: false
-                        },
-                        function() {
-                            API.rejectDivisionZone({ division_id: id }).then(function(e) {
+                        title: "退回部門單",
+                        text: "即將為您退回部門單，確認要執行?!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "執行",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: false
+                    },
+                        function () {
+                            API.rejectDivisionZone({ division_id: id }).then(function (e) {
                                 var result = API.format(e);
                                 if (result.is) {
                                     swal('退回成功', '已為您退回部門單', 'success');
@@ -680,8 +781,8 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                             });
                         });
                 },
-                downloadExcelDivisionZone: function(id) {
-                    API.exportYearlyAssessmentExcel({ year: this.currentYear, division_id: id }).then(function(e) {
+                downloadExcelDivisionZone: function (id) {
+                    API.exportYearlyAssessmentExcel({ year: this.currentYear, division_id: id }).then(function (e) {
                         var result = API.format(e);
                         if (result.is) {
                             swal('下載成功', '已為您下載部門考評單', 'success');
@@ -690,10 +791,10 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                         }
                     });
                 },
-                reRenderThisReport: function() {
+                reRenderThisReport: function () {
                     var vm = this;
                     $(vm.$el).q('.collapsible-header.active').trigger('click.collapse');
-                    API.getYearlyDivisionZone({ year: vm.currentYear }).then(function(e) {
+                    API.getYearlyDivisionZone({ year: vm.currentYear }).then(function (e) {
                         var result = API.format(e);
                         // console.log(result);
                         if (result.is) {
@@ -704,40 +805,41 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                         }
                     });
                 },
-                personalReport: function(id) {
+                personalReport: function (id) {
 
-                    API.getYearlyAssessment({ 'year': this.currentYear, 'assessment_id': id }).then(function(e) {
+                    API.getYearlyAssessment({ 'year': this.currentYear, 'assessment_id': id }).then(function (e) {
                         var data = API.format(e).get();
+                        console.log(data);
                         if (!ts.personal.$el) { ts.personal = callVueRenderReport(data, TEMPLATE_SIDENAV); } else { ts.personal.updateMainData(adjReportData(data)); }
                         ts.personal.openReport();
                     });
 
                 },
-                totalScore: function(scoreData) {
+                totalScore: function (scoreData) {
                     var total = 0;
                     for (var score in scoreData) {
                         total += parseInt(scoreData[score]);
                     }
                     return total;
                 },
-                sortReportBy: function(key) {
+                sortReportBy: function (key) {
                     var vm = this;
                     if (isNaN(vm.report_sort[key])) { return console.log('not found sort key : ' + key); }
                     vm.report_sort[key] = (vm.report_sort[key] + 1) % 2;
                     vm.report_sort_now = key;
                     var asc = vm.report_sort[key] == 1;
-                    return vm.divisionData._reports.sort(function(a, b) {
+                    return vm.divisionData._reports.sort(function (a, b) {
                         var ai = isNaN(a[key]) ? a[key].charCodeAt(0) : a[key];
                         var bi = isNaN(b[key]) ? b[key].charCodeAt(0) : b[key];
                         return asc ? ai - bi : bi - ai;
                     });
                 },
-                focusLevel: function(dlv, e) {
+                focusLevel: function (dlv, e) {
                     var vm = this,
                         name = (dlv || {}).name,
                         all = !name || name == vm.cfn;
                     vm.cfn = all ? '' : name;
-                    vm.divisionData._distribution.forEach(function(i) {
+                    vm.divisionData._distribution.forEach(function (i) {
                         i.focus = all ? false : i.name == name;
                     });
 
@@ -745,7 +847,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                         vm.levelObj = {
                             timer: 0,
                             n: 0,
-                            fn: function() {
+                            fn: function () {
                                 var lt = this;
                                 lt.timer && clearTimeout(lt.timer);
                                 while (lt.n > 0) {
@@ -755,12 +857,12 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                                     if (b != i.show) {
                                         i.show = b;
                                         if (!b) { continue; }
-                                        lt.timer = setTimeout(function() { lt.fn(); }, 30);
+                                        lt.timer = setTimeout(function () { lt.fn(); }, 30);
                                         break;
                                     }
                                 }
                             },
-                            start: function(na, al) {
+                            start: function (na, al) {
                                 this.n = vm.divisionData._reports.length;
                                 this.name = na;
                                 this.all = al;
@@ -772,7 +874,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
 
                 }
             },
-            mounted: function() {
+            mounted: function () {
                 frameworkInit(ts.q(this.$el), this);
                 if (this.divisionData._reports.length > 5) {
                     ts.q(this.$el).q('#division-table-header').css('width', '99.5%');
@@ -785,7 +887,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function() {
         function frameworkInit($selector, vueo) {
             // $selector.q('.modal').modal();
             $selector.q('.collapsible').collapsible({
-                onOpen: function(el) {
+                onOpen: function (el) {
                     $subli = $selector.siblings().q('.collapsible-header.active').trigger('click.collapse');
                     vueo.countTotal();
                     if (!vueo.tableY) { vueo.tableY = $(vueo.$el).q('table').TableScrollbarY({}); }

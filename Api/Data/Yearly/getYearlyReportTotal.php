@@ -10,7 +10,8 @@ use Model\Business\Multiple\StaffHistory;
 if( $api->checkPost(array('year','department_level'))  && $api->SC->isLogin() ){
 
   $year = $api->post('year');
-  $api->SC->set('year',$year);
+  $api->SC->set('year', $year);
+  $is_admin = $api->SC->isAdmin();
 
   $department_level = $api->post('department_level');
   if( isset($department_level) && (!is_numeric($department_level) || (int)$department_level > 5)){ $api->denied('Param Wrong.'); }
@@ -22,30 +23,40 @@ if( $api->checkPost(array('year','department_level'))  && $api->SC->isLogin() ){
   $sh = new StaffHistory();
   $self_id = $api->SC->getId();
 
+  //員工只能看該看的
+  if ($api->SC->isLeader()) {
+    $report_columns = [];
+  } else {
+    $report_columns = ['attendance_json', 'before_level', 'department_id', 'division_id', 'level', 'monthly_average', 'self_contribution', 'self_improve', 'staff_id', 'staff_post', 'staff_title', 'upper_comment', 'enable'];
+  }
 
-  $result = $yfb->getPerfomanceList( $self_id , $year, $department_level, $with_assignment, $is_over );
+  $result = $yfb->getPerfomanceList( $self_id , $year, $department_level, $with_assignment, $is_over, true, $report_columns );
+  // dd($result);
   //員工只能看自評
-  if(!$api->SC->isLeader()){
-    foreach($result['assessment']['staff'] as &$sv){
-      foreach($sv['assessment_json'] as $k=>$v){
-        if($k!='self'){ unset($sv['assessment_json'][$k]); }
+  if ($api->SC->isLeader() && !$is_admin) {
+    
+    $is_not_division_leader = !$api->SC->getMember()['_is_division_leader'];
+
+    foreach ($result['assessment'] as $duty => &$reports) {
+      foreach ($reports as &$report) {
+        if ($is_not_division_leader) {
+          unset($report['assessment_evaluating_json']);
+          unset($report['assessment_total']);
+          unset($report['assessment_total_ceo_change']);
+          unset($report['assessment_total_division_change']);
+          unset($report['assessment_total_final']);
+        }
       }
     }
   }
 
-  foreach($result['assessment']['leader'] as &$sv){
-    if($resSH = $sh->getStayWithStaff($sv['staff_id'])){
-      $sv['staff_stay'] = $resSH;
-    }else{
-      $sv['staff_stay'] = array();
-    }
-  }
-
-  foreach($result['assessment']['staff'] as &$sv){
-    if($resSH = $sh->getStayWithStaff($sv['staff_id'])){
-      $sv['staff_stay'] = $resSH;
-    }else{
-      $sv['staff_stay'] = array();
+  foreach ($result['assessment'] as $duty => &$reports) {
+    foreach ($reports as &$report) {
+      if ($resSH = $sh->getStayWithStaff($report['staff_id'])) {
+        $report['staff_stay'] = $resSH;
+      } else {
+        $report['staff_stay'] = array();
+      }
     }
   }
 

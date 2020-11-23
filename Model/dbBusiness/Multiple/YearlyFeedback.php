@@ -96,48 +96,58 @@ class YearlyFeedback extends MultipleSets{
 
 
         $staff = $staff_map[ $sid ];
+        $all_leader_ids = [];
+
         if( $staff['is_leader']==1){
           //主管要看上層有沒無單位 來決定要不要產生 部屬回饋
           foreach($v['path_department'] as $upid){
             if($upid==$v['id']){ continue;}//路徑是自己
-            if($team_map[$upid]['manager_staff_id']==0){ continue;}//沒有主管
-            $target_staff = $staff_map[ $team_map[$upid]['manager_staff_id'] ];
-            $record = array(
-              "year"=>$year,
-              "staff_id"=>$sid,
-              "staff_title_id"=> $staff['title_id'],
-              "staff_title"=> $staff['title'],
-              "department_id" => $staff['department_id'],
-              "target_staff_id" => $team_map[$upid]['manager_staff_id'],
-              "target_staff_title_id"=> $target_staff['title_id'],
-              "target_staff_title"=> $target_staff['title'],
-              "multiple_choice_json" => $config['defaultChoiceJSON'],
-              "multiple_total" => $config['defaultChoiceJSON_total']
-            );
-            $this->feedback->addStorage($record);
+            $upper_team = $team_map[$upid];
+            if($upper_team['manager_staff_id']==0){ continue;}//沒有主管
+            $all_leader_ids[] = $upper_team['manager_staff_id'];
+            if (isset($upper_team['_other_leaders'])) {
+              $all_leader_ids = array_merge($all_leader_ids, $upper_team['_other_leaders']);
+            }
           }
         }else{
           //員工只會有自己的主管
           $myteam = $team_map[ $staff['department_id'] ];
-          $target_staff_id = $myteam['manager_staff_id']>0 ? $myteam['manager_staff_id'] : $myteam['supervisor_staff_id'] ;
-          $target_staff = $staff_map[$target_staff_id];
+          if ($myteam['manager_staff_id'] > 0) {
+            $target_team = $myteam;
+          } else {
+            foreach($v['path_department'] as $upid){
+              if($upid==$v['id']){ continue;}
+              $upper_team = $team_map[$upid];
+              if($upper_team['manager_staff_id']==0){ continue;}
+              $target_team = $upper_team;
+              break;
+            }
+          }
+
+          $all_leader_ids[] = $target_team['manager_staff_id'];
+          $all_leader_ids = array_merge($all_leader_ids, $target_team['_other_leaders']);
+        }
+
+        foreach ($all_leader_ids as $target_staff_id) {
+          $target_staff = $staff_map[ $target_staff_id ];
           $record = array(
             "year"=>$year,
             "staff_id"=>$sid,
             "staff_title_id"=> $staff['title_id'],
-              "staff_title"=> $staff['title'],
+            "staff_title"=> $staff['title'],
             "department_id" => $staff['department_id'],
             "target_staff_id" => $target_staff_id,
             "target_staff_title_id"=> $target_staff['title_id'],
-              "target_staff_title"=> $target_staff['title'],
+            "target_staff_title"=> $target_staff['title'],
             "multiple_choice_json" => $config['defaultChoiceJSON'],
             "multiple_total" => $config['defaultChoiceJSON_total']
           );
           $this->feedback->addStorage($record);
         }
+
       }
 
-      // LG($construct);
+      // dd($construct);
     }
     $count = $this->feedback->addRelease();
     return $count;
@@ -317,7 +327,7 @@ class YearlyFeedback extends MultipleSets{
 
         $result = $feedback;
 
-      }else{
+      } else {
         $result['error'] = 'You Are Not Owner.';
       }
     }
@@ -469,7 +479,7 @@ class YearlyFeedback extends MultipleSets{
 
     //進度
     if($config_data['processing']< YearPerformanceConfigCyclical::PROCESSING_CHECKED  || $reset){
-      $config_data['processing']= YearPerformanceConfigCyclical::PROCESSING_CHECKED ;
+      $config_data['processing']= YearPerformanceConfigCyclical::PROCESSING_CHECKED;
     }
     if($config_data['processing']<= YearPerformanceConfigCyclical::PROCESSING_CHECKED ){
       //選取當年當下的選擇題

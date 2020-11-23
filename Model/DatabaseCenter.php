@@ -326,7 +326,7 @@ class DatabaseCenter {
 		return $symbol.' '.$val;
 	}
 
-	protected function stringParseOrderBy($ord){
+	protected function stringParseOrderBy($ord) {
 		if(isset($ord) && count($ord)>0){
 			if(is_array($ord)){
 				$caseArray = array();

@@ -84,6 +84,9 @@ if($api->SC->isLogin() && $api->checkPost(['year','department_level'])){
    *  等級分佈
    */
   $rate_name_map = ['A'=>'優秀','B'=>'良好','C'=>'普通','D'=>'尚需努力','E'=>'不符標準'];
+  // if ($year >= 2020) {
+  //   $rate_name_map = ['A+'=>'優秀','A'=>'良好','B'=>'普通','C'=>'尚需努力','D'=>'不符標準'];
+  // }
   function rewritePage_2(&$sht){
     Global $leader, $staff, $distribution, $rate_name_map, $team_map;
     // dd($distribution);

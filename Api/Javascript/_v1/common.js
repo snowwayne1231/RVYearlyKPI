@@ -316,10 +316,10 @@ self.getMyIndex = function(data){
 }
 
 /**
- * Carmen 測試區
+ * 結束特定月考評
  */
-self.carmenTest = function(data){
-  return $.post(API_PATH+"test/carmen", data);
+self.closeMonth = function(data){
+  return $.post(API_PATH+"test/test_for_monthly_report", data);
 }
 
 

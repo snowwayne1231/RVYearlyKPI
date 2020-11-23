@@ -18,7 +18,7 @@ $ym = ['year'=>(int)date('Y'),'mnoth'=>(int)date('m')];
 
 //年設定
 $YCC = new \Model\Business\YearPerformanceConfigCyclical();
-$year_config = $YCC->select(['processing','year'], 'where processing > '.$YCC::PROCESSING_LAUNCHED.' and processing < '.$YCC::PROCESSING_FINISH_WELL );
+$year_config = $YCC->select(['processing','year'], 'where processing >= '.$YCC::PROCESSING_LAUNCHED.' and processing < '.$YCC::PROCESSING_FINISH_WELL );
 
 if( count($year_config)>0 ){
   $year_config = $year_config[0];
@@ -32,7 +32,12 @@ if( count($year_config)>0 ){
   //年考評
   if($year_config['processing']>$YCC::PROCESSING_VERIFY){
     $yearly = new \Model\Business\YearPerformanceReport();
-    $undo['yearly_assessment'] = $yearly->getUnDo($self_id);
+    
+    if ($my['is_leader'] == 1) {
+      $undo['yearly_assessment'] = $yearly->getUnDoWithLeader($my);
+    } else {
+      $undo['yearly_assessment'] = $yearly->getUnDo($self_id);
+    }
   }
   
 

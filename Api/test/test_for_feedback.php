@@ -1,7 +1,7 @@
 <?php
 include __DIR__."/../ApiCore.php";
 
-$api = new ApiCore($_POST);
+$api = new ApiCore($_REQUEST);
 // use Model\Business\Multiple\YearlyAssessment;
 // use Model\Business\Multiple\YearlyQuickly;
 
@@ -10,7 +10,11 @@ $api->isAdmin();
 $fb = new Model\Business\YearPerformanceFeedback;
 $rq = new Model\Business\RecordYearPerformanceQuestions;
 
-$year = 2018;
+$year = $api->post('year');
+
+if (empty($year)) {
+  $api->denied('No Year.');
+}
 
 $all_data = $fb->select(['id','multiple_choice_json','multiple_score','staff_id','target_staff_id'],['year'=>$year,'status'=>0]);
 $i = 0;

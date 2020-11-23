@@ -15,6 +15,7 @@ CREATE TABLE `rv_attendance_monthly_special` (
   `year` int(4) DEFAULT '0' COMMENT '年戳',
   `month` int(4) DEFAULT '0' COMMENT '月戳',
   `type` int(2) NOT NULL COMMENT '類型id 1=未帶 2=忘刷',
+  `status_duty` int(2) NOT NULL COMMENT '上班狀態 1=上班 2=下班',
   `reason` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT '原因',
   `remark` varchar(255) COLLATE utf8_unicode_ci DEFAULT '' COMMENT '備註欄',
   `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '建立日期',

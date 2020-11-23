@@ -100,7 +100,7 @@ class MonthlyReport extends DBPropertyObject{
 	 * @param  integer $month 月
 	 * @return true
 	 */
-	public function copyTmpData($year, $month){
+	public function copyTmpData($year, $month, $evaluatingDataMap = null){
 		$this->sql('CREATE TABLE IF NOT EXISTS {table}_tmp LIKE {table}');
 
 		$arrUPDATE = array();

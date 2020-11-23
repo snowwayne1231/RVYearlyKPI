@@ -26,18 +26,5 @@ class YearPerformanceReportDistributionRate extends DBPropertyObject
 	{
 		parent::__construct();
 	}
-
-	//override
-	public function select($a=null,$b=0,$c=null){
-    	parent::select($a,$b,$c);
-    	return $this->parseJSON()->data;
-  	}
-  	
-  	private function parseJSON(){
-   		foreach($this->data as &$val){
-    		if(isset($val['multiple_choice_json']))$val['multiple_choice_json'] = json_decode($val['multiple_choice_json'],true);
-    	}
-    	return $this;
-  	}
 }
 ?>

@@ -339,6 +339,10 @@ self.getYearlyAssessment = function(data){
   return $.post(Data_PATH+"Yearly/getYearlyAssessment",data);
 }
 
+self.getYearlyAssessmentScoreDetailByAdmin = function(data) {
+  return $.post(Data_PATH+"Yearly/getYearlyAssessmentScoreDetailByAdmin", data);
+}
+
 /**
  *  @method  取得 該人的部屬回饋/其他回饋
  *  @param   必須 year
@@ -761,6 +765,20 @@ self.getYearlyFeedbackList = function(data){
 self.getYearlyAssessmentByAdmin = function(data) {
  return $.post(Data_PATH+"Yearly/getYearlyAssessmentByAdmin", data);
 }
+
+
+/**
+ * 管理者取得 當前考評分數詳情
+ * @modifyDate 2020-11-16
+ * @param      必須  year
+ * @return      {
+  
+  }
+*/
+self.getYearlyAssessmentScoreDetailByAdmin = function(data) {
+  return $.post(Data_PATH+"Yearly/getYearlyAssessmentScoreDetailByAdmin", data);
+}
+
 
  /**
  * 把收集到部門單的年考績做駁回的動作   (管理者)(取消核准)

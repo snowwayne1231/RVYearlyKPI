@@ -18,6 +18,7 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 	$year  = $api->post('year'); //integer 年份
 	$month = $api->post('month');//integer 月份
 	$check = $api->post('check');//bool 是否要產生 報表, 考評表
+	$recheck = $api->post('recheck');//bool 是否要產生 報表, 考評表
 	$del   = $api->post('del');  //bool 是否要刪除
 
 	if($check){
@@ -25,7 +26,7 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 		if(!$month) $month = (int)date('m');
 	}
 
-	if ($check || $del) {
+	if ($check || $del || $recheck) {
 		$dsc = new DepartmentStaffCyclical($year, $month, true);
 	} else {
 		$dsc = new DepartmentStaffCyclical($year, $month);
@@ -64,18 +65,25 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 		$pr = new ProcessReport($year, $month);
 		$mrle = new MonthlyReportLeadershipEvaluating($year, $month);
 
-		if($del && $check && $api->SC->isAdmin() && $isInRange){
+		if (($del || $recheck) && $api->SC->isAdmin() && $isInRange) {
+
+			$MREvaluating = new Model\Business\MonthlyReportEvaluating();
 
 			$ym = array('year'=>$year,'month'=>$month);
-
-			//將成績複製一份
+			
+			// 將成績複製一份
+			if ($recheck) {
+				$MREvaluating->copyTmpByWhere($ym);
+			}
+			
 			$pr->general->copyTmpData($year, $month);
 			$pr->leader->copyTmpData($year, $month);
-
+			
 			//刪除月考評單
 			$pr->process->delete($ym);
 			$pr->general->delete($ym);
 			$pr->leader->delete($ym);
+			// $MREvaluating->delete($ym);
 
 			//初始化讀取資料
 			$mrle->delete();
@@ -91,12 +99,12 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 
 
 		//更新/檢查 月報表
-		if( $api->SC->isAdmin() && $isInRange && ($check || $del) ){
+		if ( $api->SC->isAdmin() && $isInRange && ($check || $del) ) {
 
 			$emptyTeams = array();//沒有人的部門
 
 			//產生月績效考評單
-			foreach($teamsData as $loc){
+			foreach ($teamsData as $loc) {
 				$manager_id    = $loc['manager_staff_id'];//部門管理者ID
 				$super_id      = $loc['supervisor_staff_id'];//上層管理者ID
 				$team_id       = $loc['id'];//部門ID
@@ -110,7 +118,7 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 				$this_team_leaderships = isset($mapDepartmentToLeadership[$team_id]) ? $mapDepartmentToLeadership[$team_id] : [];
 
 				//沒主管又沒員工
-				if( (!$hasManager && !$hasStaff) ){
+				if ( (!$hasManager && !$hasStaff) ) {
 					$emptyTeams[] = $team_id;//將部門ID紀錄下來
 					continue;//跳過後續處理
 				}
@@ -126,13 +134,13 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 				}
 
 				//有員工
-				if($hasStaff){
+				if ($hasStaff) {
 					$staffs = $loc[ $Staff_key ];//array 員工資料
 
 					//分開 管理職 和 一般職務
 					$staffLeaders = array();
 					$staffGenerals= array();
-					foreach($staffs as $staff_id => $staff_value){
+					foreach ($staffs as $staff_id => $staff_value) {
 						if (in_array($staff_id, $this_team_leaderships)) {
 							$staffLeaders[$staff_id] = $staff_value;
 						} else {
@@ -182,7 +190,7 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 			}
 
 
-			if($check && $del){
+			if($check && ($del || $recheck)){
 
 				//把評論組回到重新建立的單子上
 				include_once BASE_PATH.'/Model/dbBusiness/RecordPersonalComment.php';
@@ -192,6 +200,10 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 				//將成績塞回去
 				$pr->leader->putScoreWithYM($year, $month);
 				$pr->general->putScoreWithYM($year, $month);
+				if ($recheck) {
+					$MREvaluating->putScoreWithYM($year, $month);
+				}
+				
 
 				//刪除暫存資料表
 				$pr->leader->delTmpData();

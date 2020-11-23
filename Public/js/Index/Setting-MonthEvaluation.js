@@ -12,17 +12,7 @@ var $SettingEvaluation = $('#SettingEvaluation').generalController(function () {
     }
     init();
 
-
     ts.onLogin(function () {
-
-        // year.yearSet();
-        // year.change(function() {
-        //     current.year = this.value;
-        //     $.ym.save();
-        //     console.log('save year')
-        // });
-
-
         var month = [];
         for (var i = 1; i <= 12; i++) {
             if (i < 10) {
@@ -102,13 +92,10 @@ var $SettingEvaluation = $('#SettingEvaluation').generalController(function () {
                     //this.submit();
 
                 },
-                submit: function () {
+                submit() {
                     if (!this.has_monthly_data) {
                         this.createProcessing();
                     }
-
-                    // this.createProcessing();
-
 
                     var submitData = {
                         year: this.now.year,
@@ -124,14 +111,11 @@ var $SettingEvaluation = $('#SettingEvaluation').generalController(function () {
                         if (cnt.is) {
                             var result = cnt.get();
                             vuethis.setting = result;
-                            //vuethis.has_monthly_data = result['has_monthly_data'] == 1;
                             if (result.hasChanged) {
                                 vuethis.refreshMonthly();
                                 vuethis.getCycleConfig();
                             } else {
-                                // alert('更新成功');
                                 swal("Success", "更新成功!");
-
                             }
                         } else {
                             generalFail(cnt.get());
@@ -172,15 +156,25 @@ var $SettingEvaluation = $('#SettingEvaluation').generalController(function () {
                         }
                     });
                 },
-                delRefreshMonthly: function () {
-                    var vm = this;
+                delRefreshMonthly(key) {
+                    var vm = this,
+                        type = {
+                            recheck: {
+                                msg: "將重新產生有異動單位/人員的考評單，但不影響工作評語，是否繼續？",
+                                resMsg: "已重製有異動單位/人員的考評單"
+                            },
+                            del: {
+                                msg: "所有考評單將會重新產生且不會保留已評的分數，但不影響工作評語，是否繼續？",
+                                resMsg: "所有考評單已重製"
+                            }
+                        };
                     swal({
-                        title: "確定更新嗎？",
-                        text: "執行更新將會重新整理組織及考評表，並不會刪除已評語之資料及已儲存的分數，是否繼續？",
+                        title: "確定執行嗎？",
+                        text: type[key]["msg"],
                         type: "warning",
                         showCancelButton: true,
                         confirmButtonColor: "#DD6B55",
-                        confirmButtonText: "確定重新整理！",
+                        confirmButtonText: "確定執行！",
                         cancelButtonText: "取消！",
                         closeOnConfirm: true,
                         closeOnCancel: false
@@ -195,14 +189,16 @@ var $SettingEvaluation = $('#SettingEvaluation').generalController(function () {
                         });
 
                     function updateMonth() {
-                        API.checkDepartment({ del: true, year: vm.now.year, month: vm.now.month }).then(function (e) {
+                        let data = {year: vm.now.year, month: vm.now.month};
+                        data[key] = true;
+                        API.checkDepartment(data).then(function (e) {
                             var cnt = API.format(e);
                             if (cnt.is) {
                                 //alert('更新成功');
                                 API.checkDepartment({ year: vm.now.year, month: vm.now.month }); // 重整後check department
                                 // swal("成功！", "已重新整理成功",
                                 //     "success");
-                                Materialize.toast('已重新整理成功!', 1000);
+                                Materialize.toast(type[key]["resMsg"], 1000);
                             } else {
                                 //alert('更新失敗');
                                 swal("Fail", cnt.get());

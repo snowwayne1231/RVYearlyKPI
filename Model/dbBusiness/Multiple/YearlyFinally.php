@@ -140,7 +140,7 @@ class YearlyFinally extends MultipleSets{
       unset($sv['_can_feedback']);
       unset($sv['_can_assessment']);
       unset($sv['is_admin']);
-      unset($sv['is_leader']);
+      // unset($sv['is_leader']);
       unset($sv['first_day']);
       $team_id = $sv['department_id'];
       // $key = ($team_map[$team_id]['manager_staff_id']==$sid)?'_manager':'_staff';

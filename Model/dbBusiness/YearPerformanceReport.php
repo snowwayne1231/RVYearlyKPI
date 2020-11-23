@@ -24,6 +24,8 @@ class YearPerformanceReport extends DBPropertyObject{
     'id',
     'year',
     'staff_id',
+    'owner_staff_id',
+    'own_department_id',
     'department_id',
     'division_id',
     'staff_post',
@@ -33,10 +35,12 @@ class YearPerformanceReport extends DBPropertyObject{
     'processing_lv', // -2 作廢 , -1 設為歷史狀態, 0 設為已核準 送到CEO審核的階段, 1 送到處長審核的階段, 2 送到部長審核的階段, 3 送到員工填考評的階段
     'path',
     'path_lv',
+    'path_lv_leaders',
     'before_level',
     'monthly_average',
     'attendance_json',    // {'late':0,'early':0,'nocard':0,'leave':0,'paysick':0,'physiology':0,'sick':0,'absent':0}
     'assessment_json',
+    'assessment_evaluating_json',
     'sign_json',
     'assessment_total',
     'assessment_total_division_change',
@@ -113,9 +117,13 @@ class YearPerformanceReport extends DBPropertyObject{
         if(isset($val['path'])){
           $val['path'] = json_decode($val['path'],true);
           $val['path_lv'] = json_decode($val['path_lv'],true);
+          if (isset($val['path_lv_leaders'])) {
+            $val['path_lv_leaders'] = json_decode($val['path_lv_leaders'],true);
+          }
         }
         if(isset($val['attendance_json']))$val['attendance_json'] = json_decode($val['attendance_json'],true);
         if(isset($val['assessment_json']))$val['assessment_json'] = json_decode($val['assessment_json'],true);
+        if(isset($val['assessment_evaluating_json']))$val['assessment_evaluating_json'] = json_decode($val['assessment_evaluating_json'],true);
         if(isset($val['upper_comment'])){
           // $val['upper_comment'] = json_decode($val['upper_comment'],true);
           
@@ -191,6 +199,51 @@ class YearPerformanceReport extends DBPropertyObject{
    */
   public function getUnDo($staff_id){
     return $this->select(['id'],['owner_staff_id'=>$staff_id, 'processing_lv'=>'>'.self::PROCESSING_LV_STOP,'enable'=>1]);
+  }
+
+  public function getUnDoWithLeader($staff_data) {
+    $res = [];
+    $department_id = $staff_data['department_id'];
+    $reports = $this->select(['id', 'staff_id', 'owner_staff_id', 'assessment_evaluating_json', 'processing_lv'], ['own_department_id'=> $department_id, 'processing_lv'=>'>'.self::PROCESSING_LV_STOP,'enable'=>1]);
+    // dd($staff_data);
+    // dd($reports);
+    foreach ($reports as $report) {
+      if ($report['staff_id'] == $report['owner_staff_id'] && $report['staff_id'] != $staff_data['id']) { continue; }
+      $processing_lv = $report['processing_lv'];
+      if (isset($report['assessment_evaluating_json'][$processing_lv])) {
+        $aej = $report['assessment_evaluating_json'][$processing_lv];
+        
+        $idx_leader = array_search($staff_data['id'], $aej['leaders']);
+        if ($idx_leader >= 0) {
+          $is_commited = $aej['commited'][$idx_leader];
+          if (!$is_commited) {
+            $res[] = ['id'=>$report['id']];
+          }
+        }
+      } else {
+        $res[] = ['id'=>$report['id']];
+      }
+    }
+    return $res;
+  }
+
+  /**
+   *  確認主管ID是否存在這張單
+   */
+  public function isInLeadership($staff_id) {
+    if (count($this->data) == 1) {
+      if (isset($this->data[0]['path_lv_leaders'])) {
+        $all_leaders = [];
+        foreach ($this->data[0]['path_lv_leaders'] as $lv => $leaders) {
+          $all_leaders = array_merge($all_leaders, $leaders);
+        }
+        return in_array($staff_id, $all_leaders);
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
   
 }

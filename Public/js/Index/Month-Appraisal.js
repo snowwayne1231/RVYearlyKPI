@@ -78,7 +78,7 @@ var $assessForm = $('#Assess').generalController(function () {
                 report['_special_attendance_times'] = res;
                 report['_attendance_max'] = res > 6 ? 0 : range[res];
                 report['_attendance_max_reason'] = '補卡次數: ' + report['_special_attendance_times'] + ' ,上限: ' + report['_attendance_max'];
-                console.log(report);
+                // console.log(report);
                 // if () {
 
                 // }
@@ -179,31 +179,46 @@ var $assessForm = $('#Assess').generalController(function () {
                             def.then(function () { vss.stateChange('wait'); });
                             if (!this.isEmptyObject(this.changed)) {
 
-                                var changedObj = JSON.parse(JSON.stringify(this.changed));
-                                var insertData = {
-                                    report: changedObj
-                                };
-                                // 確認是否存至新表
-                                API.saveReport(insertData).then(function (e) {
-                                    var success = API.format(e);
-                                    if (success.is) {
-                                        if (typeof (e.result) != "string") {
-                                            for (var key in e.result) {
-                                                if (vss.recvice._reports[key] != undefined) {
-                                                    vss.recvice._reports[key] = Object.assign(vss.recvice._reports[key], e.result[key]);
+                                var changedObj = JSON.parse(JSON.stringify(this.changed)),
+                                    reports = this.recvice._reports,
+                                    error = 0,
+                                    insertData = {
+                                        report: changedObj
+                                    };
+                                for (var i in reports) {
+                                    let curr = reports[i];
+                                    if (curr.attendance > curr._attendance_max) {
+                                        error++;
+                                    }
+
+                                }
+                                if (error == 0) {
+                                    // 確認是否存至新表
+                                    API.saveReport(insertData).then(function (e) {
+                                        var success = API.format(e);
+                                        if (success.is) {
+                                            if (typeof (e.result) != "string") {
+                                                for (var key in e.result) {
+                                                    if (vss.recvice._reports[key] != undefined) {
+                                                        vss.recvice._reports[key] = Object.assign(vss.recvice._reports[key], e.result[key]);
+                                                    }
                                                 }
                                             }
+                                            Materialize.toast('已儲存完畢您的變更', 2000);
+                                            vss.changed = {};
+                                            def.resolve();
+                                        } else {
+                                            Materialize.toast('儲存錯誤，原因:' + e.msg, 2000);
+                                            vss.stateChange('wait');
+                                            def.fail();
                                         }
-                                        Materialize.toast('已儲存完畢您的變更', 2000);
-                                        vss.changed = {};
-                                        def.resolve();
-                                    } else {
-                                        Materialize.toast('儲存錯誤，原因:' + e.msg, 2000);
-                                        vss.stateChange('wait');
-                                        def.fail();
-                                    }
-                                    // vss.stateChange('wait');
-                                })
+                                        // vss.stateChange('wait');
+                                    });
+                                } else {
+                                    Materialize.toast('評分紅框問題需要被處理', 2000);
+                                    vss.stateChange('wait');
+                                    def.fail();
+                                }
                             } else {
                                 Materialize.toast('資料尚未變更', 2000);
                                 def.resolve();
@@ -284,10 +299,10 @@ var $assessForm = $('#Assess').generalController(function () {
                                     attendanceOverMax.push(report[r].name_en);
                                 }
                             }
-                            
-                            if (isAllDone && !error) {
+
+                            if (isAllDone && error == 0) {
                                 commitMonthly();
-                            } else if (!error) {
+                            } else if (error == 0) {
 
                                 if (nonZeroShouldnotCount.length != 0) {
                                     var nameShouldCount = nonZeroShouldnotCount.join("、");
@@ -355,7 +370,7 @@ var $assessForm = $('#Assess').generalController(function () {
                                             Materialize.toast('提交失敗', 2000)
                                         }
                                     });
-                                }).catch(function() {
+                                }).catch(function () {
                                     alert('有 fail');
                                 });
                             }
@@ -544,7 +559,7 @@ var $assessForm = $('#Assess').generalController(function () {
                             max = (max != 0 && !max) ? 5 : max;
                             if (pnumber < 0 || pnumber > max) {
                                 e.value = pnumber < 0 ? 0 : max;
-                                swal("!", "請輸入0~"+max+"的整數");
+                                swal("!", "請輸入0~" + max + "的整數");
                             }
                             // if (!/^\+?[0-max]*$/.test(pnumber)) {
                             //     e.value = /\+?[0-max]*/.exec(e.value);

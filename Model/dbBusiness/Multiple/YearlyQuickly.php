@@ -56,7 +56,7 @@ class YearlyQuickly extends MultipleSets{
 
     $config_data = $this->data;
 
-    $staff_data = $this->staff->select(array('id','staff_no', 'title_id', 'post_id', 'lv', 'name','name_en','rank','department_id','status_id','is_admin','first_day'),null);
+    $staff_data = $this->staff->select(array('id','staff_no', 'title_id', 'post_id', 'lv', 'name','name_en','rank','department_id','status_id','is_admin','first_day', 'is_leader'),null);
 
     $team_data = $this->team->select();
 
@@ -87,7 +87,7 @@ class YearlyQuickly extends MultipleSets{
 
     $this->construct = $this->config->updateStaffOnConstruct($staff, $department, $feedback, $assessment);
 
-    $this->staff->read(array('id','staff_no', 'title_id', 'post_id', 'lv', 'name','name_en','rank','department_id','status_id'),null);
+    $this->staff->read(array('id','staff_no', 'title_id', 'post_id', 'lv', 'name','name_en','rank','department_id','status_id', 'is_leader'),null);
 
     return $this->mergeData();
 
@@ -131,6 +131,22 @@ class YearlyQuickly extends MultipleSets{
   public function getDepartmentMap(){
     $data = $this->getSD();
     return $data['department'];
+  }
+
+  public function getDepartmentMultipleLeadersMap() {
+    $data = $this->getDepartmentMap();
+    $result = [];
+    foreach ($data as $d) {
+      $id = $d['id'];
+      $result[$id] = [];
+      if (isset($d['manager_staff_id']) && $d['manager_staff_id'] > 0) {
+        $result[$id][] = $d['manager_staff_id'];
+      }
+      if (isset($d['_other_leaders']) && count($d['_other_leaders']) > 0) {
+        $result[$id] = array_merge($result[$id], $d['_other_leaders']);
+      }
+    }
+    return $result;
   }
 
   public function getAdminId(){
@@ -184,12 +200,24 @@ class YearlyQuickly extends MultipleSets{
       $this->staffAndDepartment = array();
       $data = $this->getConstrust();
 
+      $DepartmentLeadership = new \Model\Business\DepartmentLeadership();
+      $DLSmap = $DepartmentLeadership->read(['department_id', 'staff_id'], ['status' => 1])->map('department_id', false, true);
+
       foreach($data as $dv){
 
         foreach($dv['staff'] as $sv){
           $this->staffAndDepartment['staff'][$sv['id']] = $sv;
         }
         unset($dv['staff']);
+        $other_leaders = [];
+        if (isset($DLSmap[$dv['id']])) {
+          foreach ($DLSmap[$dv['id']] as $dls_val) {
+            if ($dls_val['staff_id'] != $dv['manager_staff_id']) {
+              $other_leaders[] = $dls_val['staff_id'];
+            }
+          }
+        }
+        $dv['_other_leaders'] = $other_leaders;
         $this->staffAndDepartment['department'][$dv['id']] = $dv;
       }
       //staff 0 是中心
@@ -198,7 +226,7 @@ class YearlyQuickly extends MultipleSets{
       // dd($this->staffAndDepartment['department']);
     }
     // $time_2 = microtime(true);
-    // var_dump($time_2-$time_1);
+    // dd($this->staffAndDepartment);
     return $this->staffAndDepartment;
   }
 
@@ -206,7 +234,6 @@ class YearlyQuickly extends MultipleSets{
   private function mergeData($data=null){
     // $time_1=microtime(true);
     $result = is_null($data) ? $this->construct : $data;
-
     $team_map = $this->team->cmap();
     $staff_map = $this->staff->cmap();
     $staff_title_map = $this->staff_title->cmap();
@@ -222,7 +249,7 @@ class YearlyQuickly extends MultipleSets{
           'title' => $staff_title_map[$vv['title_id']]['name'],
           'post' => $staff_post_map[$vv['post_id']]['name'],
           'department_id' => $v['id'],
-          'is_leader' => $v['manager_staff_id']==$vv['id'] ? 1 : 0
+          'is_leader' => $v['manager_staff_id']==$vv['id'] || $vv['is_leader']? 1 : 0
         );
         $tmp = array_merge($vv,$tmp);
         $v['staff'][$i] = array_merge( $staff_map[$vv['id']] ,$tmp);

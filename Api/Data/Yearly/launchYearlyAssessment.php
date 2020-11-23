@@ -12,8 +12,6 @@ if( $api->checkPost(array('year')) && $api->SC->isAdmin() ){
   $ya = new YearlyAssessment( $year );
   $self_id = $api->SC->getId();
   
-  
-  
   $result = $ya->launchAssessment();
   
   //結果

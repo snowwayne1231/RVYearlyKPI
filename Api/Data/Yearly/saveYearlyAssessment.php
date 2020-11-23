@@ -12,6 +12,7 @@ if( $api->checkPost(array('assessment_id')) && $api->SC->isLogin() ){
     $self_contribution = $api->post('self_contribution');
     $self_improve = $api->post('self_improve');
     $comment = $api->post('comment');
+    $should_count = $api->post('should_count');
     
     if(empty($assessment_json) && empty($self_contribution) && empty($self_improve) && empty($comment)){$api->denied('Nothing Changed.');}
     
@@ -28,7 +29,7 @@ if( $api->checkPost(array('assessment_id')) && $api->SC->isLogin() ){
     if( !empty($self_improve) ){ $update_data['self_improve'] = $self_improve; }
     if( !empty($comment) ){ $update_data['comment'] = $comment; }
     
-    $result = $ya->saveYearlyAssessment( $api->post('assessment_id'), $api->SC->getMember(), $update_data );
+    $result = $ya->saveYearlyAssessment( $api->post('assessment_id'), $api->SC->getMember(), $update_data, $should_count);
 
     $api->setArray($result);
 

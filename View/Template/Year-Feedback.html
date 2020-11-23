@@ -58,7 +58,7 @@
                                         <div class="question-area" v-bind:class="{ active: isActive[choiceOptionsIndex] }" v-for="(choiceOptions,choiceOptionsIndex) in questionChoice">
                                             <div class="question">
                                                 <span class="no">{{choiceOptionsIndex+1}}</span>
-                                                <span>{{choiceOptions.title}}</span>
+                                                <span>{{appraisee.target_staff_name_en}}的{{choiceOptions.title}}</span>
                                             </div>
                                             <div class="answer-group">
                                                 <div class="answer" v-for="(choiceOption, index) in choiceOptions.options_json">
@@ -97,7 +97,7 @@
                                         <div class="question-area" v-bind:class="{ active: isActiveToQA[index] }" v-for="(QN,index) in questionNormal">
                                             <div class="question">
                                                 <span class="no">{{index+1}}.</span>
-                                                <span>{{QN.description}}</span>
+                                                <span>{{QN.description}} ( {{appraisee.target_staff_name_en}} )</span>
                                             </div>
                                             <div class="answer-group m10">
 

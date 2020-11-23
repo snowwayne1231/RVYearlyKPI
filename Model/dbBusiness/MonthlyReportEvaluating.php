@@ -111,6 +111,20 @@ class MonthlyReportEvaluating extends DBPropertyObject{
 		return $result;
 	}
 
+	//
+	public function putScoreWithYM($year, $month) {
+		$sql = "UPDATE {table} AS main JOIN {table}_tmp AS tmp ON main.staff_id = tmp.staff_id AND main.staff_id_evaluator = tmp.staff_id_evaluator SET
+					main.status_code = tmp.status_code,
+					main.submitted = tmp.submitted,
+					main.should_count = tmp.should_count,
+					main.json_data = tmp.json_data
+				WHERE main.staff_id = tmp.staff_id
+					AND main.staff_id_evaluator = tmp.staff_id_evaluator
+					AND main.year = '$year' AND main.month = '$month'";
+		$this->sql($sql);
+		return $this;
+	}
+
 	//override
 	public function select($a=null,$b=0,$c=null){
 		parent::select($a,$b,$c);

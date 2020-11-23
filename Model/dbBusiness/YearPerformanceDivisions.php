@@ -115,7 +115,13 @@ class YearPerformanceDivisions extends DBPropertyObject{
         if($v['division']==1){$center[]=$v;}
         if($v['processing']<3){$b=false;}
       }
-      if($b){$data = $center;}
+      if ($b) {
+        $data = $center;
+      } else {
+        $data = array_values(array_filter($data, function ($_) {
+          return $_['division'] != 1;
+        }));
+      }
     }else{
       $data = $this->select(['id'],['owner_staff_id'=>$staff_id, 'processing'=>'<'.self::PROCESSING_CEO_COMMIT]);
     }

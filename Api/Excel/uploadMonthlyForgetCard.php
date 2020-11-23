@@ -32,7 +32,7 @@ require_once RP('/Model/PHPExcel/IOFactory.php');
 include __DIR__."/common_function.php";
 
 $all_sheet_datas = [];
-$col_name_array = ['unit_id','unit_name','staff_no','name','outside_number', 'type', 'reason', 'status_char', 'date', 'time'];
+$col_name_array = ['unit_id','unit_name','staff_no','name','outside_number', 'type', 'reason', 'status_char', 'date', 'time', 'status_duty'];
 //
 foreach ($files as $fileInfo) {
     // 呼叫封裝好的 function
@@ -47,7 +47,7 @@ foreach ($files as $fileInfo) {
     $sheet = $objPHPExcel->getSheet(0);
     //取得 excel 資料
     $max_row = $sheet->getHighestRow();
-    $zoonArray = [1,2, 10,$max_row];
+    $zoonArray = [1,2, 11,$max_row];
     
     $sheet_data = getDataByTable($sheet, $zoonArray, $col_name_array);
     $all_sheet_datas[] = $sheet_data;
@@ -70,6 +70,8 @@ foreach ($all_sheet_datas as $sht_data) {
   
   $year = $ym[0];
   $month = $ym[1];
+
+  // dd($sht_data);
   
   foreach ($sht_data as $val){
     $err_msg = '';
@@ -81,13 +83,15 @@ foreach ($all_sheet_datas as $sht_data) {
       // $err_msg = printf('Unit ID: [ %s ] | Name: [ %s ] | Date: [ %s ]', $unit_id, $val['name'], $val['date']);
       continue;
     } else if (empty($unit_id)){
-      $err_msg = sprintf('Staff: [ %s ] | Date: [ %s ]', $staff_no, $val['date']);
+      $err_msg = sprintf('"Wrong Department" Staff: [ %s ] | Date: [ %s ]', $staff_no, $val['date']);
     } else if (empty($val['type'])) {
-      $err_msg = sprintf('Staff: [ %s ] | Date: [ %s ]', $staff_no, $val['date']);
+      $err_msg = sprintf('"Wrong Type" Staff: [ %s ] | Date: [ %s ]', $staff_no, $val['date']);
     } else if (empty($val['date'])) {
-      $err_msg = sprintf('Staff: [ %s ] | Time: [ %s ]', $staff_no, $val['time']);
+      $err_msg = sprintf('"Wrong Date" Staff: [ %s ] | Time: [ %s ]', $staff_no, $val['time']);
     } else if (empty($val['time'])) {
-      $err_msg = sprintf('Staff: [ %s ] | Date: [ %s ]', $staff_no, $val['date']);
+      $err_msg = sprintf('"Wrong Time" Staff: [ %s ] | Date: [ %s ]', $staff_no, $val['date']);
+    } else if (empty($val['status_duty'])) {
+      $err_msg = sprintf('"Empty Duty" Staff: [ %s ] | Date: [ %s ]', $staff_no, $val['date']);
     }
 
 
@@ -123,6 +127,7 @@ foreach ($all_sheet_datas as $sht_data) {
         'year' => $year,
         'month' => $month,
         'type' => (int) $val['type'],
+        'status_duty' => (int) $val['status_duty'],
         'reason' => trim($val['reason']),
         'remark' => trim($val['status_char']),
       ];
@@ -136,32 +141,24 @@ foreach ($all_sheet_datas as $sht_data) {
       
     } else {
       $errors[] = $err_msg;
+
+      dd($errors);
     }
 
   }
 }
 
 
-//
-// $ddtest = [
-//   'errors'=>$errors,
-//   'meta_data'=>$meta_data,
-//   'min_date'=>$min_date,
-//   'max_date'=>$max_date,
-//   'status'=>'OK.',
-// ];
-
-// dd($ddtest);
-
-
+// dd($meta_data);
 //搜尋繼存資料
 
-$old_atten_data = $attendance->select(['id','type','staff_id','date','time', 'outside_number'],['staff_id'=>$staff_ids, 'date'=> ["BETWEEN", date('Y-m-d', $min_date), date('Y-m-d', $max_date)]]);
+$old_atten_data = $attendance->select(['id','type','staff_id','date','time', 'status_duty'],['staff_id'=>$staff_ids, 'date'=> ["BETWEEN", date('Y-m-d', $min_date), date('Y-m-d', $max_date)]]);
 
 // dd($attendance->getSql());
 $old_atten_map = [];
 foreach($old_atten_data as $val){
-  $old_atten_map[$val['staff_id']][$val['date']][$val['outside_number']] = $val;
+  // $old_atten_map[$val['staff_id']][$val['date']][$val['outside_number']] = $val;
+  $old_atten_map[$val['staff_id']][$val['date']][$val['status_duty']] = $val;
 }
 
 // dd($atten_map);
@@ -178,12 +175,12 @@ foreach ($meta_data as $staff_id => $val_ary){ //所有有上傳的資料
       $has_double_date = isset($history_atten_staff_map[$date]);
       
       if ($has_double_date) {
-        $outside_number = $val['outside_number'];
+        $status_duty = $val['status_duty'];
         $history_atten_staff_date_map = $history_atten_staff_map[$date];
-        $has_double_outside_number = isset($history_atten_staff_date_map[$outside_number]);
+        $has_double_duty = isset($history_atten_staff_date_map[$status_duty]);
 
-        if ($has_double_outside_number) {
-          $history_val = $history_atten_staff_date_map[$outside_number];
+        if ($has_double_duty) {
+          $history_val = $history_atten_staff_date_map[$status_duty];
 
           $nothing_changed = $val['time'] == $history_val['time'] && $val['type'] == $history_val['type'];
           if ($nothing_changed) {
@@ -231,7 +228,7 @@ $record_data = [];
 $record_data['table']=$attendance->table_name;
 $record = new \Model\Business\RecordAdmin( $self_id );
 if(!empty($update_data)){
-  $tmp = []; 
+  $tmp = [];
   foreach($update_data as $id=>$v){
     $tmp[]=$id;
   }

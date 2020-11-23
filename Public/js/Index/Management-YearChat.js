@@ -42,7 +42,7 @@ var $overView = $('#Management-YearChart').generalController(function() {
                                 ceo: apithis.config.processing == 8,
                                 finish: apithis.config.processing == 9
                             }
-                            console.log(apithis.config.processing)
+                            // console.log(apithis.config.processing)
                             if (apithis.config.processing == 0) {
                                 ts.q('.year-map').hide();
                                 ts.q('#not-start').show();
@@ -52,11 +52,20 @@ var $overView = $('#Management-YearChart').generalController(function() {
                             }
                             // 組別資料處理
                             apithis.lv = {};
+                            
                             for (var ul in apithis.unitList) {
                                 var unit = apithis.unitList[ul];
                                 unit.manager_name = (unit.manager_staff_name) ? unit.manager_staff_name : '暫缺';
-                                unit.manager_name_en = (unit.manager_staff_name_en) ? unit.manager_staff_name_en : '';
-
+                                unit.manager_name_en = (unit.manager_staff_name_en) ? unit.manager_staff_name_en : '暫缺';
+                                let staffObj = {};
+                                for (var i in unit._staff) {
+                                    staffObj[unit._staff[i]['id']] = unit._staff[i];
+                                }
+                                for (var ol in unit._other_leaders) {
+                                    let curr = unit._other_leaders[ol];
+                                    unit.manager_name_en += (' ' + staffObj[curr]['name_en']);
+                                }
+                                
                                 var classify = apithis.lv[unit['lv']];
                                 if (classify) {
                                     classify.push(unit);
@@ -140,7 +149,7 @@ var $overView = $('#Management-YearChart').generalController(function() {
         function initial() {
             getAPI.getYearlyOrganization().then(function(e) {
                 loadMap();
-                console.log(getAPI.stepProcessing)
+                // console.log(getAPI.stepProcessing)
             });
         }
         initial();
@@ -247,7 +256,7 @@ var $overView = $('#Management-YearChart').generalController(function() {
                         // 部屬回饋組織圖
                         var thisStaffFbk = thisUnitInStaff[staff]._feedback;
                         if (getAPI.stepProcessing.feedback) {
-                            console.log(thisUnitInStaff[staff])
+                            // console.log(thisUnitInStaff[staff])
                             var row = contextmenu.append($('<li title='+thisUnitInStaff[staff].staff_no+' data-id=' + thisUnitInStaff[staff].id + '>' + thisUnitInStaff[staff].name + ' ' + thisUnitInStaff[staff].name_en + '</li>'));
                             var rowLi = $(row.find('[data-id=' + thisUnitInStaff[staff].id + ']'));
                             var sheet = 1;
@@ -302,17 +311,23 @@ var $overView = $('#Management-YearChart').generalController(function() {
 
                         // 年考評個人單組織圖
                         if (!getAPI.stepProcessing.feedback) {
+                            console.log('12');
                             var personalReport = thisUnitInStaff[staff]._report;
                             var personalStatus = thisUnitInStaff[staff]._status_code;
-
                             if (personalReport) {
-                                var row = contextmenu.append($('<li data-num=' + staff + ' data-id=' + thisUnitInStaff[staff].id + ' title=' + thisUnitInStaff[staff].name + thisUnitInStaff[staff].name_en + '>' + thisUnitInStaff[staff].name + ' ' + thisUnitInStaff[staff].name_en + '</li>'));
-                                var rowLi = $(row.find('[data-id=' + thisUnitInStaff[staff].id + ']'));
-                                rowLi.prepend('<div class="dots"><div class="dot" data-status="' + thisUnitInStaff[staff]._status_code + '"></div></div>');
-                                rowLi.prepend('<button class="personal-downexcel" data-staff-id=' + thisUnitInStaff[staff].id + '>下載</button>');
+                                var currStaff = thisUnitInStaff[staff];
+                                var isAdmin = (member.is_admin && getAPI.config.processing < 6) ? true : false;
+                                console.log(currStaff);
+                                if (member.is_admin || !currStaff.is_leader || (currStaff.is_leader && currStaff.id == member.id) || (currStaff.is_leader && currStaff.department_id != member.department_id)) {
+                                    var row = contextmenu.append($('<li data-num=' + staff + ' data-id=' + thisUnitInStaff[staff].id + ' title=' + thisUnitInStaff[staff].name + thisUnitInStaff[staff].name_en + '>' + thisUnitInStaff[staff].name + ' ' + thisUnitInStaff[staff].name_en + '</li>'));
+                                    var rowLi = $(row.find('[data-id=' + thisUnitInStaff[staff].id + ']'));
+                                    rowLi.prepend('<div class="dots"><div class="dot" data-status="' + thisUnitInStaff[staff]._status_code + '"></div></div>');
+                                    rowLi.prepend('<button class="personal-downexcel" data-staff-id=' + thisUnitInStaff[staff].id + '>下載</button>');
+                                    
+                                }
 
                                 // 管理者的作廢功能
-                                if (member.is_admin && getAPI.config.processing < 6) {
+                                if (isAdmin) {
                                     if (personalReport.enable) {
                                         rowLi.prepend('<button class="report-void" data-report-id=' + thisUnitInStaff[staff]['_report'].id + '>作廢</button>');
                                     } else {
@@ -470,7 +485,7 @@ var $overView = $('#Management-YearChart').generalController(function() {
                     if (eachUnit['lv'] == 3) { dom.addClass('nav-row'); }
 
                     // 登入者 = 能看到的組別 or 超級管理員
-                    if (eachUnit['manager_staff_id'] == member.id || member.is_admin) { dom.addClass('active'); }
+                    if (eachUnit['manager_staff_id'] == member.id || member.is_admin || (eachUnit['_other_leaders'] && eachUnit['_other_leaders'].includes(member.id))) { dom.addClass('active'); }
 
                     // key:組別ID value:staff Obj
                     if (eachUnit['_staff']) {
@@ -483,6 +498,7 @@ var $overView = $('#Management-YearChart').generalController(function() {
                     if (getAPI.stepProcessing.feedback && getAPI.config.processing != 0) {
                         feedbackFN(unitBlock, eachUnit);
                     }
+
                     if (getAPI.stepProcessing.personal || getAPI.stepProcessing.finish) {
                         personalFN(unitBlock, eachUnit);
                     }

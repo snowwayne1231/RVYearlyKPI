@@ -23,7 +23,9 @@ if( $api->checkPost(array('year', 'month', 'day_start', 'day_end', 'day_cut_addi
 		$api->denied('End Days At Future. Can Not Be Launch.');
 	}
 
-	$config = new ConfigCyclical();
+	$config = new ConfigCyclical($year, $month);
+	$old_config_data = $config->data;
+	
 
 	$cutOffDate = date( 'Y-m-d' , strtotime("$year-$month-$day_end + $day_cut_addition days"));//計算考評結束日期
 
@@ -48,6 +50,52 @@ if( $api->checkPost(array('year', 'month', 'day_start', 'day_end', 'day_cut_addi
 		$record->type($record::TYPE_MONTH)->update( $change );
 
 		$change['hasChanged'] = 1;
+
+		//修改特殊月出缺勤
+		$adms = new \Model\Business\AttendanceMonthlySpecial();
+		$day_start = (int) $day_start;
+		$day_end = (int) $day_end;
+		$year = (int) $year;
+		$month = (int) $month;
+
+		$before_month = (int) $month - 1;
+		$new_date_start = "$year-$before_month-$day_start";
+		$new_date_end = "$year-$month-$day_end";
+		
+
+		$old_date_start = "$year-$before_month-".$old_config_data['day_start'];
+		$old_date_end = "$year-$month-".$old_config_data['day_end'];
+		
+		// 修改了起始時間
+		if ($old_config_data['day_start'] > $day_start) {
+			// 涵蓋範圍更大
+		} else if ($old_config_data['day_start'] < $day_start) {
+			$range_day_end = $day_start-1;
+			$range_day_start = $old_config_data['day_start'];
+			$range_date_start = "$year-$month-$range_day_start";
+			$range_date_end = "$year-$month-$range_day_end";
+			$range_update_year = $month == 1 ? $year - 1 : $year;
+			$range_update_month = $month == 1 ? 12 : $month - 1;
+
+			$adms->update(['year'=> $range_update_year, 'month'=> $range_update_month], ['date' => ['between', $range_date_start, $range_date_end]]);
+		}
+
+		//修改了結束時間
+		if ($old_config_data['day_end'] > $day_end) {
+			$range_day_end = $old_config_data['day_end'];
+			$range_day_start = $day_end +1;
+			$range_date_start = "$year-$month-$range_day_start";
+			$range_date_end = "$year-$month-$range_day_end";
+			$range_update_year = $month == 12 ? $year +1 : $year;
+			$range_update_month = $month == 12 ? 1 : $month +1;
+
+			$adms->update(['year'=> $range_update_year, 'month'=> $range_update_month], ['date' => ['between', $range_date_start, $range_date_end]]);
+		} else if ($old_config_data['day_end'] < $day_end) {
+			// 涵蓋範圍更大
+		}
+
+		$adms->update(['year'=> $year, 'month'=> $month], ['date' => ['between', $new_date_start, $new_date_end]]);
+
 	}
 
 	$api->setArray($change);

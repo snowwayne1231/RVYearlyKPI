@@ -109,7 +109,15 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
                 report_sort_now: 'division_code',
                 staff_sort: { 'division_code': 1, 'division_name': 1, 'department_name': 1, 'staff_no': 1, 'staff_post': 1, 'staff_title': 1, 'staff_first_day': 1, 'staff_name': 1, 'assessment_total': 1, 'assessment_total_division_change': 1, 'assessment_total_ceo_change': 1, 'assessment_total_final': 1, 'level': 1 },
                 staff_sort_now: 'division_code',
-                feedback: {}
+                feedback: {},
+                assessment_json_form: [
+                    { key: 'under', title: "部屬", text: "部屬回饋問卷" },
+                    { key: 'self', title: "自評", text: "" },
+                    { key: '4', title: "組長評核", text: "" },
+                    { key: '3', title: "處主管評核", text: "" },
+                    { key: '2', title: "部長評核", text: "" },
+                    { key: '1', title: "Mickey評核", text: "" }
+                ]
             },
             created: function() {
                 var vthis = this;

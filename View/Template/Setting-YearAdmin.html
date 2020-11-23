@@ -1,0 +1,193 @@
+<div id="SettingAdminYearly">
+  <div class="had-container rv-admin rv-year-admin">
+    <h1 class="rv-title">年度考評單查閱</h1>
+    <div class="filter-date row">
+      <h3 class="title">請選擇日期</h3>
+      <div class="dropdown">
+        <select
+          id="getYear"
+          class="btn dropdown-button"
+          type="button"
+          v-model="year"
+          @change="getData()"
+        ></select>
+      </div>
+      <div class="dropdown">
+        <div class="search-input-article input-field">
+          <input
+            placeholder="輸入單位"
+            type="text"
+            class="form-control autocomplete"
+            v-model="filterDepartment"
+          />
+        </div>
+      </div>
+      <div class="dropdown">
+        <div class="search-input-article input-field">
+          <input
+            placeholder="輸入受評者姓名"
+            type="text"
+            class="form-control autocomplete"
+            v-model="filterStaff"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <template v-for="(b, b_i) in blockArea">
+        <div style="color: rgb(4, 144, 133); font-size: 18px;">{{ b.title }}</div>
+        <div class="card">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th v-for="(th, th_i) in reviewerTableTh">{{th.title}}</th>
+                <template v-for="(th, th_i) in topics.thead[b.key]">
+                  <th :class="['th'+th.type]" :title="th.type_name">
+                    {{ th.name }}
+                  </th>
+                </template>
+                <th>小計</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template 
+                v-for="(report, report_i) in topics.tbody[b.key]" 
+                v-if="filter(report.department_unit_id + ' ' + report.department_name, report.staff_name + ' ' + report.staff_name_en)">
+                <tr>
+                  <td :rowspan="getStaffRowsapn(report)+1">
+                    <div>
+                      {{ report.department_unit_id }} {{ report.department_name }}
+                    </div>
+                    <div class="main">
+                      {{ report.staff_name }} {{ report.staff_name_en }}
+                    </div>
+                  </td>
+                </tr>
+                <template v-for="(lv, lv_i) in report.assessment_json">
+                  <tr>
+                    <td :rowspan="getStepItemRowsapn(report, lv_i)">
+                      {{ stepItemMap[lv_i].name }}
+                    </td>
+                    <td
+                      class="main"
+                      v-if="getStepItemRowsapn(report, lv_i) == 1"
+                    >
+                      {{ getStaff(report, lv_i) }}
+                    </td>
+                    <td class="main" v-else>合計</td>
+                    <td
+                      class="main"
+                      v-for="(item, item_i) in topics.thead[b.key]"
+                      v-if="!!lv.score"
+                      :title="item.name"
+                    >
+                      {{ lv.score[item.id] }}
+                    </td>
+                    <td
+                      v-if="!lv.score"
+                      :colspan="topics.thead[b.key].length"
+                    ></td>
+                    <td class="main" title="小計">{{ lv.total }}</td>
+                  </tr>
+                  <template v-if="getStepItemRowsapn(report, lv_i) > 1">
+                    <tr
+                      v-for="(sub, sub_i) in report.assessment_evaluating_json[lv_i].scores"
+                    >
+                      <td class="sub":class="{'bg-red': !report.assessment_evaluating_json[lv_i].should_count[sub_i]}">
+                        {{ staffMap[report.assessment_evaluating_json[lv_i].leaders[sub_i]].name_en }}
+                        <template v-if="!report.assessment_evaluating_json[lv_i].should_count[sub_i]"><br>(不計分)</template>
+                      </td>
+                      <td
+                        class="sub"
+                        :class="{'bg-red': !report.assessment_evaluating_json[lv_i].should_count[sub_i]}"
+                        v-for="(score, score_i) in sub"
+                        :title="getItemName(topics.thead[b.key], score_i)"
+                      >
+                        {{ score }}
+                      </td>
+                      <td class="sub" :class="{'bg-red': !report.assessment_evaluating_json[lv_i].should_count[sub_i]}" title="小計">
+                        {{ report.assessment_evaluating_json[lv_i].totallist[sub_i] }}
+                      </td>
+                    </tr>
+                  </template>
+                </template>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<style>
+  .rv-year-admin .bg-red {
+    background-color: #FFCDD2 !important;
+  }
+  .rv-year-admin .main {
+    font-weight: bolder;
+    font-size: 16px;
+  }
+  .rv-year-admin .sub {
+    background-color: #eeeeee;
+  }
+  .rv-year-admin table tr:hover {
+    background-color: #FFF8E1;
+  }
+  .rv-year-admin table tr td[title] {
+    cursor: help;
+  }
+  .rv-year-admin table th,
+  .rv-year-admin table td {
+    text-align: center;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .rv-year-admin table th:nth-child(1) {
+    width: 180px;
+  }
+  .rv-year-admin table th:nth-child(2) {
+    width: 65px;
+  }
+  .rv-year-admin table th:nth-child(3) {
+    width: 110px;
+  }
+  .rv-year-admin table th:last-child {
+    width: 60px;
+  }
+  .rv-year-admin table th {
+    background: #757575 !important;
+  }
+  .rv-year-admin table th.th1 {
+    background: #ff6d00 !important;
+  }
+  .rv-year-admin table th.th2 {
+    background: #f57c00 !important;
+  }
+  .rv-year-admin table th.th3 {
+    background: #fb8c00 !important;
+  }
+  .rv-year-admin table th.th4 {
+    background: #ff9815 !important;
+  }
+  .rv-year-admin table th.th5 {
+    background: #ffa000 !important;
+  }
+  .rv-year-admin table th.th6 {
+    background: #ffa726 !important;
+  }
+  .rv-year-admin table th.th7 {
+    background: #f9a825 !important;
+  }
+  .rv-year-admin table th.th8 {
+    background: #ffb300 !important;
+  }
+  .rv-year-admin table th.th9 {
+    background: #fbc02d !important;
+  }
+  .rv-year-admin table th.th10 {
+    background: #fdd835 !important;
+  }
+</style>
+
+<script src="<?=U('/Public/js/Index/Setting-YearAdmin.js')?>"></script>

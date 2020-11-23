@@ -41,11 +41,32 @@ if( $api->checkPost(array('year')) && $api->SC->isLogin() ){
 	}
 
 	foreach($result as &$val){
-		if($resSH = $sh->getStayWithStaff($val['staff_id'])){
+		if ($resSH = $sh->getStayWithStaff($val['staff_id'])) {
 			$val['staff_stay'] = $resSH;
-		}else{
+		} else {
 			$val['staff_stay'] = array();
 		}
+
+		if ($val['processing_lv'] && isset($val['path_lv_leaders'][$val['processing_lv']]) && $val['staff_id'] != $self) {
+			$val['_is_on_multiple_leader_process'] = count($val['path_lv_leaders'][$val['processing_lv']]) > 1;
+
+			if ($val['_is_on_multiple_leader_process']) {
+				$this_aej = $val['assessment_evaluating_json'][$val['processing_lv']];
+				$idx_leader = array_search($self, $this_aej['leaders']);
+				if ($idx_leader && $idx_leader >= 0) {
+					$val['_should_count'] = $this_aej['should_count'][$idx_leader];
+				} else {
+					$val['_should_count'] = true;
+				}
+			} else {
+				$val['_should_count'] = true;
+			}
+			
+		} else {
+			$val['_is_on_multiple_leader_process'] = false;
+			$val['_should_count'] = true;
+		}
+
 	}
 
 

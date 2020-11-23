@@ -15,9 +15,9 @@ $month = $api->post('month');
 if ($year && $month) {
   $monthlyProcessing = new \Model\Business\MonthlyProcessing();
 
-  $mothly_data = $monthlyProcessing->select(['id', 'status_code'], ['year' => $year, 'month' => $month]);
+  $mothly_data = $monthlyProcessing->select(['id', 'status_code'], ['year' => $year, 'month' => $month, 'status_code' => '<5']);
   foreach ($mothly_data as $key => $val) {
-    $procussRouting = new ProcessRouting($val['id']);
+    $procussRouting = new ProcessRouting($val['id'], 1);
     $procussRouting->done();
   }
   

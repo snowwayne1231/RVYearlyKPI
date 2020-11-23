@@ -257,7 +257,7 @@ foreach ($files as $fileInfo) {
     $objPHPExcel = PHPExcel_IOFactory::load($file);
     $sheetNo = $objPHPExcel->getSheetCount(); //檔案sheet頁數
     // 撈每頁內容
-    for($sheetRow=0; $sheetRow <= $sheetNo-1; $sheetRow++){
+    for ($sheetRow=0; $sheetRow <= $sheetNo-1; $sheetRow++) {
 
       // 讀取資料
       $sheet = $objPHPExcel->getSheet($sheetRow); // 讀取工作表(編號從 0 開始)
@@ -270,7 +270,7 @@ foreach ($files as $fileInfo) {
       if(count($data)==0){ continue; }
       
       // 準備寫入資料庫的資料
-      foreach($data as $dv){
+      foreach ($data as $dv) {
         $staff_id = $dv['staff_id'];
         $date = $dv['date'];
         $all[$staff_id.'-'.$date] = $dv;
@@ -287,7 +287,7 @@ foreach ($files as $fileInfo) {
     $sids = join(',',$staff_id_array);
     $dates = "'".join("','",$date_array)."'";
     
-    $exist = $attendance->read(['id','staff_id','date','checkin_hours','checkout_hours','work_hours_total','late','early','vocation_hours','overtime_hours']
+    $exist = $attendance->read(['id','staff_id','date','checkin_hours','checkout_hours','work_hours_total','late','early','vocation_hours', 'vocation_from', 'vocation_to', 'overtime_hours', 'overtime_from', 'overtime_to']
     ," where staff_id in ($sids) and date in ($dates)")->map('staff_id,date',true);
     
     // dd($exist);

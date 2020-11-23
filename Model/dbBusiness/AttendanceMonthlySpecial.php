@@ -38,8 +38,13 @@ class AttendanceMonthlySpecial extends DBPropertyObject{
 
 
   public function checkAttendanceScoreAllowed($score) {
+    $dates = array();
+    $attendances = $this->data;
+    foreach($attendances as $val) {
+      $dates[$val['date']] = true;
+    }
     $max = 5;
-    $cnt = count($this->data);
+    $cnt = count($dates);
     if ($cnt > 5) {
       $max = 0;
     } else if ($cnt == 5) {

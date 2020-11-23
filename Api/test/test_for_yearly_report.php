@@ -17,16 +17,23 @@ if ($year) {
   $REPORT = new YearPerformanceReport();
   $TOPIC = new YearPerformanceReportTopic();
   $topic_map = $TOPIC->map();
-  $all_report = $REPORT->select([],['year'=>$year,'enable'=>1,'division_id'=>'>2']);
+  $all_report = $REPORT->select([],['year'=>$year,'enable'=>1,'self_contribution'=>'', 'staff_id'=>'>1']);
+  // dd($all_report);
   foreach($all_report as $val){
     $time =  time();
     $aj = &$val['assessment_json'];
     $sign_json = ['s'=>[$val['staff_id'],$time],'c'=>[2,$time],'f'=>[1,$time]];
-    foreach($val['path_lv'] as $plv=> $pv){
+    foreach($val['path_lv_leaders'] as $plv=> $pv){
       if( isset($sign_json[ $plv ]) ){continue;}
-      if( $pv[1]==$val['staff_id'] ){continue;}
-      if( $plv==1 ){continue;}
-      $sign_json[$plv] = [$pv[1],$time];
+      if( $plv==1 && $val['processing_lv'] != 1){continue;}
+      foreach ($pv as $_staff_id) {
+        if( $_staff_id==$val['staff_id'] ){continue;}
+        if (isset($sign_json[$plv])) {
+          $sign_json[$plv] = array_merge($sign_json[$plv], [$_staff_id,$time]);
+        } else {
+          $sign_json[$plv] = [$_staff_id,$time];
+        }
+      }
     }
     $total = 0;
     $bonus = rand(0,3);
@@ -58,17 +65,32 @@ if ($year) {
       $level = 'E';
     }
     // $total = number_format($total,2);
-    $self_contribution = 'contribution | '.MD5(rand(10,500)).' 國國國';
+    $self_contribution = 'contribution | '.MD5(rand(10,500)).' 國國國 self';
     $self_improve = 'improve | '.MD5(rand(10,500)).' 國國國';
     
-    foreach( $val['upper_comment'] as &$ucv ){
-      $ucv['content'] = MD5(rand(10,500)).' 上司上思思qq';
+    foreach( $val['upper_comment'] as $upc_lv => &$ucv ){
+      foreach ($ucv['staff_id'] as $_uidx => $_ustaff_id) {
+        $ucv['content'][$_uidx] = MD5(rand(10,500)).' 上司上';
+      }
+    }
+
+    $next_aej = $val['assessment_evaluating_json'];
+    if (isset($next_aej)) {
+      foreach ($next_aej as $_aej_lv => &$_aej_val) {
+        foreach ($_aej_val['leaders'] as $_idx => $_leader_id) {
+          foreach ($_aej_val['scores'][$_idx] as &$_score) {
+            $_score = rand(1,5);
+          }
+          $_aej_val['commited'][$_idx] = true;
+        }
+      }
     }
     
     $update_data = [
       'processing_lv'=>0, 
       'owner_staff_id'=>1, 
       'assessment_json'=>$aj,
+      'assessment_evaluating_json'=>$next_aej,
       'assessment_total'=>$total,
       'level'=>$level,
       'self_contribution'=>$self_contribution,
@@ -82,7 +104,7 @@ if ($year) {
   
   
   $DIVI = new YearPerformanceDivisions();
-  $DIVI->update(['status'=>5],['year'=>$year,'division'=>'>2']);
+  $DIVI->update(['status'=>5],['year'=>$year,'division'=>'>1']);
 
   $api->setArray('OK');
   

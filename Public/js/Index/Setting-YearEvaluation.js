@@ -129,8 +129,15 @@ var $SettingYearEva = $('#SettingYearEva').generalController(function() {
                         API.updateYearlyConfig(data).then(function(e) {
                             var result = API.format(e);
                             if (result.is || result.get() == 'Nothing Change.') {
-                                vm.config['date_start'] = result.get().date_start;
-                                vm.config['date_end'] = result.get().date_end;
+                                let date_start = result.get().date_start,
+                                    date_end = result.get().date_end;
+                                if (result.get() == 'Nothing Change.') {
+                                    date_start = data.date_start;
+                                    date_end = data.date_end;
+                                }
+                                
+                                vm.config['date_start'] = date_start;
+                                vm.config['date_end'] = date_end;
                                 swal('設定成功', '已為您區間設定完畢', 'success');
                                 vm.nextBtn(element, 'headerOne', 'headerTwo');
                             } else {
@@ -511,11 +518,25 @@ var $SettingYearEva = $('#SettingYearEva').generalController(function() {
                     }
                 },
                 watch: {
-                    setFeedbackDate: function(val) {
-                        this.setDateSetting();
+                    setFeedbackDate(val) {
+                        let vm = this,
+                            num = Number(val);
+                        if (num < 0 || num > 99) {
+                            swal('超出允許範圍', "0 ~ 99", 'error');
+                            vm.setFeedbackDate = num > 99 ? 99 : 0;
+                        } else {
+                            vm.setDateSetting();
+                        }
                     },
                     setYealyDate: function(val) {
-                        this.setDateSetting();
+                        let vm = this,
+                            num = Number(val);
+                        if (num < 0 || num > 99) {
+                            swal('超出允許範圍', "0 ~ 99", 'error');
+                            vm.setYealyDate = num > 99 ? 99 : 0;
+                        } else {
+                            vm.setDateSetting();
+                        }
                     }
                 },
                 created: function() {
