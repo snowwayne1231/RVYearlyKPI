@@ -446,7 +446,7 @@ class YearlyAssessment extends MultipleSets{
 		return $res;
 	}
 
-	public function saveYearlyAssessment($id, $staff_val, $update_data, $should_count = 1){
+	public function saveYearlyAssessment($id, $staff_val, $update_data){
 		if($this->config_quick->isYearlyAssessmentFinished()){$this->error("This Year Is Been Finished.");}
 			$result = array(); $update = array();
 			//檢查能否編輯
@@ -494,7 +494,7 @@ class YearlyAssessment extends MultipleSets{
 				// 寫入資料
 				$current_leaders = $team_leader_map[$my_team['id']];
 				if (count($current_leaders) > 1 && !$is_self_update) {
-					$new_eva_json = $this->updateEvaluatingAssessmentJson($assessment['assessment_evaluating_json'], $u_a_json, $staff_val['id'], $assessment['staff_is_leader'], $should_count);
+					$new_eva_json = $this->updateEvaluatingAssessmentJson($assessment['assessment_evaluating_json'], $u_a_json, $staff_val['id'], $assessment['staff_is_leader']);
 					$update['assessment_evaluating_json'] = $new_eva_json;
 
 					$update_to_assessment = [];
@@ -680,7 +680,7 @@ class YearlyAssessment extends MultipleSets{
 	}
 
 	//
-	private function updateEvaluatingAssessmentJson($old, $update, $my_staff_id, $target_staff_is_lader, $should_count = null) {
+	private function updateEvaluatingAssessmentJson($old, $update, $my_staff_id, $target_staff_is_lader) {
 		$topic_map = $this->topic->map();
 		$new_json = $old;
 		foreach($new_json as $lv => &$value){
@@ -690,10 +690,13 @@ class YearlyAssessment extends MultipleSets{
 			$leader_index = array_search($my_staff_id, $value['leaders']);
 			if ($leader_index >= 0) {
 
-				if ($should_count == 1) {
-					$value['should_count'][$leader_index] = true;
-				} else if ($should_count == 2) {
-					$value['should_count'][$leader_index] = false;
+				if (isset($now_update_json['should_count'])) {
+					$should_count = $now_update_json['should_count'];
+					if ($should_count == 1) {
+						$value['should_count'][$leader_index] = true;
+					} else if ($should_count == 2) {
+						$value['should_count'][$leader_index] = false;
+					}
 				}
 
 				$total = 0;
@@ -733,7 +736,7 @@ class YearlyAssessment extends MultipleSets{
 		
 		// dd($assessment);
 		$now_lv = $assessment['processing_lv'];
-		$this_lv_leaders = $assessment['path_lv_leaders'][$now_lv];
+		$this_lv_leaders = isset($assessment['path_lv_leaders'][$now_lv]) ? $assessment['path_lv_leaders'][$now_lv] : [];
 		$is_this_lv_leader = in_array($self_id, $this_lv_leaders);
 		
 		// 權限檢查
@@ -760,14 +763,26 @@ class YearlyAssessment extends MultipleSets{
 		$is_not_myself = $self_id != $assessment['staff_id'];
 		
 		if ($is_not_myself && isset($assessment_evaluating_json[$now_lv])) { // 有多主管 且不是自評
-			$aej = &$assessment_evaluating_json[$now_lv];
-			$aej_commited = &$aej['commited'];
-			$which_leader_idx = array_search($self_id, $aej['leaders']);
-			$aej_commited[$which_leader_idx] = true;
+			$_local_lv = $now_lv;
+			while ($_local_lv < 5) {
+				if (!isset($assessment_evaluating_json[$_local_lv])) {
+					break;
+				}
+				$aej = &$assessment_evaluating_json[$_local_lv];
+				$aej_commited = &$aej['commited'];
+				$which_leader_idx = array_search($self_id, $aej['leaders']);
+				if ($which_leader_idx >= 0) {
+					$aej_commited[$which_leader_idx] = true;
+				} else {
+					break;
+				}
+				$_local_lv++;
+			}
+
 			$update['assessment_evaluating_json'] = $assessment_evaluating_json;
 
 			$is_all_leaders_commited = true;
-			foreach ($aej_commited as $idx => $_commited) {
+			foreach ($assessment_evaluating_json[$now_lv]['commited'] as $idx => $_commited) {
 				// if ($aej['should_count'][$idx]) {
 				if (!$_commited) {
 					$is_all_leaders_commited = false;
@@ -775,11 +790,12 @@ class YearlyAssessment extends MultipleSets{
 				}
 				// }
 			}
-			$result['change'] = $this->report->update($update, $id);
+			
 			// dd([$aej_commited, $is_all_leaders_commited]);
 			if (!$is_all_leaders_commited) {
 				//簽时間戳
 				$sign_lv = $assessment['owner_staff_id']==$assessment['staff_id']? 's' : $now_lv;//自評的話是 s
+				$result['change'] = $this->report->update($update, $id);
 				$this->stampReportTime($assessment['id'], $sign_lv, $self_id, $assessment['sign_json']);
 				
 				$result['status'] = 'OK.';
@@ -811,7 +827,7 @@ class YearlyAssessment extends MultipleSets{
 				$as_final_lv = min($as_final_lv,$ilv);
 				if($ilv<$check_by_now_lv){continue;}
 			}
-			foreach($score_json['score'] as $qid => $q_score){
+			foreach ($score_json['score'] as $qid => $q_score) {
 				if($q_score<0){$this->error('You Are Not Complete The Score Yet. [ question_id = '.$qid.' ]');}
 			}
 		}
@@ -1386,6 +1402,7 @@ class YearlyAssessment extends MultipleSets{
 		$team_map = $this->config_quick->getDepartmentMap();
 
 		$team_leaders_map = $this->config_quick->getDepartmentMultipleLeadersMap();
+		// dd($team_leaders_map);
 		// dd($config);
 		//年考評單
 		$report_map = $this->report->read( array('id','staff_id','level'),array('year'=>$year) )->map('staff_id',true);
@@ -1665,30 +1682,36 @@ class YearlyAssessment extends MultipleSets{
 
 	private function getDefaultAssessmentEvaluating($ass_json, $path_lV, $team_leaders_map) {
 		$res = [];
+		$lv_list = [3,4,5];
 		try {
-			foreach ($ass_json as $key => $val) {
-				if (isset($path_lV[$key])) {
-					$departmet_id = $path_lV[$key][0];
+			foreach ($lv_list as $lv) {
+				if (isset($path_lV[$lv]) && isset($ass_json[$lv])) {
+					$departmet_id = $path_lV[$lv][0];
 					if (isset($team_leaders_map[$departmet_id])) {
 						$leaders = $team_leaders_map[$departmet_id];
-						if (count($leaders) > 1) {
-							$res[$key]['leaders'] = $leaders;
-							$res[$key]['scores'] = [];
-							$res[$key]['totallist'] = [];
-							$res[$key]['commited'] = [];
-							$res[$key]['should_count'] = [];
+						$length_leader = count($leaders);
+						if ($length_leader > 1 ) {
+							$res[$lv]['leaders'] = $leaders;
+							$res[$lv]['scores'] = [];
+							$res[$lv]['totallist'] = [];
+							$res[$lv]['commited'] = [];
+							$res[$lv]['should_count'] = [];
 							foreach ($leaders as $idx => $leader_id) {
-								$res[$key]['scores'][$idx] = $val['score'];
-								$res[$key]['totallist'][$idx] = 0;
-								$res[$key]['commited'][$idx] = false;
-								$res[$key]['should_count'][$idx] = true;
+								$res[$lv]['scores'][$idx] = $ass_json[$lv]['score'];
+								$res[$lv]['totallist'][$idx] = 0;
+								$res[$lv]['commited'][$idx] = false;
+								$res[$lv]['should_count'][$idx] = true;
+							}
+						} else if ($length_leader == 0) {
+							$prev_lv = $lv -1;
+							if (isset($res[$prev_lv])) {
+								$res[$lv] = $res[$prev_lv];
 							}
 						}
-						$ass_json[$key]['_leaders'] = $leaders;
 					}
 				}
 			}
-		} catch (Exception $err) {
+		} catch (\Exception $err) {
 			dd($err);
 		}
 		return $res;
@@ -1741,6 +1764,7 @@ class YearlyAssessment extends MultipleSets{
 		$my_team_lv = 0;
 		$my_team_same_lv_other_leaders = [];
 		foreach($my_team as $team){
+			if (!isset($team['manager_staff_id'])) { continue; }
 			if( is_numeric($department_level) && $department_level>0){
 				if($team['lv']==$department_level){ $my_team_ids[] = $team['id']; }
 			}else{
@@ -2755,7 +2779,7 @@ class YearlyAssessment extends MultipleSets{
 		$staff_map_for_show = [];
 		
 		// $result['team'] = $team_map;
-		$reports = $this->report->select(['assessment_evaluating_json', 'assessment_json', 'assessment_total', 'department_id', 'division_id', 'staff_id', 'staff_is_leader', 'staff_lv', 'staff_post', 'staff_title', 'path', 'path_lv', 'path_lv_leaders'], ['year' => $this->year]);
+		$reports = $this->report->select(['id', 'assessment_evaluating_json', 'assessment_json', 'assessment_total', 'department_id', 'division_id', 'staff_id', 'staff_is_leader', 'staff_lv', 'staff_post', 'staff_title', 'path', 'path_lv', 'path_lv_leaders', 'processing_lv', 'enable'], ['year' => $this->year]);
 		foreach ($reports as &$report) {
 			$staff_id = $report['staff_id'];
 			$staff = $staff_map[$staff_id];
@@ -2778,6 +2802,14 @@ class YearlyAssessment extends MultipleSets{
 		$result['reports'] = $reports;
 		$result['staff_map'] = $staff_map_for_show;
 		return $result;
+	}
+
+
+	/**
+	 * 
+	 */
+	public function getStaffMap() {
+		return $this->config_quick->getStaffMap();
 	}
 
 }

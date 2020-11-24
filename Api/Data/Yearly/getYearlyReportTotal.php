@@ -31,7 +31,10 @@ if( $api->checkPost(array('year','department_level'))  && $api->SC->isLogin() ){
   }
 
   $result = $yfb->getPerfomanceList( $self_id , $year, $department_level, $with_assignment, $is_over, true, $report_columns );
+  $staff_map = $yfb->getStaffMap();
+  $all_in_report_ids = [];
   // dd($result);
+  // dd($staff_map);
   //員工只能看自評
   if ($api->SC->isLeader() && !$is_admin) {
     
@@ -52,6 +55,7 @@ if( $api->checkPost(array('year','department_level'))  && $api->SC->isLogin() ){
 
   foreach ($result['assessment'] as $duty => &$reports) {
     foreach ($reports as &$report) {
+      $all_in_report_ids[] = $report['staff_id'];
       if ($resSH = $sh->getStayWithStaff($report['staff_id'])) {
         $report['staff_stay'] = $resSH;
       } else {
@@ -59,6 +63,18 @@ if( $api->checkPost(array('year','department_level'))  && $api->SC->isLogin() ){
       }
     }
   }
+
+  $all_in_report_ids = array_unique($all_in_report_ids);
+  $staff_for_show_map = [];
+  foreach ($all_in_report_ids as $staff_id) {
+    $staff_data = $staff_map[$staff_id];
+    $staff_for_show_map[$staff_id] = [
+      'name' => $staff_data['name'],
+      'name_en' => $staff_data['name_en'],
+      'staff_no' => $staff_data['staff_no'],
+    ];
+  }
+  $result['staff_map'] = $staff_for_show_map;
 
   //結果
   if( isset($result['error']) ){

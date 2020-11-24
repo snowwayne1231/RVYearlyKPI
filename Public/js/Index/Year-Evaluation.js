@@ -87,11 +87,11 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function () {
             'staff_is_leader': true,
             'staff_is_ceo': false,
             'opinionFeedback': { upper_comment: { 1: {}, 2: {}, 3: {}, 4: {} }, question: { 'question_1': [], 'question_2': [], 'question_4': [], 'question_5': [] } },
-            'upperCommentForm': [
-                { key: 1, title: "運維中心" },
-                { key: 2, title: "部層級" },
-                { key: 3, title: "處層級" },
+            'upperCommentForm': [ 
                 { key: 4, title: "組層級" },
+                { key: 3, title: "處層級" },
+                { key: 2, title: "部層級" },
+                { key: 1, title: "運維中心" },
             ]
         });
 
@@ -261,23 +261,21 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function () {
 
     function adjReportData(data) {
         var can_fix_lv = parseInt(myself['_department_lv']) + (myself['is_leader'] == 1 ? 0 : 1);
-        var my_edit_lv_alloweds = getAllowedEditLvevls();
+        var my_allowed_edition_lv = getAllowedEditLevel();
 
-        function getAllowedEditLvevls() {
+        function getAllowedEditLevel() {
             var _my_id = myself['id'];
             var _pll = data.path_lv_leaders;
             var _pl = data.path_lv;
-            var resultary = [];
+            var _my_leader_lv = 0;
             for (var _lv in _pl) {
                 var _leaders = _pll[_lv];
-                var _manager = _pl[_lv][1];
-                if (_manager == _my_id) {
-                    resultary.push(_lv);
-                } else if (_leaders && _leaders.includes(_my_id)) {
-                    resultary.push(_lv);
+                if (_leaders && _leaders.includes(_my_id)) {
+                    _my_leader_lv = parseInt(_lv);
+                    break;
                 }
             }
-            return resultary;
+            return _my_leader_lv;
         }
 
 
@@ -288,7 +286,7 @@ var $YearEvaluationPage = $('#Year-Evaluation').generalController(function () {
             if (pd == 'under') { continue; }
 
             aj.view = pd == 'self' ? true : parseInt(pd) >= can_fix_lv;
-            aj.edit = data['_authority'].edit && (pd == 'self' ? myself['id'] == data['staff_id'] : my_edit_lv_alloweds.includes(pd));
+            aj.edit = aj.view && data['_authority'].edit && (pd == 'self' ? myself['id'] == data['staff_id'] : parseInt(pd) >= my_allowed_edition_lv);
             // 如果還能編輯又有多主管 取assessment_evaluating_json
             if (aj.edit && data.assessment_evaluating_json && data.assessment_evaluating_json[pd]) {
                 var aej = data.assessment_evaluating_json[pd];

@@ -266,7 +266,6 @@ function grenalJSONFormat(json){
     return res;
   }
   this.res = function(){
-    if(!this.is){ console.log(this); }
     return contain.result;
   }
   this.set = function(data){

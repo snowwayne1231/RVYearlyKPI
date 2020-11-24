@@ -33,6 +33,10 @@ if( $api->SC->isAdmin() ){
         if ($d_data['upper_id'] == 0) {
             $api->denied('Top Department Can Not Give Leadership.');
         }
+
+        if ($d_data['lv'] <= 2) {
+            $api->denied('Division Can Not Set Multiple Leadership.');
+        }
     }
 
     $staff = new Staff();

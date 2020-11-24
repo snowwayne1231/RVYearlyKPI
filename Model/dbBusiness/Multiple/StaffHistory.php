@@ -49,6 +49,9 @@ class StaffHistory extends MultipleSets{
 	public function createEvent($set=array()){
 		$set['create_date'] = date('Y-m-d H:i:s');
 		$set['update_date'] = date('Y-m-d H:i:s');
+		if (empty($set['note'])) {
+			$set['note'] = '';
+		}
 		return $this->event->create($set);
 	}
 

@@ -431,7 +431,7 @@
                                             <table class="table table-fixed" v-if="personalInfo['assessment_json']">
                                                 <thead>
                                                     <tr>
-                                                        <th colspan="2">項目</th>
+                                                        <th colspan="2">項目123</th>
                                                         <th :colspan="item.itemBlock" v-for="(item, index) in staffThead.titleArray">{{item.title}}</th>
                                                         <th rowspan="2">總分</th>
                                                     </tr>
@@ -449,7 +449,7 @@
                                                             <td v-for="(score, index) in personalInfo.assessment_json[item.key].score">{{score}}</td>
                                                         </template>
                                                         <template v-else>
-                                                            <td colspan="17">{{item.text}}</td>
+                                                            <td colspan="13">{{item.text}}</td>
                                                         </template>
                                                         <td>
                                                             <div clayear-evalution-tabless="total">{{personalInfo.assessment_json[item.key].total}}</div>
@@ -459,73 +459,21 @@
                                                     <tr class="ready" v-if="Object.keys(personalInfo).indexOf('assessment_total') != -1">
                                                         <td>-</td>
                                                         <td>總分</td>
-                                                        <td colspan="17"> 以上計算之總分 </td>
+                                                        <td colspan="13"> 以上計算之總分 </td>
                                                         <td> {{personalInfo.assessment_total}}</td>
                                                     </tr>
                                                     <tr class="ready" v-if="Object.keys(personalInfo).indexOf('assessment_total_division_change') != -1">
                                                         <td>加減分</td>
                                                         <td>部長</td>
-                                                        <td colspan="17"> {{personalInfo.assessment_total_division_change}}</td>
+                                                        <td colspan="13"> {{personalInfo.assessment_total_division_change}}</td>
                                                         <td> {{personalInfo.assessment_total+personalInfo.assessment_total_division_change}}</td>
                                                     </tr>
                                                     <tr class="ready" v-if="Object.keys(personalInfo).indexOf('assessment_total_ceo_change') != -1">
                                                         <td>加減分</td>
                                                         <td>Mickey</td>
-                                                        <td colspan="17"> {{personalInfo.assessment_total_ceo_change}}</td>
+                                                        <td colspan="13"> {{personalInfo.assessment_total_ceo_change}}</td>
                                                         <td> {{personalInfo.assessment_total_final}}</td>
                                                     </tr>
-                                                    <template v-if="false">
-                                                        <tr class="ready">
-                                                            <td>{{personalInfo.assessment_json.self.percent}}%</td>
-                                                            <td>自評</td>
-                                                            <td v-for="score in personalInfo.assessment_json.self.score">{{score}}</td>
-                                                            <td>
-                                                                <div class="total">{{personalInfo.assessment_json.self.total}}</div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr v-if="personalInfo.assessment_json[4]" class="ready">
-                                                            <td>{{personalInfo.assessment_json[4].percent}}%</td>
-                                                            <td>組長初核</td>
-                                                            <td v-for="score in personalInfo.assessment_json[4].score">{{score}}</td>
-                                                            <td>
-                                                                <div class="total">{{totalScore(personalInfo.assessment_json[4].score)}}</div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr v-if="personalInfo.assessment_json[3]" class="ready">
-                                                            <td>{{personalInfo.assessment_json[3].percent}}%</td>
-                                                            <td>處主管覆核</td>
-                                                            <td v-for="score in personalInfo.assessment_json[3].score">{{score}}</td>
-                                                            <td>
-                                                                <div class="total">{{totalScore(personalInfo.assessment_json[3].score)}}</div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr v-if="personalInfo.assessment_json[2]" class="ready">
-                                                            <td>{{personalInfo.assessment_json[2].percent}}%</td>
-                                                            <td>部門主管核定</td>
-                                                            <td v-for="score in personalInfo.assessment_json[2].score">{{score}}</td>
-                                                            <td>
-                                                                <div class="total">{{totalScore(personalInfo.assessment_json[2].score)}}</div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr class="ready">
-                                                            <td>-</td>
-                                                            <td>總分</td>
-                                                            <td colspan="13"> 以上計算之總分 </td>
-                                                            <td> {{personalInfo.assessment_total}}</td>
-                                                        </tr>
-                                                        <tr class="ready">
-                                                            <td>加減分</td>
-                                                            <td>部長</td>
-                                                            <td colspan="13"> {{personalInfo.assessment_total_division_change}}</td>
-                                                            <td> {{personalInfo.assessment_total+personalInfo.assessment_total_division_change}}</td>
-                                                        </tr>
-                                                        <tr class="ready">
-                                                            <td>加減分</td>
-                                                            <td>Mickey</td>
-                                                            <td colspan="13"> {{personalInfo.assessment_total_ceo_change}}</td>
-                                                            <td> {{personalInfo.assessment_total_final}}</td>
-                                                        </tr>
-                                                    </template>
                                                 </tbody>
                                             </table>
                                         </div>

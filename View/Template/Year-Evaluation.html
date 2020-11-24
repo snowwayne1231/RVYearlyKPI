@@ -304,7 +304,9 @@
                   >
                 </div>
               </td>
-              <template v-if="!main._is_on_multiple_leader_process || (main._is_on_multiple_leader_process && (!main.assessment_json[aj_key].edit || (main.assessment_json[aj_key].edit && main._should_count)))">
+              <template v-if="
+                !main._is_on_multiple_leader_process || 
+                (main._is_on_multiple_leader_process && (!main.assessment_json[aj_key].edit || (main.assessment_json[aj_key].edit && main._should_count)))">
                 <td v-for="(tp, index) in topic">
                   <select
                     v-if="main.assessment_json[aj_key].edit"
@@ -329,7 +331,9 @@
               <template v-else>
                 <td :colspan="topic.length +1" style="color: #EF5350;">你的評分將不列入計算</td>
               </template>
-              <td v-if="main._is_on_multiple_leader_process"><input class="myinput large" v-if="main.assessment_json[aj_key].edit" type="checkbox" v-model="main._should_count" ></td>
+              <td v-if="main._is_on_multiple_leader_process">
+                <input class="myinput large" v-if="main.assessment_json[aj_key].edit" type="checkbox" v-model="main._should_count" >
+              </td>
             </tr>
           </tbody>
         </table>
@@ -811,11 +815,11 @@
                         <tr
                           v-for="(report,index) in divisionData._reports"
                           :class="{
-                                                      ready: divisionData.owner_staff_id != member.id || !divisionData._authority.edit,
-                                                      done:  divisionData.processing==5 || report.done,
-                                                      opppen: report._authority.isFinished && report._authority.edit,
-                                                      show: report.show
-                                                  }"
+                            ready: divisionData.owner_staff_id != member.id || !divisionData._authority.edit,
+                            done:  divisionData.processing==5 || report.done,
+                            opppen: report._authority.isFinished && report._authority.edit,
+                            show: report.show
+                          }"
                         >
                           <td :title="report.department_name">
                             <span class="tdSpan"

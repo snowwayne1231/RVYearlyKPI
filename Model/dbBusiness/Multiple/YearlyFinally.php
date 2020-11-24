@@ -300,7 +300,9 @@ class YearlyFinally extends MultipleSets{
 
           if($tm_v['_division']['processing']==$division::PROCESSING_CEO_COMMIT){
             $tm_v['status_code'] = self::CODE_DONE;
-          }else if($tm_v['_report_total']==$tm_v['_report_finished']){
+          } else if ($tm_v['_report_total'] == 0) {
+            $tm_v['status_code'] = self::CODE_NONE;
+          } else if($tm_v['_report_total']==$tm_v['_report_finished']) {
             $tm_v['status_code'] = self::CODE_FINISHED;
           }
 

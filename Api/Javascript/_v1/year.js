@@ -1153,3 +1153,19 @@ self.getYearlyOtherLeaderSuggestions = function(data){
 self.moveYearlyQuestionToLeader = function(data){
   return $.post(Data_PATH+"Yearly/moveYearlyQuestionToLeader", data);
 }
+
+
+/**
+ * 更新年報表的多主管commit狀態
+ * @param  必須 report_id
+ * @param  必須 leader_id
+ * @param  必須 commit   ( 設為已送審 = 1,  設為未審核 = 0)
+ * @return {
+ *  
+ * 
+ * }
+ * 
+ */
+self.updateYearlyLeaderCommitment = function(data) {
+  return $.post(Setting_PATH+"updateYearlyReportLeaderCommitment", data);
+}
