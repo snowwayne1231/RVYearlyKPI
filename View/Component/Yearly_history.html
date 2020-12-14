@@ -1,0 +1,76 @@
+<div id="HistoryModal" class="modal">
+  <div class="modal-content">
+    <div class="rv-page-title">
+      <h1 class="rv-title">
+        歷史紀錄<button href="#" class="modal-action modal-close btn-flat">
+          <i class="material-icons md-18">close</i>
+        </button>
+      </h1>
+    </div>
+    <div class="row">
+      <div class="widget-timeline">
+        <div class="widget-timeline-section widget-timeline-first">
+          考評單歷程
+        </div>
+        <div v-for="(record,index) in historyRecords">
+          <div class="widget-timeline-item">
+            <div class="widget-timeline-info">
+              <div class="widget-timeline-bullet bg-primary"></div>
+              <div class="widget-timeline-time bg-primary">
+                {{record.date}} <br />{{record.time}}
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-body">
+                <div v-if="record.type == '0'">
+                  <span>✧產生考評單</span>
+                  <p>日期：{{record.date}} {{record.time}}</p>
+                </div>
+                <div v-if="record.type == '2'">
+                  <span>
+                    <template v-if="record._is_multiple_leader_from">【{{record.from_department_name}}】</template>
+                    <template v-else>【{{record.from_name}} {{record.from_name_en}}】</template>
+                  </span>
+                  <span class="commit">→ 送審 →</span>
+                  <span>
+                    <template v-if="record._is_multiple_leader_to">【{{record.to_department_name}}】</template>
+                    <template v-else>【{{record.to_name}} {{record.to_name_en}}】</template>
+                  </span>
+                </div>
+                <div v-if="record.type == '4'">
+                  <span>
+                    <template v-if="record._is_multiple_leader_from">【{{record.from_department_name}} {{record.operating_staff_name}} {{record.operating_staff_name_en}}】</template>
+                    <template v-else>【{{record.from_name}} {{record.from_name_en}}】</template>
+                  </span>
+                  <span class="return">→ 退回 →</span>
+                  <span>
+                    <template v-if="record._is_multiple_leader_to">【{{record.to_department_name}}】</template>
+                    <template v-else>【{{record.to_name}} {{record.to_name_en}}】</template>
+                  </span>
+                  <p>&nbsp;&nbsp;退回原因： {{record.reason}}</p>
+                </div>
+                <div v-if="record.type == '3'">
+                  <span class="done">√ </span><span>考評單已完成</span>
+                  <p>日期：{{record.date}}；時間：{{record.time}}</p>
+                </div>
+                <div v-if="record.type == '5'">
+                  <span>
+                    <template v-if="record._is_multiple_leader_from">【{{record.from_department_name}}】</template>
+                    <template v-else>【{{record.from_name}} {{record.from_name_en}}】</template>
+                  </span>
+                  <span class="other">→ 系統{{record.title}}</span>
+                  <!-- <span v-if="record.title">
+                    <template v-if="record._is_multiple_leader_to">【{{record.to_department_name}}】</template>
+                    <template v-else>【{{record.to_name}} {{record.to_name_en}}】</template>
+                  </span> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="<?=U('/Public/js/Index/Yearly-History.js')?>"></script>

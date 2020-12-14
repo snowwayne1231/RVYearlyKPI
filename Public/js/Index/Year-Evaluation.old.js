@@ -246,7 +246,6 @@ var $yearEvaluationPage = $('#Year-Evaluation').generalController(function() {
                                         }
                                     }
                                     vm.opinionFeedback.question = questionObj;
-                                    console.log(questionObj.question_5)
                                 }
                             }
                         });

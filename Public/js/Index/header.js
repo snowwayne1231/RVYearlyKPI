@@ -97,7 +97,6 @@
              if (slideout.hasClass('slide-small')) { slideout.in(); }
 
              if (href.match(/Template\//i)) {
-                console.log(href);
                  location.hash = API.encode(href);
                  e.preventDefault();
              };
@@ -201,7 +200,6 @@
                  }
              } else {
                  undoYear = current.year;
-                 console.log(undoYear);
              }
          }
 

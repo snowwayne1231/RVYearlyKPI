@@ -213,7 +213,7 @@ if($api->checkPost(array("year","month")) || $api->checkPost(array("check"))){
 
 
 			//產生的考評單比 部門數量還多，一定是第一次按，要寄 E-mail
-			if($times > count($teamsData) && $check && empty($del)){
+			if($times > count($teamsData) && $check && empty($del) && empty($recheck)){
 				$send_emails = [];
 				$admin_emails= [];
 

@@ -245,6 +245,14 @@ class YearPerformanceReport extends DBPropertyObject{
       return false;
     }
   }
+
+
+  /**
+   * 把C變B
+   */
+  public static function PromotionBtoC($level) {
+    return $level == 'C' ? 'B' : $level;
+  }
   
 }
 ?>

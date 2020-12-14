@@ -98,8 +98,6 @@ var Site_Root  = '<?=WEB_ROOT?>';
 
   $.ajaxSetup({
     beforeSend:function(a,set){
-      // console.log(a);
-      // console.log(set);
       var stamp = set.url + (typeof set.data=='string'?set.data:'');
       for(var i in self.ajaxPassenger){
         var loc = self.ajaxPassenger[i].u;
@@ -111,7 +109,6 @@ var Site_Root  = '<?=WEB_ROOT?>';
       for(var i in self.ajaxPassenger){
         var loc = self.ajaxPassenger[i].a;
         if(loc==a){
-          // console.log(a);
           self.ajaxPassenger.splice(i,1);break;
         }
       }
@@ -124,7 +121,6 @@ var Site_Root  = '<?=WEB_ROOT?>';
       hook_data[name] = [self[name]]; 
       self[name] = function(){
         hook_pointer = hook_data[name].length;
-        // console.log(hook_data);
         var ret, p=0;
         do{
           ret = (hook_data[name][ p ].apply(ret, arguments)) || ret;

@@ -1118,7 +1118,7 @@
               </div>
               <div class="col s6 right-align">
                 <a
-                  v-if="typeof oldStaff.rank != 'undefined' && oldStaff.rank >= 6"
+                  v-if="nowDepartment.lv > 2 && typeof oldStaff.rank != 'undefined' && oldStaff.rank >= 6"
                   class="waves-effect waves-light btn"
                   :class="{'teal lighten-2': !now.is_leader_group, 'red lighten-3': now.is_leader_group}"
                   v-on:click="updateLeaders(now)"

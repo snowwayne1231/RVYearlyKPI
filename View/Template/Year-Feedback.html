@@ -1,7 +1,6 @@
 <div id="Year-Feedback">
     <div class="had-container">
-        <h1 class="rv-title">
-            <span></span>年度部屬回饋問卷</h1>
+        <h1 class="rv-title"><span></span>年度部屬回饋問卷</h1>
     </div>
     <div id="YearFeedbackForm" class="section rv-assess rv-yearFeedbackForm">
         <!-- 樣版1 -->
@@ -75,7 +74,10 @@
                                 <div class="step">
                                     <span class="no">b.</span>問答題
                                     <span class="note">共 {{questionNormal.length}} 題</span>
-                                    <span><small class="blue-text text-darken-2"> (請以繁體中文填寫)</small></span></span>
+                                    <ul>
+                                        <li><small class="blue-text text-darken-2">* 請以繁體中文填寫</small></li>
+                                        <li><small class="blue-text text-darken-2">* 不記名方式</small></li>
+                                    </ul>
                                 </div>
                                 <div class="questionnaires-block">
                                     <div class="item-area">
@@ -150,8 +152,6 @@
                                                         <textarea class="maxWord" placeholder="請輸入文字...(字數不可超過255個字元)" v-model="ansAboutCompany" :maxlength="maxlength"></textarea>
                                                     </div>
                                                 </transition>
-
-
                                             </div>
                                         </div>
                                         <div class="question-area">
@@ -161,13 +161,9 @@
                                             </div>
                                             <div class="answer-group other-manager">
                                                 <div class="custom-fab">
-                                              
-                                                   
                                                     <a class="btn custom-btn" v-bind:class="classObject(index)"
                                                         v-for="(leader,index) in newleaderArray"  v-on:click.stop="currentManager(index,newleaderArray)">{{leader.name}}</a>
-                                                    <!-- <textarea placeholder="請輸入文字...(字數不可超過255個字元)" v-bind:class="{ active: isActiveOther[index] }" v-for="(leader,index) in leaderArray"   v-model="ansOthers[index]"></textarea> -->
-
-                                                    <div class="container modal" :id="'modal-leadercomment-'+leader.id" v-for="(leader,index) in newleaderArray">
+                                                    <div class="container modal" :id="'modal-leadercomment-' + appraisee.target_staff_id + '-' + leader.id" v-for="(leader,index) in newleaderArray">
                                                         <div class="modal-content">
                                                             <div class="rv-page-title">
                                                                 <h1 class="rv-title orange-text text-darken-4 ">對【{{leader.name}} 】提出建議
@@ -176,29 +172,24 @@
                                                                     </button>
                                                                 </h1>
                                                             </div>
-                                                            <div class="row">
-                                                                <div class="col s10 offset-s1 mb10">
-                                                                    <textarea v-model="ansOthers[index]" placeholder="請輸入文字...(字數不可超過255個字元)" maxlength="255"></textarea>
+                                                            <div class="row" style="margin-bottom: 0;">
+                                                                <div class="col s12"  style="padding-left: 20px; padding-right: 10px;">
+                                                                    <div style="position: relative;">
+                                                                        <div style="color: #a1a1a1; padding: 10px; position: absolute; top: 2px; left: 2px; background: rgb(255 237 215); width: calc( 100% - 4px);">目前正在對 {{ leader.name }} 填寫評論內容...</div>
+                                                                        <textarea v-model="ansOthers[index]" placeholder="請輸入文字...(字數不可超過255個字元)" maxlength="255" style="min-height: 150px; margin: 0; padding-top: 50px;"></textarea>
+                                                                    </div>
                                                                 </div>
-
                                                             </div>
-
                                                         </div>
                                                         <div class="modal-footer row">
                                                             <div class="col s7 mb10">
-                                                                    <a  class="modal-action waves-effect waves-light btn"
-                                                                        v-on:click="saveOtherComm(index)">儲存</a>
-                                                                    <a  class="modal-action modal-close waves-effect waves-light btn teal darken-1">取消</a>
-                                                        
+                                                                <a class="modal-action waves-effect waves-light btn"
+                                                                    v-on:click="saveOtherComm(index)">儲存</a>
+                                                                <a class="modal-action modal-close waves-effect waves-light btn teal darken-1">取消</a>
                                                             </div>
-
                                                         </div>
                                                     </div>
-
-
-
                                                 </div>
-
                                             </div>
                                         </div>
                                     </div>
@@ -213,11 +204,6 @@
             <div class="title">無部屬回饋問卷</div>
             <div class="content">若有疑問請向【人力資源處】承辦人員詢問。</div>
         </div>
-
-
-
-
     </div>
 </div>
-
-    <script type="text/javascript" src="<?=U('/Public/js/Index/Year-Feedback.js')?>"></script>
+<script type="text/javascript" src="<?=U('/Public/js/Index/Year-Feedback.js')?>"></script>

@@ -30,8 +30,6 @@ var $Organization = $('#Organization').generalController(function() {
 
     // member 的資料
     ts.onLogin(function(member) {
-        console.log(JSON.parse(JSON.stringify(member)));
-
         setTimeout(function() {
             year.val(current.year);
             month.val(current.month).trigger('change');

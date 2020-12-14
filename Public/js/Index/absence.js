@@ -71,7 +71,6 @@ var $Absence = $('#Absence').generalController(function () {
         })
             .on('mouseup', function (e) {
                 mouseData.can = false;
-                // console.log(pos);
             })
             .on('mousemove', function (e) {
                 if (!mouseData.can) {
@@ -86,7 +85,6 @@ var $Absence = $('#Absence').generalController(function () {
                     table.find('td[pos=' + pos.now + ']').hide();
                     pos.now++;
                     mouseData.sbar.css('left', ((pos.now / pos.max) * mouseData.scrollWidth) + '%');
-                    console.log(mouseData.scrollWidth);
                 } else if (pos.moveX > carry) {
                     pos.x = e.pageX;
                     if (pos.now <= 0) {
@@ -121,8 +119,6 @@ var $Absence = $('#Absence').generalController(function () {
     API.getAbsence(submit).then(function (data) {
         var rec = API.format(data).get();
         if (rec) {
-            console.log(rec);
-
             //先找到所有日期 與 所有員工
             var time_1 = new Date();
 

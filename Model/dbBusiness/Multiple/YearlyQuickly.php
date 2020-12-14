@@ -192,6 +192,13 @@ class YearlyQuickly extends MultipleSets{
     return $res;
   }
 
+  // 取得去年的BC設定
+  public function getPrevYearSetting() {
+    $prev_year = ((int) $this->year) -1;
+    $prev_config = new YearPerformanceConfigCyclical($prev_year);
+    return $prev_config->data;
+  }
+
   //cache 人跟部門資料
   private $staffAndDepartment;
   private function getSD(){
@@ -249,7 +256,7 @@ class YearlyQuickly extends MultipleSets{
           'title' => $staff_title_map[$vv['title_id']]['name'],
           'post' => $staff_post_map[$vv['post_id']]['name'],
           'department_id' => $v['id'],
-          'is_leader' => $v['manager_staff_id']==$vv['id'] || $vv['is_leader']? 1 : 0
+          'is_leader' => $v['manager_staff_id']==$vv['id'] || $vv['is_leader'] == 1? 1 : 0
         );
         $tmp = array_merge($vv,$tmp);
         $v['staff'][$i] = array_merge( $staff_map[$vv['id']] ,$tmp);

@@ -69,6 +69,7 @@ var $SettingYearEva = $('#SettingYearEva').generalController(function() {
                     dayLength: { start: [], end: [] },
                     StartDate: { year: startYear, month: '1', day: '1' },
                     EndDate: { year: startYear, month: '12', day: '1' },
+                    doCtoB: 1,
                     config: {},
                     activeHeader: { headerOne: 1, headerTwo: 0, headerThree: 0 },
                     statistics: {},
@@ -90,7 +91,9 @@ var $SettingYearEva = $('#SettingYearEva').generalController(function() {
                         var ed = new Date(vm.config.date_end);
 
                         vm.processing = vm.config.processing;
-                       vm.StartDate.year = sd.getFullYear();
+                        vm.doCtoB = vm.config.promotion_c_to_b;
+
+                        vm.StartDate.year = sd.getFullYear();
 
                         vm.StartDate.month = sd.getMonth() + 1;
                         vm.StartDate.day = sd.getDate();
@@ -123,7 +126,8 @@ var $SettingYearEva = $('#SettingYearEva').generalController(function() {
                         var data = {
                             year: this.currentYear,
                             date_start: this.StartDate.year + '-' + this.StartDate.month + '-' + this.StartDate.day,
-                            date_end: this.EndDate.year + '-' + this.EndDate.month + '-' + this.EndDate.day
+                            date_end: this.EndDate.year + '-' + this.EndDate.month + '-' + this.EndDate.day,
+                            promotion_c_to_b: this.doCtoB ? 1 : 0
                         }
                         var vm = this;
                         API.updateYearlyConfig(data).then(function(e) {

@@ -167,7 +167,7 @@ var $yearFeedbackPage = $('#Year-Feedback').generalController(function() {
                                             // swal("儲存成功", '已為您儲存問卷', 'success');
                                             // Materialize.toast('已為您儲存問卷成功', 2000);
                                         } else {
-                                            swal("儲存失敗", result.get(), 'success');
+                                            swal("儲存失敗", result.get(), 'error');
                                         }
                                     });
                                 });
@@ -321,19 +321,18 @@ var $yearFeedbackPage = $('#Year-Feedback').generalController(function() {
                                 }
                             },
                             currentManager: function(index, array) {
+                                var vm = this;
                                 this.isActiveOther = [];
                                 // console.log(index,array)
                                 for (var a in array) {
                                     this.isActiveOther.push(0);
                                 }
                                 this.isActiveOther[index] = 1;
-                                
                                 setTimeout(function(){
-                                   ts.q('#modal-leadercomment-'+array[index].id).modal('open');
+                                   ts.q('#modal-leadercomment-'+ vm.appraisee.target_staff_id + '-' + array[index].id).modal('open');
                                 },200)
                             },
                             generalFail: function(e) {
-                                console.log(e);
                                 if(e=='Multiple Choice Is Not Finished.') e = '單選題未填寫完成，請先填寫完成。'
                                 swal("Fail", (e ? e : ''));
                             }

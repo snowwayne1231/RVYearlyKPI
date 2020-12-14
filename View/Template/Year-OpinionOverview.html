@@ -6,38 +6,47 @@
                 <div class="year-select">
                     <h3 class="title">請選擇年份</h3>
                     <div class="dropdown">
-                        <select id="getYear" v-model="year" class="btn dropdown-button" name="year" v-on:change="initQuestions()"></select>
+                        <select id="getYear" v-model="year" class="btn dropdown-button" name="year" v-on:change="getYearlyConfig()"></select>
                     </div>
                     <div class="pull-right">
-                        <a class="waves-effect waves-light btn teal darken-1" v-on:click="downloadYearlyQuestion()" style="text-transform: capitalize;">公司評論下載 Excel</a>
+                        <a class="waves-effect waves-light btn teal darken-1" v-on:click="downloadYearlyQuestion()" :disabled="currYearlyConfig.processing < 3" style="text-transform: capitalize;">公司評論下載 Excel</a>
                     </div>
                 </div>
             </div>
-            <div class="card opinion-list">
-                <div class="header">員工年度建議總覽表 ( 標記有星星 )</div>
-                <ul>
-                    <li v-for="question in questions" v-if="question.highlight == 1">
-                        <div class="row">
-                            <div class="col s1 l1">
-                                <i class="material-icons star" v-on:click="checkStar(question.id,0)">star</i>
+            
+            <div v-if="currYearlyConfig.processing >= 3">
+                <div class="card opinion-list">
+                    <div class="header">員工年度建議總覽表 ( 標記有星星 )</div>
+                    <ul>
+                        <li v-for="question in questions" v-if="question.highlight == 1">
+                            <div class="row">
+                                <div class="col s1 l1">
+                                    <i class="material-icons star" v-on:click="checkStar(question.id,0)">star</i>
+                                </div>
+                                <div class="col s11 l11"><span>{{question.content}}</span></div>
                             </div>
-                            <div class="col s11 l11"><span>{{question.content}}</span></div>
-                        </div>
-                    </li>
-                </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card opinion-list">
+                    <div class="header">員工年度建議總覽表</div>
+                    <ul>
+                        <li v-for="question in questions" v-if="question.highlight == 0">
+                            <div class="row">
+                                <div class="col s1 l1">
+                                    <i class="material-icons star-border" v-on:click="checkStar(question.id,1)">star_border</i>
+                                </div>
+                                <div class="col s11 l11"><span>{{question.content}}</span></div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="card opinion-list">
-                <div class="header">員工年度建議總覽表</div>
-                <ul>
-                    <li v-for="question in questions" v-if="question.highlight == 0">
-                        <div class="row">
-                            <div class="col s1 l1">
-                                <i class="material-icons star-border" v-on:click="checkStar(question.id,1)">star_border</i>
-                            </div>
-                            <div class="col s11 l11"><span>{{question.content}}</span></div>
-                        </div>
-                    </li>
-                </ul>
+            <div v-else id="NoData" class="col s12 l12 no-data nullDataInfo" style="display: block;">
+                <div class="title">{{currentYear}} 年度部屬回饋問卷尚未產生/關閉</div>
+                <div class="content">
+                    請至【系統設定】>【年考評區間設定】進行相關設定。
+                </div>
             </div>
         </div>
     </div>

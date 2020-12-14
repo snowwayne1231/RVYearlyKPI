@@ -31,8 +31,8 @@
                     <i class="material-icons">search</i>
                     <input placeholder="請輸中/英文名查詢" type="text" class="form-control" :value="personName" v-model="personName">
                 </div>
-                <!-- 部長，ceo，admin才能下載總覽的excel -->
-                <div class="input-field export" v-if="memberLv ==1 ||memberLv ==2||isAdmin ==1">
+                <!-- admin才能下載總覽的excel -->
+                <div class="input-field export" v-if="isAdmin == 1">
                     <a class="waves-effect waves-light btn teal darken-1" v-on:click="expoYearlyExcel()">匯出 Excel</a>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                                         <i v-if="report_sort['division_code']==1" class="material-icons">arrow_downward</i>
                                         <i v-else class="material-icons">arrow_upward</i>
                                     </th>
-                                    <th @click="LeaderSortBy('department_name')" :class="{'sort-this':report_sort_now=='department_name'}">組處名稱
+                                    <th @click="LeaderSortBy('department_name')" :class="{'sort-this':report_sort_now=='department_name'}">處組名稱
                                         <i v-if="report_sort['department_name']==1" class="material-icons">arrow_downward</i>
                                         <i v-else class="material-icons">arrow_upward</i>
                                     </th>
@@ -159,17 +159,18 @@
                                     <td>{{leader.staff_title}}</td>
                                     <td>{{leader.staff_first_day}}</td>
                                     <td>{{leader.staff_name}} {{leader.staff_name_en}}</td>
-                                    <td v-if="isAdmin ==1 ||isCEO==1 ">{{leader.assessment_total}}</td>
-                                    <td v-if="isAdmin ==1 ||isCEO==1 ">{{leader.assessment_total_division_change}}</td>
-                                    <td v-if="isAdmin ==1 ||isCEO==1 ">{{leader.assessment_total_ceo_change}}</td>
-                                    <td v-if="isAdmin ==1 ||isCEO==1 "> {{leader.assessment_total + leader.assessment_total_division_change + leader.assessment_total_ceo_change}}
+                                    <td v-if="isAdmin ==1 || isCEO==1">{{leader.assessment_total}}</td>
+                                    <td v-if="isAdmin ==1 || isCEO==1">{{leader.assessment_total_division_change}}</td>
+                                    <td v-if="isAdmin ==1 || isCEO==1">{{leader.assessment_total_ceo_change}}</td>
+                                    <td v-if="isAdmin ==1 || isCEO==1">
+                                        <span v-if="Object.keys(leader).indexOf('assessment_total') != -1">{{leader.assessment_total + leader.assessment_total_division_change + leader.assessment_total_ceo_change}}</span>
                                     </td>
                                     <td>{{leader.level}}</td>
-                                    <td v-if="leader.enable ==1">
-                                        <a class="waves-effect waves-light btn" v-on:click="personalReport(leader,1)">考評單</a>
-                                    </td>
-                                    <td v-if="leader.enable ==0">
-                                        <span class="close">已作廢</span>
+                                    <td>
+                                        <div v-if="Object.keys(leader).indexOf('assessment_json') != -1 || currConfig.processing >= 8">
+                                            <a v-if=" leader.enable == 1" class="waves-effect waves-light btn" v-on:click="personalReport(leader,1)">考評單</a>
+                                            <span v-if="leader.enable ==0" class="close">已作廢</span>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -188,7 +189,7 @@
                                         <i v-if="staff_sort['division_code']==1" class="material-icons">arrow_downward</i>
                                         <i v-else class="material-icons">arrow_upward</i>
                                     </th>
-                                    <th @click="StaffSortBy('department_name')" :class="{'sort-this':staff_sort_now=='department_name'}">組處名稱
+                                    <th @click="StaffSortBy('department_name')" :class="{'sort-this':staff_sort_now=='department_name'}">處組名稱
                                         <i v-if="staff_sort['department_name']==1" class="material-icons">arrow_downward</i>
                                         <i v-else class="material-icons">arrow_upward</i>
                                     </th>
@@ -247,17 +248,18 @@
                                     <td>{{staffdata.staff_title}}</td>
                                     <td>{{staffdata.staff_first_day}}</td>
                                     <td>{{staffdata.staff_name}} {{staffdata.staff_name_en}}</td>
-                                    <td v-if="isAdmin ==1 ||isCEO==1 ">{{staffdata.assessment_total}}</td>
-                                    <td v-if="isAdmin ==1||isCEO==1 ">{{staffdata.assessment_total_division_change}}</td>
-                                    <td v-if="isAdmin ==1 ||isCEO==1 ">{{staffdata.assessment_total_ceo_change}}</td>
-                                    <td v-if="isAdmin ==1 ||isCEO==1 "> {{staffdata.assessment_total + staffdata.assessment_total_division_change + staffdata.assessment_total_ceo_change}}
+                                    <td v-if="isAdmin == 1 || isCEO == 1">{{staffdata.assessment_total}}</td>
+                                    <td v-if="isAdmin == 1 || isCEO == 1">{{staffdata.assessment_total_division_change}}</td>
+                                    <td v-if="isAdmin == 1 || isCEO == 1">{{staffdata.assessment_total_ceo_change}}</td>
+                                    <td v-if="isAdmin == 1 || isCEO == 1">
+                                        <span v-if="Object.keys(staffdata).indexOf('assessment_total') != -1">{{staffdata.assessment_total + staffdata.assessment_total_division_change + staffdata.assessment_total_ceo_change}}</span>
                                     </td>
                                     <td>{{staffdata.level}}</td>
-                                    <td v-if="staffdata.enable ==1">
-                                        <a class="waves-effect waves-light btn" v-on:click="personalReport(staffdata,0)">考評單</a>
-                                    </td>
-                                    <td v-if="staffdata.enable ==0">
-                                        <span class="close">已作廢</span>
+                                    <td>
+                                        <div v-if="Object.keys(staffdata).indexOf('assessment_json') != -1 || currConfig.processing >= 8">
+                                            <a v-if=" staffdata.enable == 1" class="waves-effect waves-light btn" v-on:click="personalReport(staffdata, 0)">考評單</a>
+                                            <span v-if="staffdata.enable == 0" class="close">已作廢</span>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -276,9 +278,9 @@
                                     <i class="material-icons">close</i>
                                 </button>
                             </h1>
-                            <div class="brand-actions" v-if="isleader || isAdmin">
-                                <span class="form-actions">
-                                    <a title="匯出excel" v-on:click="downloadExcel(personalInfo.staff_id)">
+                            <div class="brand-actions">
+                                <span class="form-actions" style="display: inline-block; min-height: 20px;">
+                                    <a title="匯出excel" v-on:click="downloadExcel(personalInfo.staff_id)" v-if="isAdmin">
                                         <i class="material-icons">vertical_align_bottom</i>
                                     </a>
                                 </span>
@@ -323,7 +325,7 @@
                                             </template>
                                         </tbody>
                                     </table>
-                                    <table class="table table-fixed">
+                                    <table id="personalInfo" class="table table-fixed">
                                         <thead>
                                             <tr>
                                                 <th>{{year-1}}
@@ -353,8 +355,6 @@
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <!-- ceo 和 admin 才能看詳細區塊 -->
-                                    <!-- <div v-if="isAdmin ==1 ||isCEO==1 "> -->
                                     <!-- 202011 改成依照內容顯示  -->
                                     <div>
                                         <!-- Leader Table -->
@@ -411,7 +411,7 @@
                                                         <td colspan="17"> 以上計算之總分 </td>
                                                         <td> {{personalInfo.assessment_total}}</td>
                                                     </tr>
-                                                    <tr class="ready" v-if="Object.keys(personalInfo).indexOf('assessment_total_division_change') != -1">
+                                                    <tr class="ready" v-if="Object.keys(personalInfo).indexOf('assessment_total_division_change') != -1 && Object.keys(personalInfo.assessment_json).indexOf('2') != -1">
                                                         <td>加減分</td>
                                                         <td>部長</td>
                                                         <td colspan="17"> {{personalInfo.assessment_total_division_change}}</td>
@@ -431,7 +431,7 @@
                                             <table class="table table-fixed" v-if="personalInfo['assessment_json']">
                                                 <thead>
                                                     <tr>
-                                                        <th colspan="2">項目123</th>
+                                                        <th colspan="2">項目</th>
                                                         <th :colspan="item.itemBlock" v-for="(item, index) in staffThead.titleArray">{{item.title}}</th>
                                                         <th rowspan="2">總分</th>
                                                     </tr>
@@ -446,7 +446,7 @@
                                                         <td>{{personalInfo.assessment_json[item.key].percent}}%</td>
                                                         <td>{{item.title}}</td>
                                                         <template v-if="personalInfo.assessment_json[item.key]['score']">
-                                                            <td v-for="(score, index) in personalInfo.assessment_json[item.key].score">{{score}}</td>
+                                                            <td v-for="(score, index) in personalInfo.assessment_json[item.key].score">{{ score }}</td>
                                                         </template>
                                                         <template v-else>
                                                             <td colspan="13">{{item.text}}</td>
@@ -509,44 +509,17 @@
                                             <div class="question">部屬回饋：</div>
                                             <div class="answer-group">
                                                 <div>
-                                                    <!-- <ul class="comment">
-                                                        <li v-for="(com,index) in underComment">
-                                                            <span class="title"> {{com.question_title}}</span>
-                                                            <span class="word">{{com.content}}</span>
-                                                        </li>
-                                                    </ul> -->
                                                     <ul class="comment">
                                                         <li>
-                                                            <ul v-if="underComm.adv.length">
-                                                                <li class="subtitle orange-text text-darken-2">優點</li>
-                                                                <li v-for="(com,index) in underComm.adv">
+                                                            <ul v-if="underComm[underComment.key].length" v-for="(underComment, underComm_i) in underCommForm">
+                                                                <li class="subtitle orange-text" :class="{'text-darken-2': underComment.key != 'sugg', 'text-darken-3':  underComment.key == 'sugg'}">{{ underComm.title }}</li>
+                                                                <li v-for="(com, index) in underComm[underComment.key]">
                                                                     <span class="title"> {{index+1}}</span>
                                                                     <span class="word">{{com.content}}</span>
                                                                 </li>
                                                             </ul>
-                                                            <ul v-if="underComm.impro.length">
-                                                                    <li class="subtitle red-text text-darken-2">改善</li>
-                                                                    <li v-for="(com,index) in underComm.impro">
-                                                                        <span class="title"> {{index+1}}</span>
-                                                                        <span class="word">{{com.content}}</span>
-                                                                    </li>
-                                                            </ul>
-
-                                                            <ul  v-if="underComm.sugg.length">
-                                                                    <li class="subtitle green-text text-darken-3">建議</li>
-                                                                    <li v-for="(com,index) in underComm.sugg">
-                                                                        <span class="title"> {{index+1}}</span>
-                                                                        <span class="word">{{com.content}}</span>
-                                                                    </li>
-                                                                </ul>
                                                         </li>
-
                                                     </ul>
-
-
-
-
-
                                                 </div>
                                             </div>
                                         </div>
@@ -564,30 +537,19 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="question-area" v-if="personalInfo.upper_comment[4]">
-                                            <div class="question">組長評語：</div>
-                                            <div class="answer-group">
-                                                <textarea disabled v-model="personalInfo.upper_comment[4].content"></textarea>
-                                            </div>
-                                        </div>
-                                        <div class="question-area" v-if="personalInfo.upper_comment[3]">
-                                            <div class="question">處主管評語：</div>
-                                            <div class="answer-group">
-                                                <textarea disabled v-model="personalInfo.upper_comment[3].content"></textarea>
-                                            </div>
-                                        </div>
-                                        <div class="question-area" v-if="personalInfo.upper_comment[2]">
-                                            <div class="question">部門主管評語：</div>
-                                            <div class="answer-group">
-                                                <textarea disabled v-model="personalInfo.upper_comment[2].content"></textarea>
-                                            </div>
-                                        </div>
-                                        <div class="question-area" v-if="personalInfo.upper_comment[1]">
-                                            <div class="question">運維主管評語：</div>
-                                            <div class="answer-group">
-                                                <textarea disabled v-model="personalInfo.upper_comment[1].content"></textarea>
-                                            </div>
-                                        </div>
+                                        <ul class="question-area">
+                                            <li v-for="(upper, upper_key) in upperCommentForm" v-if="!!upperComment[upper.lv]">
+                                                <div class="question">{{ upper['title'] }}</div>
+                                                <div class="text" style="border: 1px solid #CCC; padding: 6px 8px;">
+                                                    <table>
+                                                        <tr v-for="(content, content_i) in upperComment[upper.lv].content">
+                                                            <th style="width: 20%;">{{ upperComment[upper.lv].staff_name[content_i][0] }} {{ upperComment[upper.lv].staff_name[content_i][1] }}</th>
+                                                            <td style="text-align: left;"><template v-if="content">{{content}}</template><template v-else>無</template></td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>

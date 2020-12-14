@@ -119,7 +119,6 @@ var $assessForm = $('#Assess').generalController(function () {
                         checkMaxNumber(report) {
                             var vm = this;
                             // 員工ID 取得該員工的補卡紀錄來判定最高分
-                            console.log(report);
 
                         },
                         checkScoreState(score) {

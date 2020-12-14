@@ -63,8 +63,6 @@ self.getMonthlyReportWhenRelease = function(data){
   //可選 release
  */
 self.downloadMonthlyReportWhenRelease = function(data){
-  
-  // console.log(Excel_PATH+"downloadMonthly?year="+data.year+"&month="+data.month+(data.release?"&release=true":""));
   if(!(data && data.year && data.month)){ return false; }
   return window.open(Excel_PATH+"downloadMonthly?year="+data.year+"&month="+data.month+(data.release?"&release=true":"")+(data.department_id?"&department_id="+data.department_id:""),'_blank');
 }

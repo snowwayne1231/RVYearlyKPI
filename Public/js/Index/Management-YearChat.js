@@ -244,12 +244,12 @@ var $overView = $('#Management-YearChart').generalController(function() {
                         contextmenu.append($('<div class="filter report"><button class="void" data-status="0">作廢</button><button class="success" data-status="3">完成</button><button class="commit" data-status="2">審核</button><button class="self" data-status="1">自評</button><button class="all">全部</button></div>'));
                     }
 
-                    if (unit['lv'] <= 2 && unit['_report_total'] > 0) {
-                        contextmenu.append($('<li class="division-downexcel" data-division-id="' + unit.id + '">部門單位考評表 Download</li>'));
-                    }
-                    if (unit['_report_this_total'] > 0) {
-                        contextmenu.append($('<li class="department-downexcel" data-department-id="' + unit.id + '">當前單位考評表 Download</li>'));
-                    }
+                    // if (unit['lv'] <= 2 && unit['_report_total'] > 0) {
+                    //     contextmenu.append($('<li class="division-downexcel" data-division-id="' + unit.id + '">部門單位考評表 Download</li>'));
+                    // }
+                    // if (unit['_report_this_total'] > 0) {
+                    //     contextmenu.append($('<li class="department-downexcel" data-department-id="' + unit.id + '">當前單位考評表 Download</li>'));
+                    // }
 
 
                     for (var staff in thisUnitInStaff) {
@@ -263,18 +263,20 @@ var $overView = $('#Management-YearChart').generalController(function() {
 
                             for (var fbk in thisStaffFbk) {
                                 var rowfbk = thisStaffFbk[fbk];
-                                rowLi.prepend('<button class="btn-feedbk" data-fbk-id=' + rowfbk.id + ' data-status=' + rowfbk.status + '>' + sheet + '</button>');
+                                let currId = thisUnitInStaff[staff].id + '-' + rowfbk.id;
+                                rowLi.prepend('<button id= '+ currId +' class="btn-feedbk" data-fbk-id=' + rowfbk.id + ' data-status=' + rowfbk.status + '>' + sheet + '</button>');
                                 //問卷狀態  1=交出, 0=未交, -1=不收了
+                                
                                 switch (rowfbk.status) {
                                     case -1:
-                                        rowLi.find('button').css('background', '#ff52528f');
+                                        rowLi.find('#'+currId).css('background', '#ff52528f');
                                         sheet++;
                                         continue;
                                     case 0:
-                                        rowLi.find('button').addClass('nogofeedback');
+                                        rowLi.find('#'+currId).addClass('nogofeedback');
                                         break;
                                     case 1:
-                                        rowLi.find('button').addClass('gofeedback');
+                                        rowLi.find('#'+currId).addClass('gofeedback');
                                         break;
                                 }
 
@@ -311,23 +313,20 @@ var $overView = $('#Management-YearChart').generalController(function() {
 
                         // 年考評個人單組織圖
                         if (!getAPI.stepProcessing.feedback) {
-                            console.log('12');
                             var personalReport = thisUnitInStaff[staff]._report;
                             var personalStatus = thisUnitInStaff[staff]._status_code;
                             if (personalReport) {
                                 var currStaff = thisUnitInStaff[staff];
                                 var isAdmin = (member.is_admin && getAPI.config.processing < 6) ? true : false;
-                                console.log(currStaff);
                                 if (member.is_admin || !currStaff.is_leader || (currStaff.is_leader && currStaff.id == member.id) || (currStaff.is_leader && currStaff.department_id != member.department_id)) {
                                     var row = contextmenu.append($('<li data-num=' + staff + ' data-id=' + thisUnitInStaff[staff].id + ' title=' + thisUnitInStaff[staff].name + thisUnitInStaff[staff].name_en + '>' + thisUnitInStaff[staff].name + ' ' + thisUnitInStaff[staff].name_en + '</li>'));
                                     var rowLi = $(row.find('[data-id=' + thisUnitInStaff[staff].id + ']'));
                                     rowLi.prepend('<div class="dots"><div class="dot" data-status="' + thisUnitInStaff[staff]._status_code + '"></div></div>');
-                                    rowLi.prepend('<button class="personal-downexcel" data-staff-id=' + thisUnitInStaff[staff].id + '>下載</button>');
-                                    
                                 }
 
                                 // 管理者的作廢功能
                                 if (isAdmin) {
+                                    rowLi.prepend('<button class="personal-downexcel" data-staff-id=' + thisUnitInStaff[staff].id + '>下載</button>');
                                     if (personalReport.enable) {
                                         rowLi.prepend('<button class="report-void" data-report-id=' + thisUnitInStaff[staff]['_report'].id + '>作廢</button>');
                                     } else {

@@ -11,7 +11,7 @@ if( $api->checkPost(array('year')) && $api->SC->isAdmin() ){
 
   $year = $api->post('year');
 
-  $data = $api->getPost( array("date_start","date_end","feedback_addition_day","assessment_addition_day") );
+  $data = $api->getPost( array("date_start","date_end","feedback_addition_day","assessment_addition_day", "promotion_c_to_b") );
 
   if(count($data)==0){
     $api->denied('Not Enough Param.');
@@ -67,7 +67,7 @@ if( $api->checkPost(array('year')) && $api->SC->isAdmin() ){
 
 
 
-}else{
+} else {
   $api->denied();
 }
 

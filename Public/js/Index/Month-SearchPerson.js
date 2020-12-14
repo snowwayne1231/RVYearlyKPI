@@ -92,7 +92,6 @@ var $MonthSearchPerson = $('#MonthSearchPerson').generalController(function() {
     tmpYM =  [thisyear, thismonth, thismonth];
    }
    current.year = tmpYM[0] ;
-   console.log(tmpYM[0])
    $.ym.save();
 
     ts.onLogin(function(member) {

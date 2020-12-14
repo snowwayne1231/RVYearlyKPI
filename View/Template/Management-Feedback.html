@@ -44,9 +44,9 @@
                     FBlist.target_staff.name_en.toLowerCase().indexOf(targetName.toLowerCase()) != -1
                     ">
                             <td>{{index+1}}</td>
-                            <td>{{FBlist.department.unit_id}}{{FBlist.department.name}}</td>
-                            <td>{{FBlist.staff.name_en}} {{FBlist.staff.name}}</td>
-                            <td class="target">{{FBlist.target_staff.name_en}} {{FBlist.target_staff.name}}</td>
+                            <td style="text-align: left;">{{FBlist.department.unit_id}}{{FBlist.department.name}}</td>
+                            <td style="text-align: left;">{{FBlist.staff.staff_no}} {{FBlist.staff.name}} {{FBlist.staff.name_en}}</td>
+                            <td class="target" style="text-align: left;">{{FBlist.target_staff.staff_no}} {{FBlist.target_staff.name}} {{FBlist.target_staff.name_en}}</td>
                             <td class="total">{{FBlist.multiple_score}}</td>
                             <td v-for="(val,key) in managementFbkChoices">{{FBlist.multiple_choice_json[ val.id ]}}</td>
                         </tr>

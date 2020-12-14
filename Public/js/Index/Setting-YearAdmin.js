@@ -7,12 +7,15 @@ var $settingAdmin = $('#SettingAdminYearly').generalController(function () {
         end = 0;
 
     ts.onLogin(function (member) {
+        $('#historyArea').load("");
         let vm,
             myself = member;
         var current = $.ym.get();
 
         var year = ts.q("#getYear").empty();
         year.yearSet();
+
+        ts.modal = {};
 
         var getData = function (year, callback, obj) {
 
@@ -72,6 +75,7 @@ var $settingAdmin = $('#SettingAdminYearly').generalController(function () {
         }
 
         var newVue = function () {
+            initModal(ts);
             vm = new Vue({
                 el: ts.q('.rv-admin')[0],
                 data: {
@@ -97,7 +101,8 @@ var $settingAdmin = $('#SettingAdminYearly').generalController(function () {
                         { title: "受評者" },
                         { title: "項目" },
                         { title: "評核主管" },
-                    ]
+                    ],
+                    historyRecords: {}
                 },
                 computed: {
                     deps() {
@@ -132,6 +137,62 @@ var $settingAdmin = $('#SettingAdminYearly').generalController(function () {
                     },
                 },
                 methods: {
+                    getRecords(id) {
+                        var vm = this;
+                        vm.historyRecords = {};
+                        API.getYearlyHistoryRecord({ assessment_id: id }).then(function (e) {
+                            var result = API.format(e);
+                            if (result.is) {
+                                var record = result.res();
+                                for (var r in record) {
+                                    var separateDate = record[r].date.split(" ");
+                                    record[r]['date'] = separateDate[0];
+                                    record[r]["time"] = separateDate[1];
+                                }
+                                vm.historyRecords = record;
+                                ts.modal.history.setData({ 'historyRecords': record });
+                                $(ts.modal.history.$el).modal('open');
+                            }
+                        });
+                    },
+                    reply(report, leader_id) {
+                        var vm = this,
+                            leaderName = vm.staffMap[leader_id]['name'];
+                        swal({
+                            title: "確定取消此單的提交狀態嗎?",
+                            text:  "將取消 " + leaderName +" 對 " + report.staff_name + " 的考評單已提交狀態",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#EF5350",
+                            confirmButtonText: "確定",
+                            cancelButtonText: "返回"
+                        }, function() { goReply() });
+                        
+                        
+                        function goReply() {
+                            let data = {
+                                report_id: report.id,
+                                leader_id: leader_id,
+                                commit: 0
+                            }
+                            API.updateYearlyLeaderCommitment(data).then(function(e) {
+                                let res = API.format(e);
+                                if (res.is) {
+                                    let data = res.get(),
+                                    assessment_evaluating_json = data['assessment_evaluating_json'];
+                                    for (var i in assessment_evaluating_json) {
+                                        let curr = assessment_evaluating_json[i];
+                                        report['assessment_evaluating_json'][i]['commited'] = curr['commited']
+                                    }
+                                    setTimeout(function(){
+                                        swal('操作成功', "成功取消" + report.staff_name + '的考評單已提交狀態', 'success');
+                                    }, 500);
+                                } else {
+                                    swal('操作失敗', res.get(), 'error');
+                                }
+                            });
+                        }
+                    },
                     getData() {
                         var vm = this;
                         getData(vm.year, false, vm);
@@ -149,7 +210,6 @@ var $settingAdmin = $('#SettingAdminYearly').generalController(function () {
                             target = events.target,
                             value = target.value;
                         // if () {}
-                        console.log(target, value);
                     },
                     getItemName(items, id) {
                         for (var i in items) {
@@ -159,16 +219,16 @@ var $settingAdmin = $('#SettingAdminYearly').generalController(function () {
                             }
                         }
                     },
-                    getStaff(report, lv) {
+                    getStaff(report, lv, res_key) {
                         let leadersArr = report.path_lv[lv],
                             staff_id = !leadersArr ? 0 : leadersArr[1],
-                            staff_name_en;
+                            res;
                         if (staff_id == 0) {
-                            staff_name_en = "-";
+                            res = "-";
                         } else {
-                            staff_name_en = this.staffMap[staff_id].name_en;
+                            res = this.staffMap[staff_id][res_key];
                         }
-                        return staff_name_en;
+                        return res;
                     },
                     getStepItemRowsapn(report, lv) {
                         let leadersArr = report.path_lv_leaders[lv],
@@ -189,7 +249,6 @@ var $settingAdmin = $('#SettingAdminYearly').generalController(function () {
                 },
                 mounted() {
                     end = new Date().getTime();
-                    console.log((end - start) / 1000 + "sec");
                 },
             });
         }

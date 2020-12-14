@@ -29,6 +29,7 @@
                                 <div class="mb5">
                                     <div class="row mb0">
                                         <div class="col s12 m12 l12 initdate">
+                                            <h3>此年度考評日期區間:</h3>
                                             <div class="grid">
                                                 <div class="dateblock">
                                                     <label>起算日</label>
@@ -70,7 +71,7 @@
                                             </div>
                                         </div>
                                         <div class="col s12 m12 l12 description">
-                                            <div class="grid">
+                                            <div class="grid" style="color: #a1a1a1">
                                                 <ul>
                                                     <li>區間設定說明：</li>
                                                     <li>1. 每年度考核前建議優先確定考核區間。</li>
@@ -81,6 +82,22 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col s12">
+                                            <h3>考評結果顯示處理: <span style="font-size: 12px; color: #a1a1a1">(僅對 非系統管理者身分 的使用者)</span></h3>
+                                            <div class="form-group">
+                                                <label class="col s4 m2 control-label" style="font-size: 14px; font-weight: bold;">是否將 C 顯示為 B</label>
+                                                <div class="switch col s8">
+                                                    <label>
+                                                        <input type="checkbox" v-model="doCtoB">
+                                                        <span class="lever"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
                                 </div>
                                 <button class="waves-effect waves-dark btn m5 ml15" v-on:click="readyStepOne($event)">下一步</button>
                             </div>

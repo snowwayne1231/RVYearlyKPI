@@ -55,6 +55,7 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
         var vm = new Vue({
             el: '.rv-year-overview',
             data: {
+                currConfig: {},
                 viewData: {
                     leader: [],
                     staff: []
@@ -94,12 +95,18 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
                 leaderThead: leaderEvaluationItem,
                 staffThead: staffEvaluationItem,
                 personName: '',
+                upperComment: [],
                 underComment: [], // 未分類的下屬意見
                 underComm:{ // 將下屬的意見分類
                     adv:[], // 優點
                     impro:[],// 改善
                     sugg:[]// 建議
                 },
+                underCommForm: [
+                    { key: "adv", title: "優點" },
+                    { key: "impro", title: "改善" },
+                    { key: "sugg", title: "建議" },
+                ],
                 otherComment: [],
                 leaderTopic: {},
                 staffTopic: {},
@@ -110,24 +117,38 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
                 staff_sort: { 'division_code': 1, 'division_name': 1, 'department_name': 1, 'staff_no': 1, 'staff_post': 1, 'staff_title': 1, 'staff_first_day': 1, 'staff_name': 1, 'assessment_total': 1, 'assessment_total_division_change': 1, 'assessment_total_ceo_change': 1, 'assessment_total_final': 1, 'level': 1 },
                 staff_sort_now: 'division_code',
                 feedback: {},
+                staff_map: {},
                 assessment_json_form: [
-                    { key: 'under', title: "部屬", text: "部屬回饋問卷" },
-                    { key: 'self', title: "自評", text: "" },
-                    { key: '4', title: "組長評核", text: "" },
-                    { key: '3', title: "處主管評核", text: "" },
-                    { key: '2', title: "部長評核", text: "" },
-                    { key: '1', title: "Mickey評核", text: "" }
+                    {key: "under", title: "部屬", text: "部屬回饋問卷" },
+                    {key: "self", title: "自評", text: "" },
+                    {key: "4", title: "組長評核", text: "" },
+                    {key: "3", title: "處主管評核", text: "" },
+                    {key: "2", title: "部長評核", text: "" },
+                    {key: "1", title: "Mickey評核", text: "" }
+                ],
+                upperCommentForm: [
+                    { title: "組層級評語：", lv: 4 },
+                    { title: "處層級評語：", lv: 3 },
+                    { title: "部層級評語：", lv: 2 },
+                    { title: "運維中心評語：", lv: 1 },
                 ]
             },
             created: function() {
-                var vthis = this;
+                const vm = this;
+                let data = { year: vm.year };
+                API.getYearlyConfig(data).then(function(e) {
+                    let res = API.format(e);
+                    if (res.is) {
+                        vm.currConfig = res.res();
+                    }
+                });
 
-                API.getYearlyTopic({ year: vthis.year }).then(function(e) {
+                API.getYearlyTopic(data).then(function(e) {
                     var gyt = API.format(e);
                     if (gyt.is) {
                         var result = gyt.res();
-                        vthis.leaderTopic = result.leader;
-                        vthis.staffTopic = result.normal;
+                        vm.leaderTopic = result.leader;
+                        vm.staffTopic = result.normal;
                     }
                 });
             },
@@ -168,6 +189,7 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
                             vthis.viewData.leader = list.assessment.leader;
                             vthis.viewData.staff = list.assessment.staff;
                             vthis.scoreRange = list.distribution;
+                            vthis.staff_map = list['staff_map'];
 
                             // 作廢的單子不算
                             for (var i in list.assessment.leader) {
@@ -304,48 +326,36 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
                             department_level: vm.devno,
                             with_assignment: vm.w_ass
                         };
+
                     $.ym.save(data);
-                    
-                    
-                    API.getYearlyReportTotal(data).then(function(e) {
-                        var result = API.format(e),
-                            sheetlist = result.res(),
-                            list = {},
-                            person = {},
-                            key = 'staff';
-                        
-                        if (isleader == 1) { key = 'leader'; }
-                        list = sheetlist.assessment[key];
 
-                        for (var i in list) {
-                            person[list[i].staff_id] = list[i];
+                    vm.personalInfo = report;
+
+                    var assessment = vm.personalInfo.assessment_json;
+                    for (var prop in assessment) {
+                        for (var score in assessment[prop].score) {
+                            if (assessment[prop].score[score] == -1) { assessment[prop].score[score] = 0 }
                         }
-                        
-                        vm.personalInfo = person[report.staff_id];
-
-                        var assessment = person[report.id].assessment_json;
-                        for (var prop in assessment) {
-                            for (var score in assessment[prop].score) {
-                                if (assessment[prop].score[score] == -1) { assessment[prop].score[score] = 0 }
-                            }
+                    }
+                    
+                    // 取得評論
+                    for (var k in vm.underComm) {
+                        vm.underComm[k] = [];
+                    }
+                    vm.underComment = [];
+                    vm.otherComment = [];
+                    console.log(report);
+                    API.getYearlyAllReportWord({ assessment_id: report.id }).then(function(e) {
+                        var resultCom = API.format(e).res(),
+                            fbcomment = resultCom.question,
+                            upperComments = resultCom.upper_comment;
+                        if (upperComments) {
+                            vm.upperComment = upperComments;
                         }
 
-                        getUnderComm();
-                    });
-
-                   
-                    
-                    vm.feedback = {}
-                    vm.getFeedbackDetail(report.staff_id);
-                    // get 部屬回饋資料
-                    function getUnderComm() {
-                        console.log(vm.personalInfo);
-                        API.getYearlyAllReportWord({ assessment_id: report.id }).then(function(e) {
-                            var resultCom = API.format(e).res();
-                            var fbcomment = resultCom.question;
-                            var underCom = [];
-                            var reUnderCom=[];
-                            var otherCom = [];
+                        if (fbcomment.length > 0) {
+                            let underCom = [],
+                                otherCom = [];
                             for (var i in fbcomment) {
                                 switch (fbcomment[i].from_type) {
                                     case 1:
@@ -353,36 +363,37 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
                                         break;
                                     case 2:
                                         otherCom.push(fbcomment[i]);
+                                        break;
                                 }
                             }
-                            //console.log(underCom) // 未分類前
-
-                            // 優點
-                            vm.underComm.adv = underCom.filter(function(e){
-                                return e.question_id ==1;
-                            })
-                            // 改善
-                            vm.underComm.impro = underCom.filter(function(e){
-                                return e.question_id ==2;
-                            })
-                            // 建議
-                            vm.underComm.sugg = underCom.filter(function(e){
-                                return e.question_id ==4;
-                            })
-                            //console.log(vm.underComm)      // 分類後的回饋
-
-
+    
+                            for (var j in underCom) {
+                                let curr = underCom[j];
+                                switch (curr.question_id) {
+                                    case 1: // 優點
+                                        vm.underComm['adv'].push(curr);
+                                        break;
+                                    case 2: // 改善
+                                        vm.underComm['impro'].push(curr);
+                                        break; 
+                                    case 4: // 建議
+                                        vm.underComm['sugg'].push(curr);
+                                        break;
+                                }
+                            }
+    
                             vm.underComment = underCom;
                             vm.otherComment = otherCom;
-                        })
-
-                        // 判斷是否可以看部屬回饋
-
-                        if (vm.personalInfo.staff_id == member.id || member.id == 1 || member.is_admin == 1) {
-                            vm.authCom = 1;
-                        } else {
-                            vm.authCom = 0;
                         }
+                        
+                    });
+
+                    vm.feedback = {}
+                    vm.authCom = 0;
+                    if(isleader) {
+                        // get 部屬回饋資料
+                        vm.getFeedbackDetail(report.staff_id);
+                        vm.authCom = 1;
                     }
                 },
                 getFeedbackDetail: function(id) {

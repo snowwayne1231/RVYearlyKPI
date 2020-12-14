@@ -13,7 +13,7 @@ try {
     $assessment_id = $api->post('assessment_id');
     $res = $yearlyAssessment->getYearlyAllReportWord( $api->SC->getId(), $assessment_id );
     $api->setArray($res);
-  }  
+  }
 } catch (\Exception $ex) {
   $api->denied($ex);
 }

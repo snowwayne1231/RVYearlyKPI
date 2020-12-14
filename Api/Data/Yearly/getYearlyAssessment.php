@@ -35,10 +35,12 @@ if( $api->checkPost(array('year')) && $api->SC->isLogin() ){
 		// $result = $ya->getAssessmentWithLeader( $self,$teams,$team_lv );
 		$result = $ya->getAssessment( $self );
 
-	}else{
+	} else {
 		// $result = $ya->getAssessmentWithOwner( $self,$self );
 		$result = $ya->getAssessment( $self );
 	}
+
+	// dd($result);
 
 	foreach($result as &$val){
 		if ($resSH = $sh->getStayWithStaff($val['staff_id'])) {
@@ -48,7 +50,7 @@ if( $api->checkPost(array('year')) && $api->SC->isLogin() ){
 		}
 
 		if ($val['processing_lv'] && isset($val['path_lv_leaders'][$val['processing_lv']]) && $val['staff_id'] != $self) {
-			$val['_is_on_multiple_leader_process'] = count($val['path_lv_leaders'][$val['processing_lv']]) > 1;
+			$val['_is_on_multiple_leader_process'] = count($val['path_lv_leaders'][$val['processing_lv']]) > 1 && isset($val['assessment_evaluating_json'][$val['processing_lv']]);
 
 			if ($val['_is_on_multiple_leader_process']) {
 				$this_aej = $val['assessment_evaluating_json'][$val['processing_lv']];
@@ -67,6 +69,22 @@ if( $api->checkPost(array('year')) && $api->SC->isLogin() ){
 			$val['_should_count'] = true;
 		}
 
+		if (isset($val['upper_comment'])) {
+			$processing_lv = $val['processing_lv'];
+			foreach ($val['upper_comment'] as $lv => $comment) {
+				if ($lv < $processing_lv) {
+					unset($val['upper_comment'][$lv]);
+				} else if ($lv == $processing_lv){
+					$staff_id = $comment['staff_id'];
+					if (is_array($staff_id)) {
+						if (in_array($self, $staff_id)) { continue; }
+					} else {
+						if ($staff_id == $self) { continue; }
+					}
+					unset($val['upper_comment'][$lv]);
+				}
+			}
+		}
 	}
 
 

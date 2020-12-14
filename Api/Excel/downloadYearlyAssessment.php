@@ -8,7 +8,9 @@ use \Model\Business\Department;
 
 use Model\Business\Multiple\YearlyAssessment;
 
-if($api->SC->isLogin() && $api->checkPost(['year','department_level'])){
+$is_super = $api->SC->isSuperUser();
+
+if($api->SC->isLogin() && $is_super && $api->checkPost(['year','department_level'])){
   
   include BASE_PATH.'/Model/PHPExcel.php';
   require_once RP('/Model/PHPExcel/IOFactory.php');

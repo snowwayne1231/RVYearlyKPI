@@ -50,6 +50,7 @@ class YearPerformanceConfigCyclical extends DBPropertyObject{
     'assessment_date_start',
     'assessment_date_end',
     'assessment_ids',
+    'promotion_c_to_b',
     'update_date'
   );
 
@@ -60,7 +61,7 @@ class YearPerformanceConfigCyclical extends DBPropertyObject{
 
   private $department_construct_json = array();
 
-  public static $aisleColumn = array("year","processing","date_start","date_end","feedback_addition_day","feedback_date_start","feedback_date_end","assessment_addition_day","assessment_date_start","assessment_date_end","update_date", "department_construct_json", "feedback_question_ids", "feedback_choice_ids", "assessment_ids","ceo_staff_id","constructor_staff_id");
+  public static $aisleColumn = array("year","processing","date_start","date_end","feedback_addition_day","feedback_date_start","feedback_date_end","assessment_addition_day","assessment_date_start","assessment_date_end","update_date", "department_construct_json", "feedback_question_ids", "feedback_choice_ids", "assessment_ids","ceo_staff_id","constructor_staff_id", "promotion_c_to_b");
 
   public function __construct($y=null){
 
@@ -139,9 +140,10 @@ class YearPerformanceConfigCyclical extends DBPropertyObject{
     return $this->getFullConstruct($json);
   }
   //解析 員工資料
+  private $olderConStaffCol = ['id','title_id','post_id', '_can_feedback','_can_assessment'];
   private $conStaffCol = ['id','title_id','post_id','is_leader','_can_feedback','_can_assessment'];
   private $end_time;
-  private function getConByStaff($sv){
+  private function getConByStaff($sv, $manager_id = -1){
     $ary = [];
     if(isset($sv['id'])){
       $end = $this->end_time;
@@ -152,10 +154,15 @@ class YearPerformanceConfigCyclical extends DBPropertyObject{
       $ary[4] = ($sv['department_id']==1&&$sv['lv']==1)?0:1; // CEO以外 都可以填問卷
       $ary[5] = ($sv['rank'] >0 && $first<=$end && in_array($sv['status_id'], array(1,2,3,5)))? 1:0;  // _can_assessment 是否為正職
     }else if(is_array($sv)){
+      $column = count($sv) == 5 ? $this->olderConStaffCol : $this->conStaffCol;
       foreach($sv as $i => $v){
-        $key = $this->conStaffCol[$i];
+        $key = $column[$i];
         $ary[$key] = $v;
       }
+      if (empty($ary['is_leader'])) {
+        $ary['is_leader'] = $manager_id==$ary['id'] ? 1 : 0;
+      }
+      
     }
     return $ary;
   }
@@ -169,7 +176,7 @@ class YearPerformanceConfigCyclical extends DBPropertyObject{
     foreach($json as &$val){
       $staffs = [];
       foreach($val[5] as $sv){
-        $staffs[] = $this->getConByStaff( $sv );
+        $staffs[] = $this->getConByStaff( $sv, $val[3] );
       }
       array_unshift($val[6],$val[0]);
       $result[] = array(

@@ -23,8 +23,10 @@
 </style>
 <div id="Management-FeedbackCheck">
     <div class="had-container rv-feeback-check">
-        <h1 class="rv-title">部屬意見管理 (對其它單位主管) </h1>
-        <div class="container">
+        <h1 class="rv-title">部屬意見管理 
+            <span style="font-size: 14px; color: #a1a1a1; display: inline-block; margin-right: 10px;">※ 對其它單位主管</span>
+            <span style="font-size: 14px; color: #a1a1a1;">※ 無法處理給自己的回饋內容</span> </h1>
+        <div class="">
             <div class="row filter-date">
                 <div class="year-select">
                     <h3 class="title">請選擇年份</h3>
@@ -35,14 +37,14 @@
             </div>
             <div v-if="config.processing >= 3 && alleader[0]">
                 <div class="card opinion-list" v-for="leader in alleader" v-if="leader.questions && leader.questions.length>0">
-                    <div class="header">{{leader.name}} {{leader.name_en}} </div>
+                    <div class="header">{{leader.staff_no}} {{leader.name}} {{leader.name_en}} </div>
                     <ul>
                         <li>
                             <div class="row list-item" v-for="lq in leader.questions">
-                                <div class="col s8 l8">
+                                <div class="col s8 l9">
                                     <p>{{lq.content}}</p>
                                 </div>
-                                <div class="col s4 l4 action" v-if="isNotFinished">
+                                <div class="col s4 l3 action" v-if="isNotFinished">
                                     <span>轉移給</span>
                                     <div class="dropdown">
                                         <select class="btn dropdown-button" v-model="lq.target_id">

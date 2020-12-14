@@ -306,7 +306,7 @@
               </td>
               <template v-if="
                 !main._is_on_multiple_leader_process || 
-                (main._is_on_multiple_leader_process && (!main.assessment_json[aj_key].edit || (main.assessment_json[aj_key].edit && main._should_count)))">
+                (main._is_on_multiple_leader_process && (!main.assessment_json[aj_key].edit || (main.assessment_json[aj_key].edit && main.assessment_json[aj_key]['should_count'])))">
                 <td v-for="(tp, index) in topic">
                   <select
                     v-if="main.assessment_json[aj_key].edit"
@@ -319,7 +319,7 @@
                     </option>
                   </select>
                   <span v-else
-                    >{{main.assessment_json[aj_key].score[tp.id]}}</span
+                    >{{ main.assessment_json[aj_key].score[tp.id] }}</span
                   >
                 </td>
                 <td>
@@ -332,7 +332,7 @@
                 <td :colspan="topic.length +1" style="color: #EF5350;">你的評分將不列入計算</td>
               </template>
               <td v-if="main._is_on_multiple_leader_process">
-                <input class="myinput large" v-if="main.assessment_json[aj_key].edit" type="checkbox" v-model="main._should_count" >
+                <input class="myinput large" v-if="main.assessment_json[aj_key].edit" type="checkbox" v-model="main.assessment_json[aj_key]['should_count']" >
               </td>
             </tr>
           </tbody>
@@ -548,6 +548,7 @@
                 >
                 <a
                   title="匯出excel"
+                  v-if="member.is_admin"
                   v-on:click="downloadExcelDivisionZone(divisionData.division)"
                   ><i class="material-icons">vertical_align_bottom</i></a
                 >
@@ -1023,13 +1024,13 @@
     <div class="tab-area">
       <ul class="tabs tab-feedback">
         <li class="tab" v-if="staff_is_leader">
-          <a :href="'#subordinate123'" class="active">部屬回饋</a>
+          <a :href="'#subordinate123'" class="active">部屬回饋 ({{opinionFeedback.question.question_1.length + opinionFeedback.question.question_2.length + opinionFeedback.question.question_4.length}})</a>
         </li>
         <li class="tab" v-if="staff_is_leader">
-          <a :href="'#other'">其它單位回饋</a>
+          <a :href="'#other'">其它單位回饋 ({{opinionFeedback.question.question_5.length}})</a>
         </li>
         <li class="tab"><a :href="'#self'">自我評語</a></li>
-        <li class="tab" v-if="!staff_is_ceo">
+        <li class="tab" v-if="!staff_is_ceo && main.processing_lv != main.staff_lv">
           <a :href="'#supervisor'">主管評語</a>
         </li>
       </ul>
@@ -1108,25 +1109,24 @@
         </div>
       </div>
       <div :id="'supervisor'" class="col s12 tab-content" style="display: none">
-        <div class="content">
+        <div class="content" v-if="opinionFeedback.upper_comment">
           <ul
             class="content-list"
             v-if="opinionFeedback.upper_comment[upper.key]"
             v-for="(upper, upper_i) in upperCommentForm"
           >
             <span class="no">{{upper.title}}</span>
-            <template
+            <li class="text" style="border: 1px solid #CCC; padding: 6px 8px;"
+              v-if="Object.keys(opinionFeedback.upper_comment[upper.key]).length != 0"
               v-for="(content, content_i) in opinionFeedback.upper_comment[upper.key].content"
-            >
-              <li class="text" style="border: 1px solid #CCC; padding: 6px 8px;">
-                <table>
-                    <tr>
-                        <th style="width: 20%;">{{opinionFeedback.upper_comment[upper.key]['staff_name'][content_i][0]}} {{opinionFeedback.upper_comment[upper.key]['staff_name'][content_i][1]}}</th>
-                        <td style="text-align: left;"><template v-if="content">{{content}}</template><template v-else>無</template></td>
-                    </tr>
-                </table>
-              </li>
-            </template>
+              >
+              <table>
+                <tr>
+                    <th style="width: 20%;">{{opinionFeedback.upper_comment[upper.key]['staff_name'][content_i][0]}} {{opinionFeedback.upper_comment[upper.key]['staff_name'][content_i][1]}}</th>
+                    <td style="text-align: left;"><template v-if="content">{{content}}</template><template v-else>無</template></td>
+                </tr>
+              </table>
+            </li>
           </ul>
           <!-- <ul class="content-list" v-if="opinionFeedback.upper_comment[2]">
             <span class="no">部單位</span>
@@ -1227,11 +1227,11 @@
                     <template v-if="record._is_multiple_leader_from">【{{record.from_department_name}}】</template>
                     <template v-else>【{{record.from_name}} {{record.from_name_en}}】</template>
                   </span>
-                  <span class="other">→ 其他 →</span>
-                  <span>
+                  <span class="other">→ 系統{{record.title}}</span>
+                  <!-- <span v-if="record.title">
                     <template v-if="record._is_multiple_leader_to">【{{record.to_department_name}}】</template>
                     <template v-else>【{{record.to_name}} {{record.to_name_en}}】</template>
-                  </span>
+                  </span> -->
                 </div>
               </div>
             </div>

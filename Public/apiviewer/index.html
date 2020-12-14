@@ -82,13 +82,11 @@ $(function(){
 
 var comment = {};
 function buildComment(items){
-  //console.log(items);
   //var fnName = API_OBJECT_NAME+'.'+item.name;
   //var fnName = 'self.'+item.name;
   //var index = API_JS_CONTENT.indexOf(fnName);
   
   API_JS_CONTENT.replace(/(\/\*\*[^!!]+?)function/igm,function($m,$a){
-    //console.log($a);
     for(var i in items){
       var str = items[i].name;
       var ia = $a.lastIndexOf(str);
@@ -109,10 +107,7 @@ function launch(){
   $apis.limit = MAX_AUTOCOMPLETE_ITEM;
   
   var $params = $('#params');
-  
   var max_tip = MAX_TIP_LENGTH;
-  
-  console.log(API);
   
   for(var i in API){
     if(typeof API[i]!='function' || String(i).match(/^(encode|go|decode|when|format)/i)){continue;}
@@ -128,7 +123,6 @@ function launch(){
       }).slice(0,$apis.limit) );
     },
     select: function( e,ui){
-      //console.log(ui);
       $apis.target = ui.item.fn;
       var cm = comment[ui.item.name] || '無註解';
       $('#detail textarea').val( cm );
@@ -195,11 +189,8 @@ function launch(){
   function callbackSuccess(r){
     
     var cot = API.format(r);
-    //console.log(cot);
     if(cot.is){
       var data = cot.res();
-      console.log(data);
-      
       visualize(data);
       
     }else{

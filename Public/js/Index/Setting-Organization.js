@@ -249,7 +249,6 @@ var $SettingOrganization = $("#SettingOrganization").generalController(
             var now = this.now;
             var manager = this.manager;
             var managers = this.managers;
-            console.log(sd);
             if ((typeof sd.manager_staff_id != undefined && sd.manager_staff_id == 0) && (vuet.department_leader_group.length > 0 && vuet.department_leader_group.find(function (item) { return item.status == 1 }) != undefined)) {
               vuet.changeManager(vuet.managers_array.find(function (item) { return item.id == now.manager_staff_id }));
               return swal(
@@ -302,7 +301,6 @@ var $SettingOrganization = $("#SettingOrganization").generalController(
               }
 
               if (!!callback) {
-                console.log(e);
                 callback();
               }
             });

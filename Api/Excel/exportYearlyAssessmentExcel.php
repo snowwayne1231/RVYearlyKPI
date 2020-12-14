@@ -8,7 +8,14 @@ use \Model\Business\RecordYearPerformanceDivisions;
 use \Model\Business\YearPerformanceFeedbackQuestions;
 use \Model\Business\Staff;
 use \Model\Business\Multiple\StaffHistory;
+use \Model\Business\YearPerformanceReport;
+
 $api = new ApiCore($_REQUEST);
+
+$is_super = $api->SC->isSuperUser();
+if (!$is_super) {
+  $api->denied('No Promised User.');
+}
 
 //防制機制      //Session 沒用 改版再改用 file cache
 $Excel_Request = isset($_COOKIE['Excel_Request'])?$_COOKIE['Excel_Request']:1;
@@ -40,6 +47,7 @@ if( $api->checkPost(array('year'))  && $api->SC->isLogin()){
   $myself = $api->SC->getMember();
   $is_leader = $myself['is_leader'];
   $is_admin = $myself['is_admin'];
+  $is_ceo = $api->SC->isCEO();
   $my_lv = $is_admin ? 0 : ($is_leader==1? $myself['_department_lv'] : $myself['_department_lv']+1);
 
   $is_super_user = $api->SC->isSuperUser();
@@ -51,6 +59,10 @@ if( $api->checkPost(array('year'))  && $api->SC->isLogin()){
   $ryqq = new RecordYearPerformanceQuestions();
   $ypfq = new YearPerformanceFeedbackQuestions();
   $sh = new StaffHistory();
+
+  $is_yearly_finished = $ya->isYearlyFinished();
+  $config_data = $ya->getConfigData();
+  $year_setting_should_promo = $config_data['promotion_c_to_b'] == 1;
 
   //預處理資料  基本資料
   $all_reports = $ya->getAssessmentWithDDS( $dds, $self_id );
@@ -71,6 +83,10 @@ if( $api->checkPost(array('year'))  && $api->SC->isLogin()){
         $tmp_stay[] = $shv['start_day'].' ~ '.$shv['end_day'];
       }
       $arsv['staff_stay'] = implode('，', $tmp_stay);
+    }
+
+    if ($self_id == $arsv['staff_id'] && !$is_yearly_finished) {
+      continue;
     }
     if($arsv['staff_is_leader']==1){
       $leader[]=$arsv;
@@ -194,7 +210,7 @@ function ForeachTopic($t){
 
 //建立一個 excel分頁
 function createSheetByData($report, $topic, $rate, $index=1){
-  global $excel, $column_score_lv_map, $column_rate_map, $question_map, $questionTitle_map, $column_team_caller_map,$staff_map,$is_super_user, $my_lv, $is_division_leader, $is_admin;
+  global $excel, $column_score_lv_map, $column_rate_map, $question_map, $questionTitle_map, $column_team_caller_map,$staff_map,$is_super_user, $my_lv, $is_division_leader, $is_admin, $is_ceo, $year_setting_should_promo;
 
   $t1 = microtime(true);
   if($index==0){
@@ -213,9 +229,9 @@ function createSheetByData($report, $topic, $rate, $index=1){
   $row++;
   $row_assessment_start = $row;
   //如果是執行長 加上 HK評定
-  $isCEO = $report['staff_is_leader']==1 && $report['division_id']==1;
+  $isCEOsReport = $report['staff_is_leader']==1 && $report['division_id']==1;
 
-  if($report['processing_lv']>0 || $is_super_user || true){   //還再考評中的個人 report 或是 超級使用者
+  if($report['processing_lv']>0 || $is_super_user){   //還再考評中的個人 report 或是 超級使用者
     //格式 - 考評分數
     $sheet->mergeCells( str_fetchColRow(1,$row,4,$row+1) );
     $sheet->mergeCells( str_fetchColRow(5,$row,5,$row+1) );
@@ -226,7 +242,7 @@ function createSheetByData($report, $topic, $rate, $index=1){
     $has_under_merge = false;
 
 
-    if($isCEO){
+    if($isCEOsReport){
       $report['assessment_json'][0] = $report['assessment_json']['self'];
       $report['assessment_json'][0]['percent'] = 40;
       $report['assessment_json'][0]['total'] = '';
@@ -298,12 +314,14 @@ function createSheetByData($report, $topic, $rate, $index=1){
     }
 
     //總分
-    $no_total = $isCEO || $report['processing_lv']>0; //執行長或還沒結束的單子不給總分
+    $no_total = $isCEOsReport || $report['processing_lv']>0; //執行長或還沒結束的單子不給總分
     // dd([$is_division_leader, $is_admin]);
-    if ($is_division_leader || $is_admin) {
+    if ($is_admin || $is_ceo) {
       $score_total = $no_total ? '':(int)$report['assessment_total'];
       $score_fix = $no_total ? '' : (int)$report['assessment_total_division_change'] + (int)$report['assessment_total_ceo_change']; //加減分
       $score_final = $no_total ? '' : $score_total + $score_fix; //核定總分
+    } else if ($is_division_leader) {
+
     } else {
       $score_total = '?';
       $score_fix = '?';
@@ -335,6 +353,14 @@ function createSheetByData($report, $topic, $rate, $index=1){
   }
 
   $t2 = microtime(true);
+  if ($is_super_user) {
+    $level = $report['level'];
+  } else if ($is_yearly_finished && $year_setting_should_promo) {
+    $level = YearPerformanceReport::PromotionBtoC($report['level']);
+  } else {
+    $level = $report['level'];
+  }
+  
   //核定總分
   $sheet->mergeCells( str_fetchColRow(1, $row, 4, $row) );
   $sheet->setCellValue( p(1, $row), '核定總分' );
@@ -343,7 +369,7 @@ function createSheetByData($report, $topic, $rate, $index=1){
   //考核等級
   $sheet->mergeCells( str_fetchColRow(1, $row, 4, $row) );
   $sheet->setCellValue( p(1, $row), '考績等級 ' );
-  $sheet->setCellValue( p(5, $row), $report['level'] );
+  $sheet->setCellValue( p(5, $row), $level );
   $col_rate = 6;
   foreach($rate as $name=>$value){
     $sheet->setCellValue( p($col_rate, $row), $name.' '.$column_rate_map[$name] );
@@ -409,7 +435,7 @@ function createSheetByData($report, $topic, $rate, $index=1){
   $sign_run = ['s'=>'本人', 4=>'組長', 3=>'處主管', 2=>'部門主管', 1=>'運維主管', 'f'=>'決策者核定'];
   $col = 1;
 
-  if($isCEO){
+  if($isCEOsReport){
     $row = addCommentBySheet($sheet, $row, 'HK 評語：', "\r\n \r\n \r\n \r\n \r\n");
     $row++;
     $staff = $staff_map[$report['staff_id']];

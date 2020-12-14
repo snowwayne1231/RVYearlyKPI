@@ -18,7 +18,6 @@ var $overView = $("#Overview").generalController(function() {
       $.ym.save();
     });
     month.change(function() {
-      console.log(this.value);
       if ($.isNumberic(this.value) && this.value > 0) {
         current.month = this.value;
         $.ym.save();
@@ -87,7 +86,6 @@ var $overView = $("#Overview").generalController(function() {
         if (vm.month != 0) {
           //vm.getAlldepart();
         } else {
-          console.log("全年");
           ts.q("#selectDepartmentID").remove();
         }
       },

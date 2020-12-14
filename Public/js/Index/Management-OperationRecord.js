@@ -22,7 +22,6 @@ var $managementOperationRecord = $('#Management-OperationRecord').generalControl
                         var result = API.format(e);
                         if (result.is) {
                             vm.record = result.res();
-                            console.log(vm.record)
                         }
                     });
                 },
@@ -32,7 +31,6 @@ var $managementOperationRecord = $('#Management-OperationRecord').generalControl
                     var f = API.format(e);
                     if(f.is){
                       var result = f.get();
-                      console.log(result);
                       var str = JSON.stringify(result.changed_json);
                       swal('詳細',str,'');
                     }

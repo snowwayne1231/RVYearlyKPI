@@ -244,8 +244,14 @@ class YearlyFeedback extends MultipleSets{
       //該單是這位選手的
       if($feedback['staff_id']==$staff_id){
 
-        //需要更新選擇題
+        //檢查進度是否可以送審
+        $config_map = $this->getConfigMap($year);
+        $processing = $config_map[$year]['processing'];
+        if($processing > \Model\Business\YearPerformanceConfigCyclical::PROCESSING_LAUNCHED){
+          return $this->error('Already Done.');
+        }
 
+        //需要更新選擇題
         if( isset($choice_json) && is_array($choice_json) ){
           $choices = $this->getChoiceWithYear( $feedback['year'] );
           if( isset($choices['error']) ){return $choices;}
@@ -621,7 +627,7 @@ class YearlyFeedback extends MultipleSets{
     $staff_id = array_merge($staff_id, $target_staff_id);
     $staff_id = array_unique($staff_id);
     if ($staff_id) {
-      $staff_list = $this->staff->read(['name', 'name_en', 'id'], ['id' => ' in ('.implode(',', $staff_id).')'])->cmap('id');
+      $staff_list = $this->staff->read(['name', 'name_en', 'staff_no', 'id'], ['id' => ' in ('.implode(',', $staff_id).')'])->cmap('id');
       $team_map = $this->team->read(['id','unit_id','name'],[])->cmap();
     } else {
       $staff_list = [];

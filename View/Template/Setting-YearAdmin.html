@@ -1,6 +1,6 @@
 <div id="SettingAdminYearly">
   <div class="had-container rv-admin rv-year-admin">
-    <h1 class="rv-title">年度考評單查閱</h1>
+    <h1 class="rv-title">年度績效 考評單管理</h1>
     <div class="filter-date row">
       <h3 class="title">請選擇日期</h3>
       <div class="dropdown">
@@ -45,73 +45,95 @@
                   {{ th.name }}
                 </th>
                 <th>小計</th>
+                <th>操作</th>
               </tr>
             </thead>
-            <tbody>
-              <template 
-                v-for="(report, report_i) in tbody[b.key]" 
-                v-if="filter(report.department_unit_id + ' ' + report.department_name, report.staff_name + ' ' + report.staff_name_en)">
+            <tbody
+              v-for="(report, report_i) in tbody[b.key]" 
+              v-if="filter(report.department_unit_id + ' ' + report.department_name, report.staff_name + ' ' + report.staff_name_en)"
+              :class="{'delete': report['enable'] == 0}">
                 <tr>
                   <td :rowspan="report['_f_rowspanNum']">
                     <div>
-                      {{ report.department_unit_id }} {{ report.department_name }}
-                    </div>
-                    <div class="main">
-                      {{ report.staff_name }} {{ report.staff_name_en }}
+                      <table>
+                        <tbody>
+                          <tr>
+                            <td colspan="3" style="color: #a1a1a1; text-align: left; border: none; padding: 0 3px;"><div style="width: 150px;">{{ report.department_unit_id }} {{ report.department_name }} <span v-if="report['enable'] == 0" class="delete-text"><i class="material-icons">layers_clear</i></sapn></div></td>
+                          </tr>
+                          <tr>
+                            <td style="text-align: left; padding: 3px; border: none;"><div style="width: 30px;">{{ staffMap[report.staff_id]['staff_no'] }}</div></td>
+                            <td class="main" style="text-align: left; padding: 3px; line-height: 18px; border: none;"> <div style="min-width: 80px;">{{ report.staff_name }} <br> {{ report.staff_name_en }}</div></td>
+                            <td style="border: none; padding: 3px; text-align: right;"><a @click="getRecords(report.id)" title="歷史記錄" style="cursor: pointer;
+                              display: inline-block;
+                              opacity: 1;
+                              padding: 4px;
+                              border: 1px solid #dddddd;
+                              padding-bottom: 0;
+                              border-radius: 5px;
+                              margin: 0;
+                              background-color: #FFF;
+                              -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.18);
+                              box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.18);"><i class="material-icons indigo-text" style="font-size: 20px;">library_books</i></a></td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </td>
                 </tr>
                 <template v-for="(lv, lv_i) in report['assessment_json']">
-                  <tr>
-                    <td :rowspan="lv['_f_rowspanNum']">
-                      {{ stepItemMap[lv_i].name }}
-                    </td>
-                    <td
-                      class="main"
-                      v-if="lv['_f_rowspanNum']"
-                    >
-                      合計
-                    </td>
-                    <td class="main" v-else>{{ getStaff(report, lv_i) }}</td>
-                    <td
-                      class="main"
-                      v-for="(item, item_i) in thead[b.key]"
-                      v-if="!!lv.score"
-                      :title="item.name"
-                    >
-                      <div v-if="lv.score[item.id] == -1">-</div>
-                      <div v-else>{{ lv.score[item.id] }}</div>
-                    </td>
-                    <td
-                      v-if="!lv.score"
-                      :colspan="thead[b.key].length"
-                    ></td>
-                    <td class="main" title="小計">{{ lv.total }}</td>
-                  </tr>
-                  <template v-if="lv['_f_hasEvluating']">
-                  <tr
-                    v-for="(sub, sub_i) in lv['_f_evluating']['scores']"
-                    class="sub"
-                    :class="{'bg-red': !lv['_f_evluating']['should_count'][sub_i]}"
+                <tr>
+                  <td :rowspan="lv['_f_rowspanNum']">
+                    {{ stepItemMap[lv_i].name }}
+                  </td>
+                  <td
+                    class="main"
+                    v-if="lv['_f_rowspanNum']"
                   >
-                    <td>
-                      {{ staffMap[lv['_f_evluating']['leaders'][sub_i]]['name_en'] }}
-                      <div v-if="!lv['_f_evluating']['should_count'][sub_i]">(不計分)</div>
-                    </td>
-                    <td
-                      v-for="(score, score_i) in sub"
-                      :title="titleObj[score_i]"
-                    >
-                      <div v-if="score == -1">-</div>
-                      <div v-else>{{ score }}</div>
-                    </td>
-                    <td title="小計">
-                      {{ lv['_f_evluating']['totallist'][sub_i] }}
-                    </td>
-                  </tr>
-                  </template>
+                    合計
+                  </td>
+                  <td class="main" :title="getStaff(report, lv_i, 'staff_no')" v-else>{{ getStaff(report, lv_i, 'name_en') }}</td>
+                  <td
+                    class="main"
+                    v-for="(item, item_i) in thead[b.key]"
+                    v-if="!!lv.score"
+                    :title="item.name"
+                  >
+                    <div v-if="lv.score[item.id] == -1">-</div>
+                    <div v-else>{{ lv.score[item.id] }}</div>
+                  </td>
+                  <td
+                    v-if="!lv.score"
+                    :colspan="thead[b.key].length"
+                  ></td>
+                  <td class="main" title="小計">{{ lv.total }}</td>
+                  <td></td>
+                </tr>
+                <template v-if="lv['_f_hasEvluating']">
+                <tr
+                  v-for="(sub, sub_i) in lv['_f_evluating']['scores']"
+                  class="sub"
+                  :class="{'bg-red': !lv['_f_evluating']['should_count'][sub_i]}"
+                >
+                  <td :title="staffMap[lv['_f_evluating']['leaders'][sub_i]]['staff_no']">
+                    {{ staffMap[lv['_f_evluating']['leaders'][sub_i]]['name_en'] }}
+                    <div v-if="!lv['_f_evluating']['should_count'][sub_i]">(不計分)</div>
+                  </td>
+                  <td
+                    v-for="(score, score_i) in sub"
+                    :title="titleObj[score_i]"
+                  >
+                    <div v-if="score == -1">-</div>
+                    <div v-else>{{ score }}</div>
+                  </td>
+                  <td title="小計">
+                    {{ lv['_f_evluating']['totallist'][sub_i] }}
+                  </td>
+                  <td>
+                    <a v-if="report['enable'] == 1 && report['processing_lv'] == lv_i && lv['_f_evluating']['commited'][sub_i]" @click="reply(report, lv['_f_evluating']['leaders'][sub_i])" href="javascript:;" title="取消提交" class="btn waves-effect waves-teal lighten-1 red" style="padding-left: 10px; padding-right: 10px; display: block;"><i class="material-icons dp48">reply</i></a>
+                  </td>
+                </tr>
                 </template>
-              </template>
+                </template>
             </tbody>
           </table>
         </div>
@@ -126,7 +148,7 @@
   }
   .rv-year-admin .main {
     font-weight: bolder;
-    font-size: 16px;
+    font-size: 15px;
   }
   .rv-year-admin .sub {
     background-color: #eeeeee;
@@ -142,6 +164,29 @@
     text-align: center;
     padding-left: 10px;
     padding-right: 10px;
+  }
+  .delete > tr {
+    opacity: 0.3;
+  }
+  .delete > tr:first-child {
+    opacity: 1;
+  }
+  .delete .delete-text {
+    width: 24px;
+    height: 24px;
+    padding: 2px; 
+    text-align: center; 
+    background-color: #EF5350; 
+    color: #FFF;
+    font-size: 13px;
+    display: inline-block;
+    opacity: 1;
+    display: inline-block;
+    float: right;
+    border-radius: 3px;
+  }
+  .delete .delete-text i {
+    font-size: 20px;
   }
   .rv-year-admin table th:nth-child(1) {
     width: 180px;
@@ -189,5 +234,7 @@
     background: #fdd835 !important;
   }
 </style>
+
+<?=V('Component/Yearly_history.html')?>
 
 <script src="<?=U('/Public/js/Index/Setting-YearAdmin.js')?>"></script>
