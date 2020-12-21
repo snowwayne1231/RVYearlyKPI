@@ -136,13 +136,6 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
             created: function() {
                 const vm = this;
                 let data = { year: vm.year };
-                API.getYearlyConfig(data).then(function(e) {
-                    let res = API.format(e);
-                    if (res.is) {
-                        vm.currConfig = res.res();
-                    }
-                });
-
                 API.getYearlyTopic(data).then(function(e) {
                     var gyt = API.format(e);
                     if (gyt.is) {
@@ -163,6 +156,15 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
                 }
             },
             methods: {
+                getConfig() {
+                    let data = { year: this.year };
+                    API.getYearlyConfig(data).then(function(e) {
+                        let res = API.format(e);
+                        if (res.is) {
+                            vm.currConfig = res.res();
+                        }
+                    });
+                },
                 DataInit: function() {
                     var vthis = this;
                     var person = [];
@@ -178,6 +180,7 @@ var $yearEvaluationOverview = $('#Year-EvaluationOverview').generalController(fu
                         is_over: vthis.is_over
                     }
                     $.ym.save(data);
+                    vthis.getConfig();
                     API.getYearlyReportTotal(data).then(function(e) {
                         var result = API.format(e);
                         if (result.is) {

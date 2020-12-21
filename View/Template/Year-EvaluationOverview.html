@@ -91,11 +91,11 @@
                     </div>
                 </div>
             </div>
-            <div class="row" v-if="viewData.leader">
-                <h2 v-if="viewData.leader.length!=0">單位主管</h2>
+            <div class="row" v-if="viewData.leader && viewData.leader.length > 0">
+                <h2>單位主管</h2>
                 <div>
                     <div class="card">
-                        <table class="table table-striped viewTable" v-if="viewData.leader.length!=0">
+                        <table class="table table-striped viewTable">
                             <thead>
                                 <tr>
                                     <th @click="LeaderSortBy('division_code')" :class="{'sort-this':report_sort_now=='division_code'}">部門名稱
@@ -163,11 +163,11 @@
                                     <td v-if="isAdmin ==1 || isCEO==1">{{leader.assessment_total_division_change}}</td>
                                     <td v-if="isAdmin ==1 || isCEO==1">{{leader.assessment_total_ceo_change}}</td>
                                     <td v-if="isAdmin ==1 || isCEO==1">
-                                        <span v-if="Object.keys(leader).indexOf('assessment_total') != -1">{{leader.assessment_total + leader.assessment_total_division_change + leader.assessment_total_ceo_change}}</span>
+                                        <span v-if="leader.hasOwnProperty('assessment_total')">{{leader.assessment_total + leader.assessment_total_division_change + leader.assessment_total_ceo_change}}</span>
                                     </td>
                                     <td>{{leader.level}}</td>
                                     <td>
-                                        <div v-if="Object.keys(leader).indexOf('assessment_json') != -1 || currConfig.processing >= 8">
+                                        <div v-if="leader.hasOwnProperty('assessment_json') || currConfig.processing >= 8">
                                             <a v-if=" leader.enable == 1" class="waves-effect waves-light btn" v-on:click="personalReport(leader,1)">考評單</a>
                                             <span v-if="leader.enable ==0" class="close">已作廢</span>
                                         </div>
@@ -178,11 +178,11 @@
                     </div>
                 </div>
             </div>
-            <div class="row" v-if="viewData.staff">
-                <h2 v-if="viewData.staff !=0">一般員工</h2>
+            <div class="row" v-if="viewData.staff && viewData.staff.length > 0">
+                <h2>一般員工</h2>
                 <div>
                     <div class="card">
-                        <table class="table table-striped viewTable staff-table" v-if="viewData.staff !=0">
+                        <table class="table table-striped viewTable staff-table">
                             <thead>
                                 <tr>
                                     <th @click="StaffSortBy('division_code')" :class="{'sort-this':staff_sort_now=='division_code'}">部門名稱
@@ -252,11 +252,11 @@
                                     <td v-if="isAdmin == 1 || isCEO == 1">{{staffdata.assessment_total_division_change}}</td>
                                     <td v-if="isAdmin == 1 || isCEO == 1">{{staffdata.assessment_total_ceo_change}}</td>
                                     <td v-if="isAdmin == 1 || isCEO == 1">
-                                        <span v-if="Object.keys(staffdata).indexOf('assessment_total') != -1">{{staffdata.assessment_total + staffdata.assessment_total_division_change + staffdata.assessment_total_ceo_change}}</span>
+                                        <span v-if="staffdata.hasOwnProperty('assessment_total')">{{staffdata.assessment_total + staffdata.assessment_total_division_change + staffdata.assessment_total_ceo_change}}</span>
                                     </td>
                                     <td>{{staffdata.level}}</td>
                                     <td>
-                                        <div v-if="Object.keys(staffdata).indexOf('assessment_json') != -1 || currConfig.processing >= 8">
+                                        <div v-if="staffdata.hasOwnProperty('assessment_json') || currConfig.processing >= 8">
                                             <a v-if=" staffdata.enable == 1" class="waves-effect waves-light btn" v-on:click="personalReport(staffdata, 0)">考評單</a>
                                             <span v-if="staffdata.enable == 0" class="close">已作廢</span>
                                         </div>

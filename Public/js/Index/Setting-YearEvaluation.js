@@ -465,8 +465,9 @@ var $SettingYearEva = $('#SettingYearEva').generalController(function() {
                             } else {
                                 console.log('設置年度考評單時間失敗：' + result.get());
                             }
+                            vm.operatYearlyProcess(1);
                         });
-                        this.operatYearlyProcess(1);
+                        // this.operatYearlyProcess(1);
                     },
                     operatYearlyProcess: function(status) {
                         // 1:START , 0:RESTART
